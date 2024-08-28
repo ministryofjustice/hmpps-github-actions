@@ -1,15 +1,15 @@
-name: Parent security trivy dependency check
+name: Security trivy dependency check
 
 on:
   workflow_dispatch:
   schedule:
-    - cron: "35 5 * * MON-FRI" # Every weekday at 05:35 UTC
+    - cron: "<<YOUR_CRONTAB>>" # Every weekday at 05:35 UTC
 
 jobs:
   security-kotlin-trivy-check:
-    name: kotlin security trivy dependency check
+    name: Project security trivy dependency check
     uses: ministryofjustice/hmpps-github-actions/.github/workflows/security/security_trivy.yml
     with:
-      channel_id: C07B548FGA0
+      channel_id: <<YOUR_SLACK_CHANNEL>>
     secrets:
       SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}

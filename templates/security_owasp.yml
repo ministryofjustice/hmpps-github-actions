@@ -1,4 +1,4 @@
-name: Parent security OWASP dependency check
+name: Security OWASP dependency check
 
 on:
   workflow_dispatch:
@@ -7,7 +7,7 @@ on:
 
 jobs:
   security-kotlin-owasp-check:
-    name: Kotlin security OWASP dependency check
+    name: Project security OWASP dependency check
     uses: ministryofjustice/hmpps-github-actions/.github/workflows/security/security_owasp.yml
     with:
       channel_id: <<YOUR_SLACK_CHANNEL>>      
