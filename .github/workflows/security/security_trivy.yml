@@ -1,0 +1,86 @@
+name: Security trivy dependency check
+
+on:
+  workflow_call:
+    inputs:
+      subproject:
+        required: false
+        type: string
+      channel_id:
+        required: false
+        type: string
+    secrets:
+      slack_bot_token:
+        description: Slack bot token
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  security-trivy-check:
+    name: Security trivy dependency check
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+    env:
+      parent_directory: ${{ github.event.repository.name == '' && '.' || github.event.repository.name }}
+    steps:
+    - uses: actions/checkout@v4
+    - name: Trivy Image Vulnerability Scanner
+      id: trivy
+      uses: aquasecurity/trivy-action@b5f4977b78f81fa3d48865ff0efcc6e279210235 # v0.50.2
+      with:
+        image-ref: 'quay.io/hmpps/${{ github.event.repository.name }}:latest'
+        severity: 'HIGH,CRITICAL'
+        ignore-unfixed: true
+        skip-files: /app/agent.jar
+        format: 'sarif'
+        output: 'trivy-results.sarif'
+        exit-code: 1
+        limit-severities-for-sarif: true
+    - uses: github/codeql-action/upload-sarif@v3
+      if: success() || steps.trivy.conclusion == 'failure'
+      with:
+        sarif_file: 'trivy-results.sarif'
+        category: trivy-dependency-check
+    - name: Slack failure notification
+      uses: slackapi/slack-github-action@70cd7be8e40a46e8b0eced40b0de447bdb42f68e # v1.26.0
+      if: failure()
+      with:
+        channel-id: ${{ inputs.channel_id}}
+        payload: |
+          {
+            "blocks": [
+              {
+                "type": "section",
+                "text": {
+                  "type": "mrkdwn",
+                  "text": ":no_entry: Failed GitHub Action:"
+                }
+              },
+              {
+                "type": "section",
+                "fields": [
+                  {
+                    "type": "mrkdwn",
+                    "text": "*Workflow:*\n<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|${{ github.workflow }}>"
+                  },
+                  {
+                    "type": "mrkdwn",
+                    "text": "*Job:*\n${{ github.job }}"
+                  },
+                  {
+                    "type": "mrkdwn",
+                    "text": "*Repo:*\n${{ github.repository }}"
+                  },
+                  {
+                    "type": "mrkdwn",
+                    "text": "*Project:*\n${{ github.event.repository.name }}"
+                  }
+                ]
+              }
+            ]
+          }
+      env:
+        SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
