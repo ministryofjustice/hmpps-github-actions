@@ -40,11 +40,6 @@ jobs:
       with:
         name: npm-security-check-${{ github.event.repository.name }}
         path: ${{ env.parent_directory }}/build/reports/npm-security-check-reports.html
-    - uses: actions/upload-artifact@v3
-      if: failure() 
-      with:
-        name: npm-security-check-${{ github.event.repository.name }}
-        path: ./files/slack_failed.tpl.json
     - uses: slackapi/slack-github-action@e28cf165c92ffef168d23c5c9000cffc8a25e117 # v1.24.0
       if: failure()
       with:
