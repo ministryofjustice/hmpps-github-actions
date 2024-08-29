@@ -1,0 +1,54 @@
+name: Security npm dependency check
+
+on:
+  workflow_call:
+    inputs:
+      channel_id:
+        required: false
+        type: string
+      node_version:
+        required: false
+        type: string
+        default: '20.12-browsers'
+    secrets:
+      SLACK_BOT_TOKEN:
+        description: Slack bot token
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  security-npm-check:
+    name: Security npm dependency check
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+    env:
+      parent_directory: ${{ github.event.repository.name == '' && '.' || github.event.repository.name}}
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup node
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ inputs.node_version }}
+    - name: Run security audit
+      id: npm
+      run: 'npm run security_audit'  
+    - uses: actions/upload-artifact@v3
+      if: success() || steps.npm.conclusion == 'failure'
+      with:
+        name: npm-security-check-${{ github.event.repository.name }}
+        path: ${{ env.parent_directory }}/build/reports/npm-security-check-reports.html
+    - uses: actions/upload-artifact@v3
+      if: failure() 
+      with:
+        name: npm-security-check-${{ github.event.repository.name }}
+        path: ./payload-slack-content.json
+    - uses: slackapi/slack-github-action@e28cf165c92ffef168d23c5c9000cffc8a25e117 # v1.24.0
+      if: failure()
+      with:
+        channel-id: ${{ inputs.channel_id}}
+        payload-file-path: "./payload-slack-content.json"
+      env:
+        SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
