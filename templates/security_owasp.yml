@@ -10,6 +10,6 @@ jobs:
     name: Project security OWASP dependency check
     uses: ministryofjustice/hmpps-github-actions/.github/workflows/security_owasp.yml@main
     with:
-      channel_id: <<YOUR_SLACK_CHANNEL>>      
+      channel_id: ${{ vars.SLACK_CHANNEL_ID }}      
     secrets:
       SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
