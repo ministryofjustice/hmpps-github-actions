@@ -8,7 +8,7 @@ on:
 jobs:
   security-kotlin-trivy-check:
     name: Project security trivy dependency check
-    uses: ministryofjustice/hmpps-github-actions/.github/workflows/security/security_npm.yml@main
+    uses: ministryofjustice/hmpps-github-actions/.github/workflows/security_npm.yml@main
     with:
       channel_id: <<YOUR_SLACK_CHANNEL>>
     secrets:
