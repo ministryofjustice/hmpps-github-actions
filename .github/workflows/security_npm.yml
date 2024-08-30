@@ -45,7 +45,7 @@ jobs:
       with:
         channel-id: ${{ inputs.channel_id}}
         payload: |
-          {
+          { "text": "npm scan failed",
             "blocks": [
               {
                 "type": "section",

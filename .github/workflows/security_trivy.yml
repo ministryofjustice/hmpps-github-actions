@@ -50,7 +50,7 @@ jobs:
       with:
         channel-id: ${{ inputs.channel_id}}
         payload: |
-          {
+          { "text: "Trivy scan failed",
             "blocks": [
               {
                 "type": "section",

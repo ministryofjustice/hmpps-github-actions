@@ -47,7 +47,7 @@ jobs:
       with:
         channel-id: ${{ inputs.channel_id}}
         payload: |
-          {
+          { "text": "Owasp check failed",
             "blocks": [
               {
                 "type": "section",
