@@ -29,9 +29,9 @@ jobs:
       with:
         java-version: '21'
         distribution: 'temurin'
-    - name: Run gradle OWASP Dependency Check Update
-      id: owasp-update
-      run: ./gradlew dependencyCheckUpdate --info
+    # - name: Run gradle OWASP Dependency Check Update
+    #   id: owasp-update
+    #   run: ./gradlew dependencyCheckUpdate --info
     - name: Run gradle OWASP Dependency Check Analyse
       id: owasp-analyse
       run: ./gradlew dependencyCheckAnalyze --info
