@@ -34,12 +34,12 @@ jobs:
         node-version: ${{ inputs.node_version }}
     - name: Run security audit
       id: npm
-      run: 'npm run security_audit'  
+      run: npm run security_audit > /build/reports/npm-security-check-reports.json
       continue-on-error: true
     - name: install sarif converter
       run:  npm install npm-audit-sarif
     - name: convert to sarif
-      run: npm-audit-sarif -o /build/reports/npm-security-check-reports.sarif /build/reports/npm-security-check-reports.json
+      run: npx npm-audit-sarif -o /build/reports/npm-security-check-reports.sarif /build/reports/npm-security-check-reports.json
     - uses: actions/upload-artifact@v3
       if: success() || steps.npm.conclusion == 'failure'
       with:
