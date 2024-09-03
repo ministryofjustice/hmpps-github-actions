@@ -28,14 +28,9 @@ jobs:
       parent_directory: ${{ github.event.repository.name == '' && '.' || github.event.repository.name}}
     steps:
     - uses: actions/checkout@v4
-    - name: Setup node
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ inputs.node_version }}
-    - name: Run security audit
+    - name: Audit for vulnerabilities
       id: npm
-      run: npm run security_audit > /build/reports/npm-security-check-reports.json
-      continue-on-error: true
+      run: npx audit-ci@^7 --config ./audit-ci.json
     - name: install sarif converter
       run:  npm install npm-audit-sarif
     - name: convert to sarif
