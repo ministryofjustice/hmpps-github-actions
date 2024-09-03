@@ -35,6 +35,7 @@ jobs:
     - name: Run security audit
       id: npm
       run: 'npm run security_audit'  
+      continue-on-error: true
     - name: install sarif converter
       run:  npm install npm-audit-sarif
     - name: convert to sarif
