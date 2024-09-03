@@ -35,12 +35,15 @@ jobs:
     - name: Run security audit
       id: npm
       run: 'npm run security_audit'  
+    - name: install sarif converter
+      run:  npm install npm-audit-sarif
+    - name: convert to sarif
+      run: npm-audit-sarif -o /build/reports/npm-security-check-reports.sarif /build/reports/npm-security-check-reports.json
     - uses: actions/upload-artifact@v3
       if: success() || steps.npm.conclusion == 'failure'
       with:
         name: npm-security-check-${{ github.event.repository.name }}
-        path: ${{ env.parent_directory }}/build/reports/npm-security-check-reports.html
-        exit-code: 1
+        path: ${{ env.parent_directory }}/build/reports/npm-security-check-reports.sarif
     - uses: slackapi/slack-github-action@e28cf165c92ffef168d23c5c9000cffc8a25e117 # v1.24.0
       if: failure()
       with:
