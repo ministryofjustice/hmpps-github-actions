@@ -30,7 +30,7 @@ jobs:
     - uses: actions/checkout@v4
     - name: Audit for vulnerabilities
       id: npm
-      run: npx audit-ci@^7 --config ./audit-ci.json
+      run: npx audit-ci@^7 --config ./audit-ci.json -o json > /build/reports/npm-security-check-reports.json
     - name: install sarif converter
       run:  npm install npm-audit-sarif
     - name: convert to sarif
