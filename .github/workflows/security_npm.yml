@@ -31,6 +31,7 @@ jobs:
     - name: Audit for vulnerabilities
       id: npm
       run: npx audit-ci@^7 --config ./audit-ci.json -o json > npm-security-check-reports.json
+      continue-on-error: true
     - name: install sarif converter
       run:  npm install npm-audit-sarif
     - name: convert to sarif
