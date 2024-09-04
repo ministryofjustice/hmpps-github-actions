@@ -4,6 +4,9 @@ inputs:
   channel_id:
     description: 'Slack channel ID'
     required: True
+  SLACK_BOT_TOKEN:
+    description: 'Slack bot token'
+    required: True
 runs:
   using: "composite"
   steps:
@@ -52,4 +55,4 @@ runs:
           ]
         }
     env:
-      SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+      SLACK_BOT_TOKEN: ${{ inputs.SLACK_BOT_TOKEN }}
