@@ -39,7 +39,16 @@ runs:
               "fields": [
                 {
                   "type": "mrkdwn",
-                  "text": "*Workflow:*\n<${{ github.server_url }}/${{ github.repository }}/security/code-scanning>"
+                  "text": "*Conde scanning:*\n<${{ github.server_url }}/${{ github.repository }}/security/code-scanning>"
+                }
+              ]
+            }
+            {
+              "type": "section",
+              "fields": [
+                {
+                  "type": "mrkdwn",
+                  "text": "*Workflow:*\n<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|${{ github.workflow }}>"
                 },
                 {
                   "type": "mrkdwn",
