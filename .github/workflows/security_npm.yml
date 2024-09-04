@@ -42,7 +42,7 @@ jobs:
       with:
         channel-id: ${{ inputs.channel_id}}
         payload: |
-          { "text": "npm scan failed",
+          { "text": "Github actions *npm dependency check* failed",
             "blocks": [
               {
                 "type": "section",

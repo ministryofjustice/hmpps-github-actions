@@ -31,7 +31,7 @@ runs:
               "type": "section",
               "text": {
                 "type": "mrkdwn",
-                "text": ":warning: npm dependency check identified issues"
+                "text": ":warning: Github Actions *npm dependency check* ran and identified issues"
               }
             },
             {
