@@ -65,7 +65,7 @@ def main():
       level='none'
     message=''
     for each_element in this_result.keys():
-      message+=f'**{each_element}**: {this_result[each_element]}\n'
+      message+=f'{each_element}: {this_result[each_element]}\n'
     result_dict={
       'level': level,
       'message': {'text': message},
