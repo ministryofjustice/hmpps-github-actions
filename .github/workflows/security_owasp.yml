@@ -39,13 +39,13 @@ jobs:
     - uses: github/codeql-action/upload-sarif@v3
       if: success() || steps.owasp-analyse.conclusion == 'failure'
       with:
-        sarif_file: ${{ env.serif_directory }}/build/reports/dependency-check-report.sarif
+        sarif_file: build/reports/dependency-check-report.sarif
         category: gradle-owasp-dependency-check
     - uses: actions/upload-artifact@v3
       if: success() || steps.owasp-analyse.conclusion == 'failure'
       with:
         name: gradle-owasp-dependency-check-${{ github.event.repository.name }}
-        path: ${{ env.serif_directory }}/build/reports/dependency-check-report.html
+        path: build/reports/dependency-check-report.html
     - uses: slackapi/slack-github-action@e28cf165c92ffef168d23c5c9000cffc8a25e117 # v1.24.0
       if: failure()
       with:
