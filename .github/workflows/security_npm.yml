@@ -33,7 +33,7 @@ jobs:
       run: npx audit-ci@^7 --config ./audit-ci.json -o json > npm-security-check-reports.json
     - name: run translator
       run: python .github/scripts/auditjson_to_sarif.py npm-security-check-reports.json
-    - uses: ministryofjustice/hmpps-github-actions/.github/actions/security_npm_reports
+    - uses: ministryofjustice/hmpps-github-actions/.github/actions/security_npm_reports@main
       if: success() || steps.npm.conclusion == 'failure'
       with:
         channel_id: ${{ inputs.channel_id }}
