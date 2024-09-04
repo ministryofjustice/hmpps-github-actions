@@ -39,10 +39,10 @@ runs:
               "fields": [
                 {
                   "type": "mrkdwn",
-                  "text": "*Conde scanning:*\n<${{ github.server_url }}/${{ github.repository }}/security/code-scanning>"
+                  "text": "*Code scanning:*\n<${{ github.server_url }}/${{ github.repository }}/security/code-scanning>"
                 }
               ]
-            }
+            },
             {
               "type": "section",
               "fields": [
