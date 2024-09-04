@@ -33,7 +33,7 @@ jobs:
       run: npx audit-ci@^7 --config ./audit-ci.json -o json > npm-security-check-reports.json
       continue-on-error: true
     - name: run translator
-      run: python auditjson_to_sarif.py npm-security-check-reports.json
+      run: python .github/scripts/auditjson_to_sarif.py npm-security-check-reports.json
     - uses: actions/upload-artifact@v3
       if: success() || steps.npm.conclusion == 'failure'
       with:

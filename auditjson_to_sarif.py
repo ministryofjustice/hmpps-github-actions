@@ -51,10 +51,13 @@ def main():
   
   for each_result_key in results_dict.keys():
     this_result=results_dict[each_result_key]
+    message=''
+    for each_element in this_result.keys():
+      message+=f'{each_element}: {this_result[each_element]}\n'
     result_dict={
       'ruleID': this_result['name'],
       'level': this_result['severity'],
-      'message': json.dumps(this_result).replace(',',',\n')
+      'message': message
     }
     result_list.append(result_dict)
   output_dict['results']=result_list
