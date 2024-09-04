@@ -31,19 +31,12 @@ jobs:
     - name: Audit for vulnerabilities
       id: npm
       run: npx audit-ci@^7 --config ./audit-ci.json -o json > npm-security-check-reports.json
-      continue-on-error: true
     - name: run translator
       run: python .github/scripts/auditjson_to_sarif.py npm-security-check-reports.json
-    - uses: actions/upload-artifact@v3
+    - uses: ./.github/actions/security_npm_reports
       if: success() || steps.npm.conclusion == 'failure'
       with:
-        name: npm-security-check-${{ github.event.repository.name }}
-        path: npm-security-check-reports.json
-    - uses: github/codeql-action/upload-sarif@v3
-      if: success() || steps.npm.conclusion == 'failure'
-      with:
-        sarif_file: 'npm-security-check-reports.sarif'
-        category: npm-dependency-check
+        channel_id: ${{ inputs.channel_id }}
     - uses: slackapi/slack-github-action@e28cf165c92ffef168d23c5c9000cffc8a25e117 # v1.24.0
       if: failure()
       with:

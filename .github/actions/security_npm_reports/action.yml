@@ -1,0 +1,55 @@
+name: 'Create and upload npm dependency reports'
+description: 'action to create and upload npm dependency reports'
+inputs:
+  channel_id:
+    description: 'Slack channel ID'
+    required: True
+runs:
+  using: "composite"
+  steps:
+  - uses: actions/upload-artifact@v3
+    with:
+      name: npm-security-check-${{ github.event.repository.name }}
+      path: npm-security-check-reports.json
+  - uses: github/codeql-action/upload-sarif@v3
+    with:
+      sarif_file: 'npm-security-check-reports.sarif'
+      category: npm-dependency-check
+  - uses: slackapi/slack-github-action@e28cf165c92ffef168d23c5c9000cffc8a25e117 # v1.24.0
+    with:
+      channel-id: ${{ inputs.channel_id}}
+      payload: |
+        { "text": "npm scan failed",
+          "blocks": [
+            {
+              "type": "section",
+              "text": {
+                "type": "mrkdwn",
+                "text": ":warning: npm dependency check ran"
+              }
+            },
+            {
+              "type": "section",
+              "fields": [
+                {
+                  "type": "mrkdwn",
+                  "text": "*Workflow:*\n<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|${{ github.workflow }}>"
+                },
+                {
+                  "type": "mrkdwn",
+                  "text": "*Job:*\n${{ github.job }}"
+                },
+                {
+                  "type": "mrkdwn",
+                  "text": "*Repo:*\n${{ github.repository }}"
+                },
+                {
+                  "type": "mrkdwn",
+                  "text": "*Project:*\n${{ github.event.repository.name }}"
+                }
+              ]
+            }
+          ]
+        }
+    env:
+      SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
