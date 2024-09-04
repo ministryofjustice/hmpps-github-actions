@@ -1,6 +1,12 @@
 import sys
 import json
 
+sev_lookup={
+  'high':'error',
+  'moderate':'warning',
+  'low':'note'
+}
+
 def eprint(*args, **kwargs):
   print(*args, file=sys.stderr, **kwargs)
 
@@ -22,16 +28,18 @@ def main():
     "version": "2.1.0",
     "$schema": "https://schemastore.azurewebsites.net/schemas/json/sarif-2.1.0-rtm.4.json",
     "runs": [
-        {
-          "tool": {
+      {
+        "tool": {
             "driver": {
-              "name": "npx audit-ci@^7"
+              "name": "npx audit-ci@^7",
+              "rules": [],
+              "version": "0.0.13"
           }
-        }
+        },
+        "results": [],
+        "artifacts": []
       }
-    ],
-    "results": [],  
-    "artifacts": []
+    ]
   } 
 
   # Populate the results
@@ -51,16 +59,26 @@ def main():
   
   for each_result_key in results_dict.keys():
     this_result=results_dict[each_result_key]
+    if this_result['severity'] in sev_lookup:
+      level=sev_lookup[this_result['severity']]
+    else:
+      level='none'
     message=''
     for each_element in this_result.keys():
-      message+=f'{each_element}: {this_result[each_element]}\n'
+      message+=f'**{each_element}**: {this_result[each_element]}\n'
     result_dict={
-      'ruleID': this_result['name'],
-      'level': this_result['severity'],
-      'message': message
+      'level': level,
+      'message': {'text': message},
+      'locations': [ {
+        'physicalLocation': {
+          'artifactLocation': {
+            'uri': this_result['name']
+            }
+          }
+      } ]
     }
     result_list.append(result_dict)
-  output_dict['results']=result_list
+  output_dict['runs'][0]['results']=result_list
 
   with open(output_file,'w') as f:
     json.dump(output_dict, f)
