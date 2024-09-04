@@ -31,7 +31,7 @@ runs:
               "type": "section",
               "text": {
                 "type": "mrkdwn",
-                "text": ":warning: npm dependency check ran"
+                "text": ":warning: npm dependency check identified issues"
               }
             },
             {
@@ -39,7 +39,7 @@ runs:
               "fields": [
                 {
                   "type": "mrkdwn",
-                  "text": "*Workflow:*\n<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|${{ github.workflow }}>"
+                  "text": "*Workflow:*\n<${{ github.server_url }}/${{ github.repository }}/security/code-scanning>"
                 },
                 {
                   "type": "mrkdwn",

@@ -33,7 +33,7 @@ jobs:
       run: npx audit-ci@^7 --config ./audit-ci.json -o json > npm-security-check-reports.json
       continue-on-error: true
     - uses: ministryofjustice/hmpps-github-actions/.github/actions/security_npm_reports@main
-      if: success() || steps.npm.conclusion == 'failure'
+      if: success() && steps.npm.conclusion == 'failure'
       with:
         channel_id: ${{ inputs.channel_id }}
         SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
