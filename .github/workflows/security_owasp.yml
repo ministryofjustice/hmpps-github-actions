@@ -22,7 +22,7 @@ jobs:
       security-events: write
     env:
       # parent_directory: ${{ github.event.repository.name == '' && '.' || github.event.repository.name}}
-      serif_directory:  "${{ github.event.repository.name == '' && '.' || github.event.repository.name}}/${{ github.event.repository.name == '' && '.' || github.event.repository.name}}"
+      serif_directory:  "${{ github.event.repository.name == '' && '.' || github.event.repository.name}}"
     steps:
     - uses: actions/checkout@v4
     - name: Set up JDK 21
