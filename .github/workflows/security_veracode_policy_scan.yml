@@ -47,12 +47,14 @@ jobs:
       run: |
           echo "Randomly picking 1 of 5 api keys, to help avoid veracode API rate limits."
           X=$(( RANDOM % 4 ))
-          VERACODE_API_ID_X="VERACODE_API_ID_$X"
-          VERACODE_API_KEY_X="VERACODE_API_KEY_$X"
-          echo "Using ${VERACODE_API_ID_X} from pool."
+          VERACODE_API_ID_X="VERACODE_API_ID_${X}"
+          VERACODE_API_KEY_X="VERACODE_API_KEY_${X}"
+          VERACODE_API_ID=${!VERACODE_API_ID_X}"
+          VERACODE_API_KEY="${!VERACODE_API_KEY_X}"
+          echo "Using VERACODE_API_ID_${X} from pool."
           java -jar VeracodeJavaAPI.jar \
-          -vid "${VERACODE_API_ID_X}" \
-          -vkey "${VERACODE_API_KEY_X}" \
+          -vid "${VERACODE_API_ID}" \
+          -vkey "${VERACODE_API_KEY}" \
           -teams "<< parameters.teams >>" \
           -action UploadAndScan \
           -appname ${{ github.event.repository.name }} \
