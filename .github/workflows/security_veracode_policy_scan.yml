@@ -44,11 +44,7 @@ jobs:
     - name: "Upload to Veracode"
       uses: actions/github-script@v5
       with: 
-        script: |
-
-        # Need to look at this
-        # https://stackoverflow.com/questions/72133102/how-to-execute-a-a-remote-script-in-a-reusable-github-workflow
-
+        script: 
         
         const { FIRST_NAME, LAST_NAME } = process.env
 
