@@ -12,12 +12,6 @@ inputs:
 runs:
   using: "composite"
   steps:
-  - name: Set up Docker Buildx
-    uses: docker/setup-buildx-action@v3
-  - name: Build temp docker image and copy app files
-    uses: docker/build-push-action@v6
-    with:
-      push: false
   - name: run the script to do the thing
     shell: bash
     run:
