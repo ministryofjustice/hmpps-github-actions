@@ -16,6 +16,36 @@ on:
       SLACK_BOT_TOKEN:
         description: Slack bot token
         required: true
+      HMPPS_VERACODE_API_ID_0:
+        description: VERACODE_API_ID_0
+        required: true
+      HMPPS_VERACODE_API_ID_1:
+        description: VERACODE_API_ID_1
+        required: true
+      HMPPS_VERACODE_API_ID_2:
+        description: VERACODE_API_ID_2
+        required: true
+      HMPPS_VERACODE_API_ID_3:
+        description: VERACODE_API_ID_3
+        required: true
+      HMPPS_VERACODE_API_ID_4:
+        description: VERACODE_API_ID_4
+        required: true
+      HMPPS_VERACODE_API_KEY_0:
+        description: VERACODE_API_KEY_0
+        required: true
+      HMPPS_VERACODE_API_KEY_1:
+        description: VERACODE_API_KEY_1
+        required: true
+      HMPPS_VERACODE_API_KEY_2:
+        description: VERACODE_API_KEY_2
+        required: true
+      HMPPS_VERACODE_API_KEY_3:
+        description: VERACODE_API_KEY_3
+        required: true
+      HMPPS_VERACODE_API_KEY_4:
+        description: VERACODE_API_KEY_4
+        required: true
 
 permissions:
   contents: read
@@ -52,7 +82,6 @@ jobs:
           VERACODE_API_KEY_X="VERACODE_API_KEY_${X}"
           VERACODE_API_ID="${!VERACODE_API_ID_X}"
           VERACODE_API_KEY="${!VERACODE_API_KEY_X}"
-          echo "Testing VERACODE_API_ID_0 - ${VERACODE_API_ID_0:0:5}"
           echo "Using VERACODE_API_ID_${X} from pool (${VERACODE_API_ID:0:5}...)"
           java -jar VeracodeJavaAPI.jar \
           -vid "${VERACODE_API_ID}" \
