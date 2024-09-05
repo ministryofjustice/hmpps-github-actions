@@ -53,10 +53,10 @@ jobs:
           -vkey "${VERACODE_API_KEY_X}" \
           -teams "<< parameters.teams >>" \
           -action UploadAndScan \
-          -appname ${CIRCLE_PROJECT_REPONAME} \
+          -appname ${{ github.event.repository.name }} \
           -createprofile true \
           -deleteincompletescan 2 \
-          -version "CircleCI-${CIRCLE_BUILD_NUM}" \
+          -version "${{ github.ref}}}" \
           -filepath source.zip \
           2>&1 | tee output.txt 
       env:
