@@ -1,4 +1,4 @@
-name: Security OWASP dependency check
+name: Security veracode policy scan
 
 on:
   workflow_call:
@@ -42,14 +42,7 @@ jobs:
     - name: "Download/Extract veracode agent"
       run: wget https://repo1.maven.org/maven2/com/veracode/vosp/api/wrappers/vosp-api-wrappers-java/22.9.10.3/vosp-api-wrappers-java-22.9.10.3.jar -O VeracodeJavaAPI.jar
     - name: "Upload to Veracode"
-      uses: actions/github-script@v5
-      with: 
-        script: 
-        
-        const { FIRST_NAME, LAST_NAME } = process.env
-
-        console.log(`Hello ${FIRST_NAME} ${LAST_NAME}`)
-
+      run: |
           echo "Randomly picking 1 of 5 api keys, to help avoid veracode API rate limits."
           X=$(( RANDOM % 4 ))
           VERACODE_API_ID_X="VERACODE_API_ID_$X"
