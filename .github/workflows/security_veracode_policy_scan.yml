@@ -16,36 +16,6 @@ on:
       SLACK_BOT_TOKEN:
         description: Slack bot token
         required: true
-      HMPPS_VERACODE_API_ID_0:
-        description: VERACODE_API_ID_0
-        required: true
-      HMPPS_VERACODE_API_ID_1:
-        description: VERACODE_API_ID_1
-        required: true
-      HMPPS_VERACODE_API_ID_2:
-        description: VERACODE_API_ID_2
-        required: true
-      HMPPS_VERACODE_API_ID_3:
-        description: VERACODE_API_ID_3
-        required: true
-      HMPPS_VERACODE_API_ID_4:
-        description: VERACODE_API_ID_4
-        required: true
-      HMPPS_VERACODE_API_KEY_0:
-        description: VERACODE_API_KEY_0
-        required: true
-      HMPPS_VERACODE_API_KEY_1:
-        description: VERACODE_API_KEY_1
-        required: true
-      HMPPS_VERACODE_API_KEY_2:
-        description: VERACODE_API_KEY_2
-        required: true
-      HMPPS_VERACODE_API_KEY_3:
-        description: VERACODE_API_KEY_3
-        required: true
-      HMPPS_VERACODE_API_KEY_4:
-        description: VERACODE_API_KEY_4
-        required: true
 
 permissions:
   contents: read
@@ -76,6 +46,16 @@ jobs:
     - name: "Upload to Veracode"
       shell: bash
       run: |
+          export VERACODE_API_ID_0=${{ secrets.HMPPS_VERACODE_API_ID_0 }}
+          export VERACODE_API_ID_1=${{ secrets.HMPPS_VERACODE_API_ID_1 }}
+          export VERACODE_API_ID_2=${{ secrets.HMPPS_VERACODE_API_ID_2 }}
+          export VERACODE_API_ID_3=${{ secrets.HMPPS_VERACODE_API_ID_3 }}
+          export VERACODE_API_ID_4=${{ secrets.HMPPS_VERACODE_API_ID_4 }}
+          export VERACODE_API_KEY_0=${{ secrets.HMPPS_VERACODE_API_KEY_0 }}
+          export VERACODE_API_KEY_1=${{ secrets.HMPPS_VERACODE_API_KEY_1 }}
+          export VERACODE_API_KEY_2=${{ secrets.HMPPS_VERACODE_API_KEY_2 }}
+          export VERACODE_API_KEY_3=${{ secrets.HMPPS_VERACODE_API_KEY_3 }}
+          export VERACODE_API_KEY_4=${{ secrets.HMPPS_VERACODE_API_KEY_4 }}
           echo "Randomly picking 1 of 5 api keys, to help avoid veracode API rate limits."
           X=$(( RANDOM % 4 ))
           VERACODE_API_ID_X="VERACODE_API_ID_${X}"
@@ -94,17 +74,17 @@ jobs:
           -version "${{ github.ref}}" \
           -filepath source.zip \
           2>&1 | tee output.txt 
-      env:
-        VERACODE_API_ID_0: ${{ secrets.HMPPS_VERACODE_API_ID_0 }}
-        VERACODE_API_ID_1: ${{ secrets.HMPPS_VERACODE_API_ID_1 }}
-        VERACODE_API_ID_2: ${{ secrets.HMPPS_VERACODE_API_ID_2 }}
-        VERACODE_API_ID_3: ${{ secrets.HMPPS_VERACODE_API_ID_3 }}
-        VERACODE_API_ID_4: ${{ secrets.HMPPS_VERACODE_API_ID_4 }}
-        VERACODE_API_KEY_0: ${{ secrets.HMPPS_VERACODE_API_KEY_0 }}
-        VERACODE_API_KEY_1: ${{ secrets.HMPPS_VERACODE_API_KEY_1 }}
-        VERACODE_API_KEY_2: ${{ secrets.HMPPS_VERACODE_API_KEY_2 }}
-        VERACODE_API_KEY_3: ${{ secrets.HMPPS_VERACODE_API_KEY_3 }}
-        VERACODE_API_KEY_4: ${{ secrets.HMPPS_VERACODE_API_KEY_4 }}
+      # env:
+      #   VERACODE_API_ID_0: ${{ secrets.HMPPS_VERACODE_API_ID_0 }}
+      #   VERACODE_API_ID_1: ${{ secrets.HMPPS_VERACODE_API_ID_1 }}
+      #   VERACODE_API_ID_2: ${{ secrets.HMPPS_VERACODE_API_ID_2 }}
+      #   VERACODE_API_ID_3: ${{ secrets.HMPPS_VERACODE_API_ID_3 }}
+      #   VERACODE_API_ID_4: ${{ secrets.HMPPS_VERACODE_API_ID_4 }}
+      #   VERACODE_API_KEY_0: ${{ secrets.HMPPS_VERACODE_API_KEY_0 }}
+      #   VERACODE_API_KEY_1: ${{ secrets.HMPPS_VERACODE_API_KEY_1 }}
+      #   VERACODE_API_KEY_2: ${{ secrets.HMPPS_VERACODE_API_KEY_2 }}
+      #   VERACODE_API_KEY_3: ${{ secrets.HMPPS_VERACODE_API_KEY_3 }}
+      #   VERACODE_API_KEY_4: ${{ secrets.HMPPS_VERACODE_API_KEY_4 }}
     - uses: actions/upload-artifact@v3
       if: success() 
       with:
