@@ -19,7 +19,7 @@ runs:
       export DOCKER_BUILDKIT=1
       IMAGE_ID=$(docker build -q . --build-arg BUILD_NUMBER=${{ github.sha }} --build-arg GIT_REF=${{ github.sha }} --build-arg GIT_BRANCH=${BRANCH_NAME} | cut -d: -f2 )
       echo "IMAGE_ID is ${IMAGE_ID}"
-      echo "docker_image_app_dir is ${{ inputs.docker_image_app_dir s}}"
+      echo "docker_image_app_dir is ${{ inputs.docker_image_app_dir }}"
       docker cp $(docker create --rm ${IMAGE_ID} | cut -d: -f2):${{ inputs.docker_image_app_dir }}> ./temp_app
       cd temp_app   
       zip -r ../source.zip . -x "*node_modules*" -x "*agent.jar*" -x "*vendor/bundle*"
