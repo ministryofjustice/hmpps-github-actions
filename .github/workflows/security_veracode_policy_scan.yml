@@ -60,7 +60,7 @@ jobs:
           -appname ${{ github.event.repository.name }} \
           -createprofile true \
           -deleteincompletescan 2 \
-          -version "${{ github.ref}}}" \
+          -version "${{ github.ref}}" \
           -filepath source.zip \
           2>&1 | tee output.txt 
       env:
