@@ -1,5 +1,5 @@
-name: 'Create and upload owasp dependency reports'
-description: 'action to create and upload owasp dependency reports'
+name: 'Create and upload OWASP dependency reports'
+description: 'action to create and upload OWASP dependency reports'
 inputs:
   channel_id:
     description: 'Slack channel ID'
@@ -24,13 +24,13 @@ runs:
     with:
       channel-id: ${{ inputs.channel_id}}
       payload: |
-        { "text": "owasp issues identified",
+        { "text": "OWASP issues identified",
           "blocks": [
             {
               "type": "section",
               "text": {
                 "type": "mrkdwn",
-                "text": ":warning: Github Actions *awasp dependency check* ran and identified issues"
+                "text": ":warning: Github Actions *OWASP dependency check* ran and identified issues"
               }
             },
             {
