@@ -1,0 +1,29 @@
+name: 'veracode prepare artifacts'
+description: ' This command collects app artifacts and creates a zip  file which is then used by veracode SAST scan.'
+inputs:
+  docker_image_app_dir:
+    description: Directory inside the docker image where the application artifacts are saved
+    required: false
+    default: "/app"
+  additional_docker_build_args:
+    description: additional build arguments
+    required: false
+    default: ""
+runs:
+  using: "composite"
+  steps:
+  - name: Set up Docker Buildx
+    uses: docker/setup-buildx-action@v3
+  - name: Build temp docker image and copy app files
+    uses: docker/build-push-action@v6
+    with:
+      push: false
+  - name: run the script to do the thing
+    shell: bash
+    run:
+      |
+      export DOCKER_BUILDKIT=1
+      IMAGE_ID=$(docker build -q . --build-arg BUILD_NUMBER=${{ github.sha }} --build-arg GIT_REF=${{ github.sha }} --build-arg GIT_BRANCH=${{ git.branch }} << ${{ inputs.additional_docker_build_args }})
+      docker cp $(docker create --rm ${IMAGE_ID}):<< parameters.docker_image_app_dir >> ./temp_app
+      cd temp_app
+      zip -r ../source.zip . -x "*node_modules*" -x "*agent.jar*" -x "*vendor/bundle*"
