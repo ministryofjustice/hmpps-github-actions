@@ -1,0 +1,83 @@
+name: Security OWASP dependency check
+
+on:
+  workflow_call:
+    inputs:
+      channel_id:
+        required: false
+        type: string
+      teams:
+        required: false
+        type: string
+        default: "hmpps-tech"
+        description: "Comma-separated list of team names associated with the specified application.  Validates against the names of existing teams for this account."
+        
+    secrets:
+      SLACK_BOT_TOKEN:
+        description: Slack bot token
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  security-veracode-policy-scan:
+    name: Security veracode policy scan
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+    env:
+      docker_image_app_dir: "/app"
+      additional_docker_build_args: ""
+      jdk_tag: "17.0"
+      java_options: "-Xmx1024m -XX:ParallelGCThreads=2 -XX:ConcGCThreads=2 -Djava.util.concurrent.ForkJoinPool.common.parallelism=2 -Dorg.gradle.daemon=false -Dkotlin.compiler.execution.strategy=in-process"
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up JDK 21
+      uses: actions/setup-java@v3
+      with:
+        java-version: '21'
+        distribution: 'temurin'
+    - name: "Download/Extract veracode agent"
+      run: wget https://repo1.maven.org/maven2/com/veracode/vosp/api/wrappers/vosp-api-wrappers-java/22.9.10.3/vosp-api-wrappers-java-22.9.10.3.jar -O VeracodeJavaAPI.jar
+    - name: "Upload to Veracode"
+      uses: actions/github-script@v5
+      with: 
+        script: |
+
+        # Need to look at this
+        # https://stackoverflow.com/questions/72133102/how-to-execute-a-a-remote-script-in-a-reusable-github-workflow
+
+        
+        const { FIRST_NAME, LAST_NAME } = process.env
+
+        console.log(`Hello ${FIRST_NAME} ${LAST_NAME}`)
+
+          echo "Randomly picking 1 of 5 api keys, to help avoid veracode API rate limits."
+          X=$(( RANDOM % 4 ))
+          VERACODE_API_ID_X="VERACODE_API_ID_$X"
+          VERACODE_API_KEY_X="VERACODE_API_KEY_$X"
+          echo "Using ${VERACODE_API_ID_X} from pool."
+          java -jar VeracodeJavaAPI.jar \
+          -vid "${VERACODE_API_ID_X}" \
+          -vkey "${VERACODE_API_KEY_X}" \
+          -teams "<< parameters.teams >>" \
+          -action UploadAndScan \
+          -appname ${CIRCLE_PROJECT_REPONAME} \
+          -createprofile true \
+          -deleteincompletescan 2 \
+          -version "CircleCI-${CIRCLE_BUILD_NUM}" \
+          -filepath source.zip \
+          2>&1 | tee output.txt 
+      env:
+        VERACODE_API_ID_0: ${{ secrets.HMPPS_VERACODE_API_ID_0 }}
+        VERACODE_API_ID_1: ${{ secrets.HMPPS_VERACODE_API_ID_1 }}
+        VERACODE_API_ID_2: ${{ secrets.HMPPS_VERACODE_API_ID_2 }}
+        VERACODE_API_ID_3: ${{ secrets.HMPPS_VERACODE_API_ID_3 }}
+        VERACODE_API_ID_4: ${{ secrets.HMPPS_VERACODE_API_ID_4 }}
+        VERACODE_API_KEY_0: ${{ secrets.HMPPS_VERACODE_API_KEY_0 }}
+        VERACODE_API_KEY_1: ${{ secrets.HMPPS_VERACODE_API_KEY_1 }}
+        VERACODE_API_KEY_2: ${{ secrets.HMPPS_VERACODE_API_KEY_2 }}
+        VERACODE_API_KEY_3: ${{ secrets.HMPPS_VERACODE_API_KEY_3 }}
+        VERACODE_API_KEY_4: ${{ secrets.HMPPS_VERACODE_API_KEY_4 }}

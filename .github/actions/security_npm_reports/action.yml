@@ -16,7 +16,7 @@ runs:
       path: npm-security-check-reports.json
   - name: run translator
     shell: bash
-    run: python .github/scripts/auditjson_to_sarif.py npm-security-check-reports.json
+    run: python ${{ github.action_path }}/.github/scripts/auditjson_to_sarif.py npm-security-check-reports.json
   - uses: github/codeql-action/upload-sarif@v3
     with:
       sarif_file: 'npm-security-check-reports.sarif'
