@@ -19,6 +19,12 @@ runs:
     run: python .github/scripts/outdated_to_slack.py npm-outdated-reports.txt
     env:
       server_url: ${{ github.server_url }}
+      repository: ${{ github.repository }}
+      run_id: ${{ github.run_id }}
+      workflow: ${{ github.workflow }}
+      job: ${{ github.job }}
+      repository_name: ${{ github.event.repository.name }}
+
   - uses: slackapi/slack-github-action@e28cf165c92ffef168d23c5c9000cffc8a25e117 # v1.24.0
     with:
       channel-id: ${{ inputs.channel_id}}
