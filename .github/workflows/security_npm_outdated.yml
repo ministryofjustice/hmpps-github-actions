@@ -32,6 +32,9 @@ jobs:
       parent_directory: ${{ github.event.repository.name == '' && '.' || github.event.repository.name}}
     steps:
     - uses: actions/checkout@v4
+    - id: install-npm
+      name: install-npm
+      run: 'npm ci --no-audit'
     - name: Audit for vulnerabilities
       id: npm
       run: npm outdated ${{ inputs.dependencies_to_check }} > npm-outdated-reports.txt
