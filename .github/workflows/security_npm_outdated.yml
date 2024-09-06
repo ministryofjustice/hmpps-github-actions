@@ -1,0 +1,82 @@
+name: Security npm outdated check
+
+on:
+  workflow_call:
+    inputs:
+      channel_id:
+        required: true
+        type: string
+      node_version:
+        required: false
+        type: string
+        default: '20.16'
+      dependencies_to_check:
+        required: false
+        type: string
+        default: typescript govuk-frontend
+    secrets:
+      SLACK_BOT_TOKEN:
+        description: Slack bot token
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  security-npm-check:
+    name: Security npm outdated check
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+    env:
+      parent_directory: ${{ github.event.repository.name == '' && '.' || github.event.repository.name}}
+    steps:
+    - uses: actions/checkout@v4
+    - name: Audit for vulnerabilities
+      id: npm
+      run: npm outdated ${{ inputs.dependencies_to_check }} npm-outdated-reports.txt
+      continue-on-error: true
+    - uses: ministryofjustice/hmpps-github-actions/.github/actions/security_npm_outdated@main
+      if: success() || steps.npm.conclusion == 'failure'
+      with:
+        channel_id: ${{ inputs.channel_id }}
+        SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+    - uses: slackapi/slack-github-action@e28cf165c92ffef168d23c5c9000cffc8a25e117 # v1.24.0
+      if: failure()
+      with:
+        channel-id: ${{ inputs.channel_id}}
+        payload: |
+          { "text": "Github actions *npm outdated check* failed",
+            "blocks": [
+              {
+                "type": "section",
+                "text": {
+                  "type": "mrkdwn",
+                  "text": ":no_entry: Failed GitHub Action:"
+                }
+              },
+              {
+                "type": "section",
+                "fields": [
+                  {
+                    "type": "mrkdwn",
+                    "text": "*Workflow:*\n<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|${{ github.workflow }}>"
+                  },
+                  {
+                    "type": "mrkdwn",
+                    "text": "*Job:*\n${{ github.job }}"
+                  },
+                  {
+                    "type": "mrkdwn",
+                    "text": "*Repo:*\n${{ github.repository }}"
+                  },
+                  {
+                    "type": "mrkdwn",
+                    "text": "*Project:*\n${{ github.event.repository.name }}"
+                  }
+                ]
+              }
+            ]
+          }
+      env:
+        SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
