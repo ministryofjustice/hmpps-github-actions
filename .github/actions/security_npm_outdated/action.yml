@@ -17,6 +17,8 @@ runs:
   - name: run translator
     shell: bash
     run: python .github/scripts/outdated_to_slack.py npm-outdated-reports.txt
+    env:
+      server_url= ${{ github.server_url }}
   - uses: slackapi/slack-github-action@e28cf165c92ffef168d23c5c9000cffc8a25e117 # v1.24.0
     with:
       channel-id: ${{ inputs.channel_id}}
