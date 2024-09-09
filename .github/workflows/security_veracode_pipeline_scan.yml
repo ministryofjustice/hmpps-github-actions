@@ -1,4 +1,4 @@
-name: Security veracode policy scan
+name: Security veracode pipeline scan
 
 on:
   workflow_call:
@@ -70,9 +70,12 @@ jobs:
         distribution: 'temurin'
     - name: prepare assets
       uses: ministryofjustice/hmpps-github-actions/.github/actions/security_veracode_prepare_artifacts@main
-    - name: "Download/Extract veracode agent"
-      run: wget https://repo1.maven.org/maven2/com/veracode/vosp/api/wrappers/vosp-api-wrappers-java/22.9.10.3/vosp-api-wrappers-java-22.9.10.3.jar -O VeracodeJavaAPI.jar
-    - name: "Upload to Veracode"
+    - name: "Download/Extract pipeline scanner"
+      shell: bash
+      run: |
+          wget https://downloads.veracode.com/securityscan/pipeline-scan-LATEST.zip -O pipeline-scan.zip
+          unzip pipeline-scan.zip -x README.md
+    - name: "Download Veracode Policy"
       shell: bash
       run: |
           echo "Randomly picking 1 of 5 api keys, to help avoid veracode API rate limits."
@@ -82,17 +85,29 @@ jobs:
           VERACODE_API_ID="${!VERACODE_API_ID_X}"
           VERACODE_API_KEY="${!VERACODE_API_KEY_X}"
           echo "Using VERACODE_API_ID_${X} from pool (${VERACODE_API_ID:0:5}...)"
-          java -jar VeracodeJavaAPI.jar \
-          -vid "${VERACODE_API_ID}" \
-          -vkey "${VERACODE_API_KEY}" \
-          -teams "${{ inputs.teams }}" \
-          -action UploadAndScan \
-          -appname ${{ github.event.repository.name }} \
-          -createprofile true \
-          -deleteincompletescan 2 \
-          -version "${{ github.ref}}" \
-          -filepath source.zip \
-          2>&1 | tee output.txt 
+          java -jar pipeline-scan.jar \
+          --request_policy "Ministry of Justice" \
+          --veracode_api_id "${VERACODE_API_ID}" \
+          --veracode_api_key "${VERACODE_API_KEY}" 
+    - name: "Scan the project"
+      shell: bash
+      run: |
+          echo "Randomly picking 1 of 5 api keys, to help avoid veracode API rate limits."
+          X=$(( RANDOM % 4 ))
+          VERACODE_API_ID_X="VERACODE_API_ID_${X}"
+          VERACODE_API_KEY_X="VERACODE_API_KEY_${X}"
+          VERACODE_API_ID="${!VERACODE_API_ID_X}"
+          VERACODE_API_KEY="${!VERACODE_API_KEY_X}"
+          java -jar pipeline-scan.jar \
+          $(test -f results.json && echo "--baseline_file results.json") \
+          --json_output true \
+          --file source.zip \
+          --policy_file Ministry_of_Justice.json \
+          --veracode_api_id "${VERACODE_API_ID}" \
+          --veracode_api_key "${VERACODE_API_ID}" \
+          --timeout 60 \
+          --issue_details false \
+          --summary_output true
       env:
         VERACODE_API_ID_0: ${{ secrets.VERACODE_API_ID_0 }}
         VERACODE_API_ID_1: ${{ secrets.VERACODE_API_ID_1 }}
@@ -108,5 +123,5 @@ jobs:
     - uses: actions/upload-artifact@v3
       if: success() 
       with:
-        name: veracode-policy-check-${{ github.event.repository.name }}
-        path: output.txt
+        name: veracode-pipeline-check-${{ github.event.repository.name }}
+        path: results.txt
