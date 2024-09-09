@@ -27,10 +27,10 @@ runs:
       repository_name: ${{ github.event.repository.name }}
 
   - uses: slackapi/slack-github-action@e28cf165c92ffef168d23c5c9000cffc8a25e117 # v1.24.0
+    if: ${{ steps.translate.outputs.results == "True" }}
     with:
       channel-id: ${{ inputs.channel_id}}
       payload-file-path: "./npm-outdated-reports.json"
     env:
       SLACK_BOT_TOKEN: ${{ inputs.SLACK_BOT_TOKEN }}
-    if:
-      ${{ steps.translate.outputs.results == "True" }}
+    
