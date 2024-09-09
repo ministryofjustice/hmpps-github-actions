@@ -1,4 +1,4 @@
-name: Security veracode policy scan
+name: Security veracode policy scan - TEST
 
 on:
   workflow_call:
@@ -11,10 +11,39 @@ on:
         type: string
         default: "hmpps-tech"
         description: "Comma-separated list of team names associated with the specified application.  Validates against the names of existing teams for this account."
-        
     secrets:
       SLACK_BOT_TOKEN:
         description: Slack bot token
+        required: true
+      VERACODE_API_ID_0:
+        description: Veracode app secret
+        required: true
+      VERACODE_API_ID_1:
+        description: Veracode app secret
+        required: true
+      VERACODE_API_ID_2:
+        description: Veracode app secret
+        required: true
+      VERACODE_API_ID_3:
+        description: Veracode app secret
+        required: true
+      VERACODE_API_ID_4:
+        description: Veracode app secret
+        required: true
+      VERACODE_API_KEY_0:
+        description: Veracode app secret
+        required: true
+      VERACODE_API_KEY_1:
+        description: Veracode app secret
+        required: true
+      VERACODE_API_KEY_2:
+        description: Veracode app secret
+        required: true
+      VERACODE_API_KEY_3:
+        description: Veracode app secret
+        required: true
+      VERACODE_API_KEY_4:
+        description: Veracode app secret
         required: true
 
 permissions:
@@ -65,16 +94,17 @@ jobs:
           -filepath source.zip \
           2>&1 | tee output.txt 
       env:
-        VERACODE_API_ID_0: ${{ secrets.HMPPS_VERACODE_API_ID_0 }}
-        VERACODE_API_ID_1: ${{ secrets.HMPPS_VERACODE_API_ID_1 }}
-        VERACODE_API_ID_2: ${{ secrets.HMPPS_VERACODE_API_ID_2 }}
-        VERACODE_API_ID_3: ${{ secrets.HMPPS_VERACODE_API_ID_3 }}
-        VERACODE_API_ID_4: ${{ secrets.HMPPS_VERACODE_API_ID_4 }}
-        VERACODE_API_KEY_0: ${{ secrets.HMPPS_VERACODE_API_KEY_0 }}
-        VERACODE_API_KEY_1: ${{ secrets.HMPPS_VERACODE_API_KEY_1 }}
-        VERACODE_API_KEY_2: ${{ secrets.HMPPS_VERACODE_API_KEY_2 }}
-        VERACODE_API_KEY_3: ${{ secrets.HMPPS_VERACODE_API_KEY_3 }}
-        VERACODE_API_KEY_4: ${{ secrets.HMPPS_VERACODE_API_KEY_4 }}
+        VERACODE_API_ID_0: ${{ secrets.VERACODE_API_ID_0 }}
+        VERACODE_API_ID_1: ${{ secrets.VERACODE_API_ID_1 }}
+        VERACODE_API_ID_2: ${{ secrets.VERACODE_API_ID_2 }}
+        VERACODE_API_ID_3: ${{ secrets.VERACODE_API_ID_3 }}
+        VERACODE_API_ID_4: ${{ secrets.VERACODE_API_ID_4 }}
+        VERACODE_API_KEY_0: ${{ secrets.VERACODE_API_KEY_0 }}
+        VERACODE_API_KEY_1: ${{ secrets.VERACODE_API_KEY_1 }}
+        VERACODE_API_KEY_2: ${{ secrets.VERACODE_API_KEY_2 }}
+        VERACODE_API_KEY_3: ${{ secrets.VERACODE_API_KEY_3 }}
+        VERACODE_API_KEY_4: ${{ secrets.VERACODE_API_KEY_4 }}
+          
     - uses: actions/upload-artifact@v3
       if: success() 
       with:
