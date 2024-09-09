@@ -89,6 +89,17 @@ jobs:
           --request_policy "Ministry of Justice" \
           --veracode_api_id "${VERACODE_API_ID}" \
           --veracode_api_key "${VERACODE_API_KEY}" 
+      env:
+        VERACODE_API_ID_0: ${{ secrets.VERACODE_API_ID_0 }}
+        VERACODE_API_ID_1: ${{ secrets.VERACODE_API_ID_1 }}
+        VERACODE_API_ID_2: ${{ secrets.VERACODE_API_ID_2 }}
+        VERACODE_API_ID_3: ${{ secrets.VERACODE_API_ID_3 }}
+        VERACODE_API_ID_4: ${{ secrets.VERACODE_API_ID_4 }}
+        VERACODE_API_KEY_0: ${{ secrets.VERACODE_API_KEY_0 }}
+        VERACODE_API_KEY_1: ${{ secrets.VERACODE_API_KEY_1 }}
+        VERACODE_API_KEY_2: ${{ secrets.VERACODE_API_KEY_2 }}
+        VERACODE_API_KEY_3: ${{ secrets.VERACODE_API_KEY_3 }}
+        VERACODE_API_KEY_4: ${{ secrets.VERACODE_API_KEY_4 }}
     - name: "Scan the project"
       shell: bash
       run: |
