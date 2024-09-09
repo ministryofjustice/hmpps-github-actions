@@ -1,4 +1,4 @@
-name: Security trivy dependency check
+name: Security veracode policy check
 
 on:
   workflow_dispatch:
@@ -6,9 +6,9 @@ on:
     - cron: "30 5 * * MON-FRI" # Every weekday at 05:35 UTC
 
 jobs:
-  security-kotlin-trivy-check:
-    name: Project security trivy dependency check
-    uses: ministryofjustice/hmpps-github-actions/.github/workflows/security_trivy.yml@main
+  security-veracode-policy-check:
+    name: Project security npm dependency check
+    uses: ministryofjustice/hmpps-github-actions/.github/workflows/security_veracode_policy_scan.yml@main
     with:
       channel_id: ${{ vars.SLACK_CHANNEL_ID }}
     secrets:

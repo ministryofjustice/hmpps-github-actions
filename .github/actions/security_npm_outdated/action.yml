@@ -16,7 +16,8 @@ runs:
       path: npm-outdated-reports.txt
   - name: run translator
     shell: bash
-    run: python .github/scripts/outdated_to_slack.py npm-outdated-reports.txt
+    id: translate
+    run: python .github/scripts/outdated_to_slack.py npm-outdated-reports.txt >> "$GITHUB_OUTPUT"
     env:
       server_url: ${{ github.server_url }}
       repository: ${{ github.repository }}
@@ -31,3 +32,5 @@ runs:
       payload-file-path: "./npm-outdated-reports.json"
     env:
       SLACK_BOT_TOKEN: ${{ inputs.SLACK_BOT_TOKEN }}
+    if:
+      $ {{ steps.translate.outputs.results == "True" }}
