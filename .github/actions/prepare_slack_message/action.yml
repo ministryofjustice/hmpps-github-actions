@@ -1,0 +1,28 @@
+name: 'prepare slack message'
+description: 'Takes a text file containing output/results and turns it into a slack-compatible environment variable'
+inputs:
+  input_file:
+    description: "filename to be read into a string"
+    required: true
+    default: "results.txt"
+  env_var:
+    description: "Variable name to be returned"
+    default: "SLACK_TXT"
+runs:
+  using: "composite"
+  steps:
+  - name: Slack - Process Results Text
+    shell: bash
+    run: |
+      if [[ -f ${{ inputs.input_file }} ]]; then
+        echo "Processing file: ${{ inputs.input_file }}"
+        echo "Exporting to env var: ${{ inputs.env_var }}"
+        SLACK_TXT=$(cat "${{ inputs.input_file }}" | \
+          sed 's/&/\&amp;/g; s/</\&lt;/g; s/>/\&gt;/g;' | \
+          jq -Rs . | \
+          sed -E 's/("$)|(^")//g')
+        echo "${{ inputs.env_var }}='${SLACK_TXT}'" >> "$GITHUB_OUTPUT"
+      else
+        echo "File not found: ${{ inputs.input_file }}"
+      fi
+
