@@ -28,7 +28,7 @@ runs:
 
   - id: send-slack 
     uses: slackapi/slack-github-action@e28cf165c92ffef168d23c5c9000cffc8a25e117 # v1.24.0
-    if: ${{ steps.translate.outputs.results }} == 'True'
+    if: steps.translate.outputs.results == 'YES'
     with:
       channel-id: ${{ inputs.channel_id}}
       payload-file-path: "./npm-outdated-reports.json"
