@@ -88,11 +88,15 @@ def main():
     eprint("Encountered an error - please check the input file")
     sys.exit(1)
   if results:
-    slack_template['blocks'][1]['elements'][0]['elements'][0]['text']=results
-
-  with open(output_file,'w') as f:
-    json.dump(slack_template, f)
-  f.close()
-
+    slack_template['blocks'][1]['elements'][0]['elements'][0]['text']=results 
+    with open(output_file,'w') as f:
+      json.dump(slack_template, f)
+    f.close()
+    # return an output to decide whether to send a slack message or not
+    eprint("results checked - results=YES")
+    print("results=YES")
+  else:
+    eprint("results checked - results=NO")
+    print("results=NO")
 if __name__ == '__main__':
   main()
