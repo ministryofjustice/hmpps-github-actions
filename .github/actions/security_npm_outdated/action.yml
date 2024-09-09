@@ -33,4 +33,4 @@ runs:
     env:
       SLACK_BOT_TOKEN: ${{ inputs.SLACK_BOT_TOKEN }}
     if:
-      $ {{ steps.translate.outputs.results == "True" }}
+      ${{ steps.translate.outputs.results == "True" }}
