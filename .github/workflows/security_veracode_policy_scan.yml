@@ -93,7 +93,7 @@ jobs:
           -version "${{ github.ref}}" \
           -filepath source.zip \
           2>&1 | tee output.txt 
-      continue-on-error: true
+#      continue-on-error: true
       env:
         VERACODE_API_ID_0: ${{ secrets.VERACODE_API_ID_0 }}
         VERACODE_API_ID_1: ${{ secrets.VERACODE_API_ID_1 }}
