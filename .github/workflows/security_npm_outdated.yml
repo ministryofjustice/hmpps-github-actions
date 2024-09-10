@@ -14,6 +14,9 @@ on:
         required: false
         type: string
         default: typescript govuk-frontend
+      version:
+        required: true
+        type: string
     secrets:
       SLACK_BOT_TOKEN:
         description: Slack bot token
@@ -39,7 +42,7 @@ jobs:
       id: npm
       run: npm outdated ${{ inputs.dependencies_to_check }} > npm-outdated-reports.txt
       continue-on-error: true
-    - uses: ministryofjustice/hmpps-github-actions/.github/actions/security_npm_outdated@main
+    - uses: ministryofjustice/hmpps-github-actions/.github/actions/security_npm_outdated@${{ version }}
       if: success() || steps.npm.conclusion == 'failure'
       with:
         channel_id: ${{ inputs.channel_id }}
