@@ -17,7 +17,7 @@ runs:
     - name: process slack message results
       uses: ministryofjustice/hmpps-github-actions/.github/actions/prepare_slack_message@main    
       id: slack_message_result 
-      env:
+      with:
         input_file: ${{ inputs.input_file }}
     - uses: slackapi/slack-github-action@e28cf165c92ffef168d23c5c9000cffc8a25e117 # v1.24.0
       with:

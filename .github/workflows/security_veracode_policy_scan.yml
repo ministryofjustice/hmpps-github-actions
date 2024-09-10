@@ -113,7 +113,7 @@ jobs:
     - name: send a failure slack message
       if: failure() 
       uses: ministryofjustice/hmpps-github-actions/.github/actions/failure_slack_message@main
-      env:
+      with:
         SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
         channel_id: ${{ inputs.channel_id }}
         input_file: output.txt
