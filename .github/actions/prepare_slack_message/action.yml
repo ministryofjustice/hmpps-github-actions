@@ -23,10 +23,10 @@ runs:
           sed 's/&/\&amp;/g; s/</\&lt;/g; s/>/\&gt;/g;' | \
           jq -Rs . | \
           sed -E 's/("$)|(^")//g')
-        echo "SLACK_TXT=\"${SLACK_TXT}\"" 
-        echo "SLACK_TXT=\"${SLACK_TXT}\"" >> "$GITHUB_OUTPUT"
+        echo "SLACK_TXT=${SLACK_TXT}" 
+        echo "SLACK_TXT=${SLACK_TXT}" >> "$GITHUB_OUTPUT"
       else
-        echo "SLACK_TXT=\"no results file (${{ inputs.input_file }}) created\""
-        echo "SLACK_TXT=\"no results file (${{ inputs.input_file }}) created\"" >> "$GITHUB_OUTPUT"
+        echo "SLACK_TXT=no results file (${{ inputs.input_file }}) created"
+        echo "SLACK_TXT=no results file (${{ inputs.input_file }}) created" >> "$GITHUB_OUTPUT"
       fi
 
