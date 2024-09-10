@@ -1,0 +1,64 @@
+name: 'failure Slack message'
+description: 'Sends a slack message based on a file uploaded'
+inputs:
+  input_file:
+    description: "filename to be read into a string"
+    required: true
+    default: "results.txt"
+  channel_id:
+    description: "Slack channel to send to"
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - name: process slack message results
+      uses: ministryofjustice/hmpps-github-actions/.github/actions/prepare_slack_message@main    
+      id: slack_message_result 
+      env:
+        input_file: ${{ inputs.input_file }}
+    - uses: slackapi/slack-github-action@e28cf165c92ffef168d23c5c9000cffc8a25e117 # v1.24.0
+      with:
+        channel-id: ${{ inputs.channel_id}}
+        payload: |
+          {
+          "blocks": [
+            {
+              "type": "context",
+              "elements": [
+                {
+                  "type": "mrkdwn",
+                  "text": ":stop: Github Actions ${{ github.workflow }} ${{ github.action_status }}"
+                }
+              ]
+            },
+            {
+              "type": "section",
+              "text": {
+                "type": "mrkdwn",
+                "text": "*${{ github.repository }}* failed ${{ github.workflow }}"
+              },
+              "accessory": {
+                  "type": "button",
+                "text": {
+                  "type": "plain_text",
+                  "text": "View job"
+                },
+                "url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|${{ github.workflow }}"
+              }
+            },
+            {
+              "type": "context",
+              "elements": [
+                {
+                  "type": "mrkdwn",
+                  "text": "Output: ```${{ steps.slack_message_result.outputs.SLACK_TXT }}```"
+                }
+              ]
+            },
+            {
+              "type": "divider"
+            }
+          ]
+          }
+      env:
+        SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}

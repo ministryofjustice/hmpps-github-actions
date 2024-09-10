@@ -105,58 +105,17 @@ jobs:
         VERACODE_API_KEY_2: ${{ secrets.VERACODE_API_KEY_2 }}
         VERACODE_API_KEY_3: ${{ secrets.VERACODE_API_KEY_3 }}
         VERACODE_API_KEY_4: ${{ secrets.VERACODE_API_KEY_4 }}
-    - name: process slack message results
-      id: slack_message_result
-      uses: ministryofjustice/hmpps-github-actions/.github/actions/prepare_slack_message@main     
     - uses: actions/upload-artifact@v3
       if: success() 
       with:
         name: veracode-policy-check-${{ github.event.repository.name }}
         path: output.txt
-    - uses: slackapi/slack-github-action@e28cf165c92ffef168d23c5c9000cffc8a25e117 # v1.24.0
-      if: failure()
-      with:
-        channel-id: ${{ inputs.channel_id}}
-        payload: |
-          {
-          "blocks": [
-            {
-              "type": "context",
-              "elements": [
-                {
-                  "type": "mrkdwn",
-                  "text": ":stop: Github Actions ${{ github.workflow }} ${{ github.action_status }}"
-                }
-              ]
-            },
-            {
-              "type": "section",
-              "text": {
-                "type": "mrkdwn",
-                "text": "*${{ github.repository }}* failed ${{ github.workflow }}"
-              },
-              "accessory": {
-                  "type": "button",
-                "text": {
-                  "type": "plain_text",
-                  "text": "View job"
-                },
-                "url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|${{ github.workflow }}"
-              }
-            },
-            {
-              "type": "context",
-              "elements": [
-                {
-                  "type": "mrkdwn",
-                  "text": "Output: ```${{ steps.slack_message_result.outputs.SLACK_TXT }}```"
-                }
-              ]
-            },
-            {
-              "type": "divider"
-            }
-          ]
-          }
+    - name: send a failure slack message
+      if: failure() 
+      uses: ministryofjustice/hmpps-github-actions/.github/actions/failure_slack_message@main
       env:
         SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+        channel_id: ${{ inputs.channel_id }}
+        input_file: output.txt
+
+  
