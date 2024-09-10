@@ -8,10 +8,9 @@ on:
 jobs:
   security-npm-depencency-check:
     name: Project security npm dependency check
-    uses: ministryofjustice/hmpps-github-actions/.github/workflows/security_npm_outdated.yml@main # WORKFLOW_VERSION
+    uses: ministryofjustice/hmpps-github-actions/.github/workflows/security_npm_outdated.yml@main
     with:
       channel_id: ${{ vars.SLACK_CHANNEL_ID }}
+      version: main
     secrets:
       SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
-
-      

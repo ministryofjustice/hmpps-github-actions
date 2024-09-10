@@ -1,0 +1,15 @@
+name: Security OWASP dependency check
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "30 5 * * MON-FRI" # Every weekday at 05:30 UTC
+
+jobs:
+  security-kotlin-owasp-check:
+    name: Kotlin security OWASP dependency check
+    uses: ministryofjustice/hmpps-github-actions/.github/workflows/security_owasp.yml@main
+    with:
+      channel_id: ${{ vars.SLACK_CHANNEL_ID }}      
+    secrets:
+      SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}

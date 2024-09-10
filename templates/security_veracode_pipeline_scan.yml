@@ -1,14 +1,14 @@
-name: Security veracode policy check
+name: Security veracode pipeline check
 
 on:
   workflow_dispatch:
   schedule:
-    - cron: "30 5 * * 1" # Every Monday at 03:50 UTC
+    - cron: "35 5 * * MON-FRI" # Every weekday at 05:35 UTC
 
 jobs:
   security-veracode-policy-check:
     name: Project security veracode policy scan
-    uses: ministryofjustice/hmpps-github-actions/.github/workflows/security_veracode_policy_scan.yml@main
+    uses: ministryofjustice/hmpps-github-actions/.github/workflows/security_veracode_pipeline_scan.yml@main
     with:
       channel_id: ${{ vars.SLACK_CHANNEL_ID }}
     secrets:
