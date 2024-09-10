@@ -15,7 +15,7 @@ runs:
     with:
       sarif_file: 'trivy-results.sarif'
       category: trivy-dependency-check
-  - uses: ministryofjustice/hmpps-github-actions/.github/actions/slack_codescan_notification@main
+  - uses: ministryofjustice/hmpps-github-actions/.github/actions/slack_codescan_notification@main # WORKFLOW_VERSION
     with:
       channel-id: ${{ inputs.channel_id}}
       title: "Trivy issues identified"

@@ -32,7 +32,7 @@ jobs:
       id: npm
       run: npx audit-ci@^7 --config ./audit-ci.json -o json > npm-security-check-reports.json
       continue-on-error: true
-    - uses: ministryofjustice/hmpps-github-actions/.github/actions/security_npm_dependency@main
+    - uses: ministryofjustice/hmpps-github-actions/.github/actions/security_npm_dependency@main # WORKFLOW_VERSION
       if: success() || steps.npm.conclusion == 'failure'
       with:
         channel_id: ${{ inputs.channel_id }}

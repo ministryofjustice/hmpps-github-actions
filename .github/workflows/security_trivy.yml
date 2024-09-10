@@ -39,11 +39,10 @@ jobs:
         output: 'trivy-results.sarif'
         # exit-code: 1
         limit-severities-for-sarif: true
-    - uses: ministryofjustice/hmpps-github-actions/.github/actions/security_trivy_reports@main
+    - uses: ministryofjustice/hmpps-github-actions/.github/actions/security_trivy_reports@main # WORKFLOW_VERSION
       if: success()  || steps.trivy.conclusion == 'failure'
       with:
-        channel-id: ${{ inputs.channel_id}}
-        title: "Trivy issues identified"
+        channel_id: ${{ inputs.channel_id}}
         SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
     - name: Slack failure notification
       uses: slackapi/slack-github-action@70cd7be8e40a46e8b0eced40b0de447bdb42f68e # v1.26.0
