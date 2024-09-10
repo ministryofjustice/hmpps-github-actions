@@ -17,7 +17,7 @@ runs:
       with:
         channel-id: ${{ inputs.channel_id}}
         payload: |
-          { "text": ${{ inputs.title }} - issues identified",
+          { "text": "${{ inputs.title }} - issues identified",
             "blocks": [
               {
                 "type": "section",
