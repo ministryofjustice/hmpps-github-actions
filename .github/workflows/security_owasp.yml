@@ -37,7 +37,7 @@ jobs:
       id: owasp-analyse
       run: ./gradlew dependencyCheckAnalyze --info
 
-    - uses: ministryofjustice/hmpps-github-actions/.github/actions/security_owasp_reports@main # WORKFLOW_VERSION
+    - uses: ministryofjustice/hmpps-github-actions/.github/actions/security_owasp_reports"0.1 # WORKFLOW_VERSION
       if: success() || steps.owasp-analyse.conclusion == 'failure'
       with:
         channel_id: ${{ inputs.channel_id }}

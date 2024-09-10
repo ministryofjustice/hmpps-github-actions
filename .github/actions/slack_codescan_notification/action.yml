@@ -17,13 +17,13 @@ runs:
       with:
         channel-id: ${{ inputs.channel_id}}
         payload: |
-          { "text": "${{ inputs.title }} - issues identified",
+          { "text": "*${{ inputs.title }}* - issues identified",
             "blocks": [
               {
                 "type": "section",
                 "text": {
                   "type": "mrkdwn",
-                  "text": ":warning: Github Actions ${{ inputs.title }} ran and identified issues"
+                  "text": ":warning: Github Workflow ${{ github.workflow }} ran and identified issues"
                 }
               },
               {

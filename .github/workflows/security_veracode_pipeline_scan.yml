@@ -69,7 +69,7 @@ jobs:
         java-version: '21'
         distribution: 'temurin'
     - name: prepare assets
-      uses: ministryofjustice/hmpps-github-actions/.github/actions/security_veracode_prepare_artifacts@main # WORKFLOW_VERSION
+      uses: ministryofjustice/hmpps-github-actions/.github/actions/security_veracode_prepare_artifacts"0.1 # WORKFLOW_VERSION
     - name: "Download/Extract pipeline scanner"
       shell: bash
       run: |
@@ -139,7 +139,7 @@ jobs:
         path: results.txt
     - name: send a failure slack message
       if: failure() 
-      uses: ministryofjustice/hmpps-github-actions/.github/actions/slack_failure_results@main # WORKFLOW_VERSION
+      uses: ministryofjustice/hmpps-github-actions/.github/actions/slack_failure_results"0.1 # WORKFLOW_VERSION
       with:
         SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
         channel_id: ${{ inputs.channel_id }}
