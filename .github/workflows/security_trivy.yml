@@ -39,7 +39,7 @@ jobs:
         output: 'trivy-results.sarif'
         # exit-code: 1
         limit-severities-for-sarif: true
-    - uses: ministryofjustice/hmpps-github-actions/.github/actions/security_trivy_reports"0.1 # WORKFLOW_VERSION
+    - uses: ministryofjustice/hmpps-github-actions/.github/actions/security_trivy_reports@0.1 # WORKFLOW_VERSION
       if: success()  || steps.trivy.conclusion == 'failure'
       with:
         channel_id: ${{ inputs.channel_id}}
