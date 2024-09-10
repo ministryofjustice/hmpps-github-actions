@@ -22,6 +22,6 @@ runs:
       path: build/reports/dependency-check-report.html
   - uses: ministryofjustice/hmpps-github-actions/.github/actions/slack_codescan_notification@main # WORKFLOW_VERSION
     with:
-      channel-id: ${{ inputs.channel_id}}
+      channel_id: ${{ inputs.channel_id}}
       title: "OWASP issues identified"
       SLACK_BOT_TOKEN: ${{ inputs.SLACK_BOT_TOKEN }}
