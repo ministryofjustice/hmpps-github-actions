@@ -30,7 +30,7 @@ runs:
               "elements": [
                 {
                   "type": "mrkdwn",
-                  "text": ":stop: Github Actions ${{ github.workflow }} ${{ github.action_status }}"
+                  "text": ":stop: Github Actions ${{ github.workflow }} - ${{ github.event.workflow_run.conclusion }}"
                 }
               ]
             },
@@ -38,7 +38,7 @@ runs:
               "type": "section",
               "text": {
                 "type": "mrkdwn",
-                "text": "*${{ github.repository }}* failed ${{ github.workflow }}"
+                "text": "*${{ github.repository }}* ${{ github.workflow }} failed"
               },
               "accessory": {
                   "type": "button",
