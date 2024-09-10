@@ -133,10 +133,10 @@ jobs:
         VERACODE_API_KEY_3: ${{ secrets.VERACODE_API_KEY_3 }}
         VERACODE_API_KEY_4: ${{ secrets.VERACODE_API_KEY_4 }}
     - name: process slack message results
-      id: slack_message_result
+      id: prepare_slack_message
       uses: ministryofjustice/hmpps-github-actions/.github/actions/prepare_slack_message@main
-      env:
-        env_var: SLACK_TXT
+      with:
+        input_file: results.txt
     - uses: actions/upload-artifact@v3
       if: success() 
       with:
@@ -178,7 +178,7 @@ jobs:
               "elements": [
                 {
                   "type": "mrkdwn",
-                  "text": "Output: ```${{ steps.slack_message_result.outputs.SLACK_TXT }}```"
+                  "text": "Output: ```${{ steps.prepare_slack_message.outputs.SLACK_TXT }}```"
                 }
               ]
             },

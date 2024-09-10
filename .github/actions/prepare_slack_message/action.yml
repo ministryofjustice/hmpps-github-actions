@@ -5,13 +5,15 @@ inputs:
     description: "filename to be read into a string"
     required: true
     default: "results.txt"
-  env_var:
-    description: "Variable name to be returned"
-    default: "SLACK_TXT"
+outputs:
+  SLACK_TXT:
+    description: "Slack text"
+    value: ${{ steps.process-results.outputs.SLACK_TXT }}
 runs:
   using: "composite"
   steps:
   - name: Slack - Process Results Text
+    id: process-results
     shell: bash
     run: |
       if [[ -f ${{ inputs.input_file }} ]]; then
@@ -21,10 +23,10 @@ runs:
           sed 's/&/\&amp;/g; s/</\&lt;/g; s/>/\&gt;/g;' | \
           jq -Rs . | \
           sed -E 's/("$)|(^")//g')
-        echo "${{ inputs.env_var }}=\"${SLACK_TXT}\"" 
-        echo "${{ inputs.env_var }}=\"${SLACK_TXT}\"" >> "$GITHUB_OUTPUT"
+        echo "SLACK_TXT=\"${SLACK_TXT}\"" 
+        echo "SLACK_TXT=\"${SLACK_TXT}\"" >> "$GITHUB_OUTPUT"
       else
-        echo "${{ inputs.env_var }}=\"no results file (${{ inputs.input_file }}) created\""
-        echo "${{ inputs.env_var }}=\"no results file (${{ inputs.input_file }}) created\"" >> "$GITHUB_OUTPUT"
+        echo "SLACK_TXT=\"no results file (${{ inputs.input_file }}) created\""
+        echo "SLACK_TXT=\"no results file (${{ inputs.input_file }}) created\"" >> "$GITHUB_OUTPUT"
       fi
 

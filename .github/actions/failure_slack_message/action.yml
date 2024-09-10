@@ -14,7 +14,7 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: process slack message results
+    - name: process slack message results # returns SLACK_TXT
       uses: ministryofjustice/hmpps-github-actions/.github/actions/prepare_slack_message@main    
       id: slack_message_result 
       with:
@@ -46,7 +46,7 @@ runs:
                   "type": "plain_text",
                   "text": "View job"
                 },
-                "url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|${{ github.workflow }}"
+                "url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
               }
             },
             {
