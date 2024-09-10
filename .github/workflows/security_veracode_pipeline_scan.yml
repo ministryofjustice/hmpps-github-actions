@@ -139,7 +139,7 @@ jobs:
         path: results.txt
     - name: send a failure slack message
       if: failure() 
-      uses: ministryofjustice/hmpps-github-actions/.github/actions/failure_slack_message@main
+      uses: ministryofjustice/hmpps-github-actions/.github/actions/slack_failure_results@main
       with:
         SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
         channel_id: ${{ inputs.channel_id }}

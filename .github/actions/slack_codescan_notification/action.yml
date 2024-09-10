@@ -1,0 +1,62 @@
+name: 'failure Slack message'
+description: 'Sends a slack message to notify of failure'
+inputs:
+  title:
+    description: "title of the failed workflow"
+    required: true
+  channel_id:
+    description: "Slack channel to send to"
+    required: true
+  SLACK_BOT_TOKEN:
+    description: "important slack token"
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - uses: slackapi/slack-github-action@e28cf165c92ffef168d23c5c9000cffc8a25e117 # v1.24.0
+      with:
+        channel-id: ${{ inputs.channel_id}}
+        payload: |
+          { "text": ${{ inputs.title }} - issues identified",
+            "blocks": [
+              {
+                "type": "section",
+                "text": {
+                  "type": "mrkdwn",
+                  "text": ":warning: Github Actions ${{ inputs.title }} ran and identified issues"
+                }
+              },
+              {
+                "type": "section",
+                "fields": [
+                  {
+                    "type": "mrkdwn",
+                    "text": "*Code scanning:*\n<${{ github.server_url }}/${{ github.repository }}/security/code-scanning>"
+                  }
+                ]
+              },
+              {
+                "type": "section",
+                "fields": [
+                  {
+                    "type": "mrkdwn",
+                    "text": "*Workflow:*\n<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|${{ github.workflow }}>"
+                  },
+                  {
+                    "type": "mrkdwn",
+                    "text": "*Job:*\n${{ github.job }}"
+                  },
+                  {
+                    "type": "mrkdwn",
+                    "text": "*Repo:*\n${{ github.repository }}"
+                  },
+                  {
+                    "type": "mrkdwn",
+                    "text": "*Project:*\n${{ github.event.repository.name }}"
+                  }
+                ]
+              }
+            ]
+          }
+      env:
+        SLACK_BOT_TOKEN: ${{ inputs.SLACK_BOT_TOKEN }}
