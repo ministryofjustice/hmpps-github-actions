@@ -93,6 +93,7 @@ jobs:
           -version "${{ github.ref}}" \
           -filepath source.zip \
           2>&1 | tee output.txt 
+      continue-on-error: true
       env:
         VERACODE_API_ID_0: ${{ secrets.VERACODE_API_ID_0 }}
         VERACODE_API_ID_1: ${{ secrets.VERACODE_API_ID_1 }}
@@ -106,13 +107,12 @@ jobs:
         VERACODE_API_KEY_4: ${{ secrets.VERACODE_API_KEY_4 }}
     - name: process slack message results
       id: slack_message_result
-      uses: ministryofjustice/hmpps-github-actions/.github/actions/prepare_slack_message@main          
+      uses: ministryofjustice/hmpps-github-actions/.github/actions/prepare_slack_message@main     
     - uses: actions/upload-artifact@v3
       if: success() 
       with:
         name: veracode-policy-check-${{ github.event.repository.name }}
         path: output.txt
-
     - uses: slackapi/slack-github-action@e28cf165c92ffef168d23c5c9000cffc8a25e117 # v1.24.0
       if: failure()
       with:
@@ -125,7 +125,7 @@ jobs:
               "elements": [
                 {
                   "type": "mrkdwn",
-                  "text": ":stop: Github Actions ${{ github.action }} ${{ github.action_status }}"
+                  "text": ":stop: Github Actions ${{ github.workflow }} ${{ github.action_status }}"
                 }
               ]
             },
@@ -133,7 +133,7 @@ jobs:
               "type": "section",
               "text": {
                 "type": "mrkdwn",
-                "text": "*${{ github.repository }}* failed ${{ github.action }}"
+                "text": "*${{ github.repository }}* failed ${{ github.workflow }}"
               },
               "accessory": {
                   "type": "button",

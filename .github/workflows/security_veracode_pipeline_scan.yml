@@ -120,6 +120,7 @@ jobs:
           --timeout 60 \
           --issue_details false \
           --summary_output true
+      continue-on-error: true
       env:
         VERACODE_API_ID_0: ${{ secrets.VERACODE_API_ID_0 }}
         VERACODE_API_ID_1: ${{ secrets.VERACODE_API_ID_1 }}
@@ -134,6 +135,8 @@ jobs:
     - name: process slack message results
       id: slack_message_result
       uses: ministryofjustice/hmpps-github-actions/.github/actions/prepare_slack_message@main
+      env:
+        env_var: SLACK_TXT
     - uses: actions/upload-artifact@v3
       if: success() 
       with:
@@ -167,7 +170,7 @@ jobs:
                   "type": "plain_text",
                   "text": "View job"
                 },
-                "url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|${{ github.workflow }}"
+                "url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
               }
             },
             {

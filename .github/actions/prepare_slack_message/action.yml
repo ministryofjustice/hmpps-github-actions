@@ -21,8 +21,10 @@ runs:
           sed 's/&/\&amp;/g; s/</\&lt;/g; s/>/\&gt;/g;' | \
           jq -Rs . | \
           sed -E 's/("$)|(^")//g')
+        echo "${{ inputs.env_var }}=\"${SLACK_TXT}\"" 
         echo "${{ inputs.env_var }}=\"${SLACK_TXT}\"" >> "$GITHUB_OUTPUT"
       else
-        echo "${{ inputs.env_var }}=\"no results file (${{ inputs.input_file }}) - created\"" >> $GITHUB_OUTPUT
+        echo "${{ inputs.env_var }}=\"no results file (${{ inputs.input_file }}) created\""
+        echo "${{ inputs.env_var }}=\"no results file (${{ inputs.input_file }}) created\"" >> "$GITHUB_OUTPUT"
       fi
 
