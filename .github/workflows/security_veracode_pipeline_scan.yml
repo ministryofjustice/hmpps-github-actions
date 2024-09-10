@@ -132,60 +132,15 @@ jobs:
         VERACODE_API_KEY_2: ${{ secrets.VERACODE_API_KEY_2 }}
         VERACODE_API_KEY_3: ${{ secrets.VERACODE_API_KEY_3 }}
         VERACODE_API_KEY_4: ${{ secrets.VERACODE_API_KEY_4 }}
-    - name: process slack message results
-      id: prepare_slack_message
-      uses: ministryofjustice/hmpps-github-actions/.github/actions/prepare_slack_message@main
-      with:
-        input_file: results.txt
     - uses: actions/upload-artifact@v3
       if: success() 
       with:
         name: veracode-pipeline-check-${{ github.event.repository.name }}
         path: results.txt
-    - uses: slackapi/slack-github-action@e28cf165c92ffef168d23c5c9000cffc8a25e117 # v1.24.0
-      if: failure()
+    - name: send a failure slack message
+      if: failure() 
+      uses: ministryofjustice/hmpps-github-actions/.github/actions/failure_slack_message@main
       with:
-        channel-id: ${{ inputs.channel_id}}
-        payload: |
-          {
-          "blocks": [
-            {
-              "type": "context",
-              "elements": [
-                {
-                  "type": "mrkdwn",
-                  "text": ":stop: Github Actions ${{ github.action }} ${{ github.action_status }}"
-                }
-              ]
-            },
-            {
-              "type": "section",
-              "text": {
-                "type": "mrkdwn",
-                "text": "*${{ github.repository }}* failed ${{ github.action }}"
-              },
-             "accessory": {
-                 "type": "button",
-                "text": {
-                  "type": "plain_text",
-                  "text": "View job"
-                },
-                "url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-              }
-            },
-            {
-              "type": "context",
-              "elements": [
-                {
-                  "type": "mrkdwn",
-                  "text": "Output: ```${{ steps.prepare_slack_message.outputs.SLACK_TXT }}```"
-                }
-              ]
-            },
-            {
-              "type": "divider"
-            }
-          ]
-          }
-      env:
         SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+        channel_id: ${{ inputs.channel_id }}
+        input_file: output.txt
