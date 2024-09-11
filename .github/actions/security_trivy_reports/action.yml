@@ -1,5 +1,5 @@
-name: 'Create and upload OWASP dependency reports'
-description: 'action to create and upload OWASP dependency reports'
+name: 'Create and upload Trivy dependency reports'
+description: 'action to create and upload Trivy dependency reports'
 inputs:
   channel_id:
     description: 'Slack channel ID'
@@ -11,7 +11,6 @@ runs:
   using: "composite"
   steps:
   - uses: github/codeql-action/upload-sarif@v3
-    if: success()  || steps.trivy.conclusion == 'failure'
     with:
       sarif_file: 'trivy-results.sarif'
       category: trivy-dependency-check
