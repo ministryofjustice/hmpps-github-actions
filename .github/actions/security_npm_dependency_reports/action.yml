@@ -3,7 +3,8 @@ description: 'action to create and upload npm dependency reports'
 inputs:
   channel_id:
     description: 'Slack channel ID'
-    required: True
+    required: false
+    default: 'NONE'
   SLACK_BOT_TOKEN:
     description: 'Slack bot token'
     required: True
@@ -27,6 +28,7 @@ runs:
     with:
       input_file: npm-security-check-reports.txt
   - uses: slackapi/slack-github-action@e28cf165c92ffef168d23c5c9000cffc8a25e117 # v1.24.0
+    if: inputs.channel_id != 'NONE'
     with:
       channel-id: ${{ inputs.channel_id}}
       payload: |
@@ -74,6 +76,7 @@ runs:
     env:
       SLACK_BOT_TOKEN: ${{ inputs.SLACK_BOT_TOKEN }}
   - uses: slackapi/slack-github-action@e28cf165c92ffef168d23c5c9000cffc8a25e117 # v1.24.0
+    if: inputs.channel_id != 'NONE'
     with:
       channel-id: ${{ inputs.channel_id}}
       payload: |

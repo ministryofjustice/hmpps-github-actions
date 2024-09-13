@@ -5,6 +5,7 @@ on:
     inputs:
       channel_id:
         required: false
+        default: 'NONE'
         type: string
     secrets:
       SLACK_BOT_TOKEN:
@@ -133,7 +134,7 @@ jobs:
         name: veracode-pipeline-check-${{ github.event.repository.name }}
         path: results.txt
     - name: send a failure slack message
-      if: failure()  && inputs.channel_id != ''
+      if: failure()  && inputs.channel_id != 'NONE'
       uses: ministryofjustice/hmpps-github-actions/.github/actions/slack_failure_results@0.2 # WORKFLOW_VERSION
       with:
         SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
