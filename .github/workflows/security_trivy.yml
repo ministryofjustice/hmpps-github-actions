@@ -10,7 +10,7 @@ on:
         required: false
         type: string
     secrets:
-      SLACK_BOT_TOKEN:
+      HMPPS_SLACK_BOT_TOKEN:
         description: Slack bot token
         required: true
 
@@ -43,7 +43,7 @@ jobs:
       if: success()  || steps.trivy.conclusion == 'failure'
       with:
         channel_id: ${{ inputs.channel_id}}
-        SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+        SLACK_BOT_TOKEN: ${{ secrets.HMPPS_SLACK_BOT_TOKEN }}
     - name: Slack failure notification
       uses: slackapi/slack-github-action@70cd7be8e40a46e8b0eced40b0de447bdb42f68e # v1.26.0
       if: failure()
@@ -83,4 +83,4 @@ jobs:
             ]
           }
       env:
-        SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+        SLACK_BOT_TOKEN: ${{ secrets.HMPPS_SLACK_BOT_TOKEN }}
