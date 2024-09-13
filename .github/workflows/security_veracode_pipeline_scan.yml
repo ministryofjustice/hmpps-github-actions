@@ -7,7 +7,7 @@ on:
         required: false
         type: string
     secrets:
-      HMPPS_SLACK_BOT_TOKEN:
+      SLACK_BOT_TOKEN:
         description: Slack bot token
         required: true
       VERACODE_API_ID_0:
@@ -136,6 +136,6 @@ jobs:
       if: failure()  && inputs.channel_id != ''
       uses: ministryofjustice/hmpps-github-actions/.github/actions/slack_failure_results@0.2 # WORKFLOW_VERSION
       with:
-        SLACK_BOT_TOKEN: ${{ secrets.HMPPS_SLACK_BOT_TOKEN }}
+        SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
         channel_id: ${{ inputs.channel_id }}
         input_file: output.txt

@@ -18,7 +18,7 @@ on:
         required: true
         type: string
     secrets:
-      HMPPS_SLACK_BOT_TOKEN:
+      SLACK_BOT_TOKEN:
         description: Slack bot token
         required: false
 
@@ -46,7 +46,7 @@ jobs:
       if: success() || steps.npm.conclusion == 'failure'
       with:
         channel_id: ${{ inputs.channel_id }}
-        SLACK_BOT_TOKEN: ${{ secrets.HMPPS_SLACK_BOT_TOKEN }}
+        SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
     - uses: slackapi/slack-github-action@e28cf165c92ffef168d23c5c9000cffc8a25e117 # v1.24.0
       if: failure() && inputs.channel_id != ''
       with:
@@ -85,4 +85,4 @@ jobs:
             ]
           }
       env:
-        SLACK_BOT_TOKEN: ${{ secrets.HMPPS_SLACK_BOT_TOKEN }}
+        SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
