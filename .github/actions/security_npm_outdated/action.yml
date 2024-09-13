@@ -3,10 +3,10 @@ description: 'action to create and upload npm outdated reports'
 inputs:
   channel_id:
     description: 'Slack channel ID'
-    required: True
+    required: false
   SLACK_BOT_TOKEN:
     description: 'Slack bot token'
-    required: True
+    required: false
 runs:
   using: "composite"
   steps:
@@ -28,7 +28,7 @@ runs:
 
   - id: send-slack 
     uses: slackapi/slack-github-action@e28cf165c92ffef168d23c5c9000cffc8a25e117 # v1.24.0
-    if: steps.translate.outputs.results == 'YES'
+    if: steps.translate.outputs.results == 'YES'  && inputs.channel_id != ''
     with:
       channel-id: ${{ inputs.channel_id}}
       payload-file-path: "./npm-outdated-reports.json"

@@ -3,16 +3,13 @@ name: Security trivy dependency check
 on:
   workflow_call:
     inputs:
-      subproject:
-        required: false
-        type: string
       channel_id:
         required: false
         type: string
     secrets:
       HMPPS_SLACK_BOT_TOKEN:
         description: Slack bot token
-        required: true
+        required: false
 
 permissions:
   contents: read
@@ -46,7 +43,7 @@ jobs:
         SLACK_BOT_TOKEN: ${{ secrets.HMPPS_SLACK_BOT_TOKEN }}
     - name: Slack failure notification
       uses: slackapi/slack-github-action@70cd7be8e40a46e8b0eced40b0de447bdb42f68e # v1.26.0
-      if: failure()
+      if: failure() && inputs.channel_id != ''
       with:
         channel-id: ${{ inputs.channel_id}}
         payload: |

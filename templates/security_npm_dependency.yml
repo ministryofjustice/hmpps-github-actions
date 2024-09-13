@@ -6,7 +6,7 @@ on:
     - cron: "30 5 * * MON-FRI" # Every weekday at 05:35 UTC
 
 jobs:
-  security-npm-depencency-check:
+  security-npm-dependency-check:
     name: Project security npm dependency check
     uses: ministryofjustice/hmpps-github-actions/.github/workflows/security_npm_dependency.yml@0.2 # WORKFLOW_VERSION 
     with:
