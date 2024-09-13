@@ -6,13 +6,8 @@ on:
       channel_id:
         required: false
         type: string
-      teams:
-        required: false
-        type: string
-        default: "hmpps-tech"
-        description: "Comma-separated list of team names associated with the specified application.  Validates against the names of existing teams for this account."
     secrets:
-      SLACK_BOT_TOKEN:
+      HMPPS_SLACK_BOT_TOKEN:
         description: Slack bot token
         required: true
       VERACODE_API_ID_0:
@@ -138,9 +133,9 @@ jobs:
         name: veracode-pipeline-check-${{ github.event.repository.name }}
         path: results.txt
     - name: send a failure slack message
-      if: failure() 
+      if: failure()  && inputs.channel_id != ''
       uses: ministryofjustice/hmpps-github-actions/.github/actions/slack_failure_results@0.2 # WORKFLOW_VERSION
       with:
-        SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+        SLACK_BOT_TOKEN: ${{ secrets.HMPPS_SLACK_BOT_TOKEN }}
         channel_id: ${{ inputs.channel_id }}
         input_file: output.txt
