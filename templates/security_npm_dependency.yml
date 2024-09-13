@@ -13,5 +13,3 @@ jobs:
       channel_id: ${{ vars.SECURITY_ALERTS_SLACK_CHANNEL_ID }}
     secrets:
       SLACK_BOT_TOKEN: ${{ secrets.HMPPS_SRE_SLACK_BOT_TOKEN }}
-
-      

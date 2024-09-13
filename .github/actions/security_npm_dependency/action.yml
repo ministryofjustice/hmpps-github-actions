@@ -26,6 +26,7 @@ runs:
     if: inputs.channel_id != 'NONE'
     with:
       channel-id: ${{ inputs.channel_id}}
+      SLACK_BOT_TOKEN: ${{ inputs.SLACK_BOT_TOKEN }}
       payload: |
         { "text": "npm dependency scan identified issues",
           "blocks": [
