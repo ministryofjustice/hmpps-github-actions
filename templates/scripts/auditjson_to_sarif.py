@@ -31,7 +31,8 @@ def main():
       {
         "tool": {
             "driver": {
-              "name": "npx audit-ci@^7",
+              "fullName": "NPM Audit",
+              "name": "npx audit-ci",
               "rules": [],
               "version": "0.0.13"
           }
@@ -43,6 +44,7 @@ def main():
   } 
 
   # Populate the results
+  rules_list=[]
   result_list=[]
   result_dict={}
   try:
@@ -56,28 +58,64 @@ def main():
   except:
     eprint("Encountered an error - please check the json file")
     sys.exit(1)
-  
+
+  rule_index=0
   for each_result_key in results_dict.keys():
+ 
     this_result=results_dict[each_result_key]
+    # lookup result severity level
     if this_result['severity'] in sev_lookup:
       level=sev_lookup[this_result['severity']]
     else:
       level='none'
+
     message=''
     for each_element in this_result.keys():
       message+=f'{each_element}: {this_result[each_element]}\n'
-    result_dict={
-      'level': level,
-      'message': {'text': message},
-      'locations': [ {
-        'physicalLocation': {
-          'artifactLocation': {
-            'uri': this_result['name']
+    
+    via=this_result['via'][0]
+
+    if not isinstance(via, str): # some vulnerabilities come via others - no sarif for them
+      rules_dict={
+        "id": via['cwe'][0],
+        "name": "LanguageSpecificPackageVulnerability",
+        "shortDescription": {
+                  "text": via['title']
+                },
+        "defaultConfiguration": {
+        "level": level
+        },
+        "helpUri": via['url'],
+        "properties": {
+          "precision": "very-high",
+          "security-severity": str(via['cvss']['score']),
+          "tags": [
+            "vulnerability",
+            "security",
+            this_result['severity'].upper()
+          ]
+        }
+      }  
+      rules_list.append(rules_dict)        
+
+      result_dict={
+        'ruleId': via['cwe'][0],
+        'ruleIndex': rule_index,
+        'level': level,
+        'message': {'text': message},
+        'locations': [ {
+          'physicalLocation': {
+            'artifactLocation': {
+              'uri': this_result['name']
+              }
             }
-          }
-      } ]
-    }
-    result_list.append(result_dict)
+        } ]
+      }
+
+      result_list.append(result_dict)
+      rule_index+=1
+
+  output_dict['runs'][0]['tool']['driver']['rules']=rules_list
   output_dict['runs'][0]['results']=result_list
 
   with open(output_file,'w') as f:
