@@ -2,7 +2,7 @@
 
 ## Introduction
 
-Periodic (so non-pipeline) security scans have, for a long while, been run by CircleCI. Towards the bottom of the `.circleci.config.yml` in a number of projects, there is a collection of jobs that are instigated on a schedule.
+Periodic (so non-pipeline) security scans have, for a long while, been run by CircleCI. Towards the bottom of the `.circleci/config.yml` file in a number of projects, there is a collection of jobs that are instigated on a schedule.
 
 It's now possible to run scans and upload them (when appropriate) to the Code Scanning section of the repo and send a Slack notification using Github actions.
 
@@ -157,7 +157,7 @@ If the workflow runs successfully, and the scan identifies issues:
 If the workfow fails, Github sends a slack message and an email to notify users.
 
 
-### security_veracode_pipeline_scan
+### security_veracode_pipeline_scan
 
 #### What to comment out:
 
@@ -184,7 +184,7 @@ Veracode processes the reports, which are ultimately made available in the [Deve
 If the workfow fails, Github sends a slack message and an email to notify users.
 
 
-### security_veracode_policy_scan
+### security_veracode_policy_scan
 
 #### What to comment out:
 
