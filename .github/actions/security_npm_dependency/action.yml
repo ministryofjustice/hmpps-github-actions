@@ -3,11 +3,11 @@ description: 'action to create and upload npm dependency reports'
 inputs:
   channel_id:
     description: 'Slack channel ID'
-    default: 'NO_SLACK'
     required: false
+    default: 'NO_SLACK'
   SLACK_BOT_TOKEN:
     description: 'Slack bot token'
-    required: false
+    required: True
 runs:
   using: "composite"
   steps:
@@ -22,11 +22,15 @@ runs:
     with:
       sarif_file: 'npm-security-check-reports.sarif'
       category: npm-dependency-check
+  - name: process slack message results # returns SLACK_TXT
+    uses: ministryofjustice/hmpps-github-actions/.github/actions/slack_prepare_results@0.2 # WORKFLOW_VERSION
+    id: slack_message_result 
+    with:
+      input_file: npm-security-check-reports.txt
   - uses: slackapi/slack-github-action@e28cf165c92ffef168d23c5c9000cffc8a25e117 # v1.24.0
-    if: inputs.channel_id != 'NO_SLACK'
+    if: inputs.channel_id != 'NO_SLACK' && !contains(steps.slack_message_result.outputs.SLACK_TXT, 'All good!')
     with:
       channel-id: ${{ inputs.channel_id}}
-      SLACK_BOT_TOKEN: ${{ inputs.SLACK_BOT_TOKEN }}
       payload: |
         { "text": "npm dependency scan identified issues",
           "blocks": [
@@ -68,6 +72,17 @@ runs:
               ]
             }
           ]
+        }
+    env:
+      SLACK_BOT_TOKEN: ${{ inputs.SLACK_BOT_TOKEN }}
+  - uses: slackapi/slack-github-action@e28cf165c92ffef168d23c5c9000cffc8a25e117 # v1.24.0
+    if: inputs.channel_id != 'NO_SLACK' && !contains(steps.slack_message_result.outputs.SLACK_TXT, 'All good!')
+    with:
+      channel-id: ${{ inputs.channel_id}}
+      payload: |
+        { 
+          "type": "mrkdwn",
+          "text": "Output: ```${{ steps.slack_message_result.outputs.SLACK_TXT }}```"
         }
     env:
       SLACK_BOT_TOKEN: ${{ inputs.SLACK_BOT_TOKEN }}
