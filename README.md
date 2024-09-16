@@ -34,3 +34,18 @@ Documentation for migrating security scans from CircleCI to Github Actions can b
 ## Templates
 
 These workflows are called by other repositories. Templates to call these are in the `templates` directory.
+
+
+## Version Control
+
+Workflows and actions are referred to by the tags associated with the current release, eg:
+
+```
+    - uses: ministryofjustice/hmpps-github-actions/.github/actions/security_owasp_reports@0.2 # WORKFLOW_VERSION
+```
+
+When a new release is issued, all of these referred workflows (as well as the calling ones within applications) will need to be updated as well.
+
+### TODO
+
+- Update the discovery tool to scan the version of Github Actions Workflows
