@@ -17,12 +17,14 @@ Template workflows can be found in the `templates` directory of this repository.
 
 Currently the only common component that's required for all action is the **Security Alerts Slack Channel ID**. 
 
-This needs to be added as the repository variables with the name: **`SECURITY_ALERTS_SLACK_CHANNEL_ID`**
+This needs to be added as the repository variables with the name: **`SECURITY_ALERTS_SLACK_CHANNEL_ID`** with the appropriate Channel ID.
 
-If this channel is empty, no slack messages will be sent within any of these workflows below.
+Then, the **[HMPPS SRE App](https://moj.enterprise.slack.com/archives/D07FR26BRBL)** needs to be added to the selected Slack channel.
+
+If the Slack Channel ID variable is empty, no slack messages will be sent within any of these workflows below. Only failed workflow emails will be sent (Veracode scans codescanning uploads will continue).
 
 
-### security_trivy
+### ***security_trivy***
 
 #### What to comment out:
 
@@ -39,7 +41,7 @@ within `.circleci/config.yml` of the target project, comment out or remove the f
 
 From this repo, copy:
 - from `/templates/security_trivy.yml` 
-- to `./github/workflows/security_trivy.yml` of the target project.
+- to `.github/workflows/security_trivy.yml` of the target project.
 
 #### Outputs
 
@@ -52,7 +54,7 @@ If the workflow runs successfully, and the scan identifies issues:
 If the workfow fails, Github sends a slack message and an email to notify users.
 
 
-### security_owasp
+### ***security_owasp***
 
 #### What to comment out:
 
@@ -71,7 +73,7 @@ within `.circleci/config.yml` of the target project, comment out or remove the f
 
 From this repo, copy:
 - from `/templates/security_owasp.yml` 
-- to`./github/workflows/security_owasp.yml` of the target project.
+- to`.github/workflows/security_owasp.yml` of the target project.
 
 #### Outputs
 
@@ -84,7 +86,7 @@ If the workflow runs successfully, and the scan identifies issues:
 If the workfow fails, Github sends a slack message and an email to notify users.
 
 
-### security_npm_dependency
+### ***security_npm_dependency***
 
 #### What to comment out:
 
@@ -100,11 +102,11 @@ within `.circleci/config.yml` of the target project, comment out or remove the f
 
 #### What to add
 
-Within templates copy `security_npm_dependency.yml` into `./github/workflows` of the target project.
+Within templates copy `security_npm_dependency.yml` into `.github/workflows` of the target project.
 
 Furthermore, to translate the npm audit report into SARIF format, a python script needs to be copied:
 - from `scripts/auditjson_to_sarif.py`
-- to `./github/scripts` on the target project.
+- to a new directory: `.github/scripts` on the target project.
 
 
 #### Outputs
@@ -139,11 +141,11 @@ within `.circleci/config.yml` of the target project, comment out or remove the f
 
 #### What to add
 
-Within templates copy `security_npm_outdated.yml` into `./github/workflows` of the target project.
+Within templates copy `security_npm_outdated.yml` into `.github/workflows` of the target project.
 
 Furthermore, to translate the npm audit report into SARIF format, a python script needs to be copied:
 - from `scripts/outdated_to_slack.py`
-- to `./github/scripts` on the target project.
+- to `.github/scripts` on the target project.
 
 
 #### Outputs
@@ -157,7 +159,7 @@ If the workflow runs successfully, and the scan identifies issues:
 If the workfow fails, Github sends a slack message and an email to notify users.
 
 
-### security_veracode_pipeline_scan
+### ***security_veracode_pipeline_scan***
 
 #### What to comment out:
 
@@ -173,7 +175,7 @@ within `.circleci/config.yml` of the target project, comment out or remove the f
 
 #### What to add
 
-Within templates copy `security_veracode_pipeline_scan.yml` into `./github/workflows` of the target project.
+Within templates copy `security_veracode_pipeline_scan.yml` into `.github/workflows` of the target project.
 
 To ensure all the scans don't run at the same time, please change the time of this scan.
 
@@ -184,7 +186,7 @@ Veracode processes the reports, which are ultimately made available in the [Deve
 If the workfow fails, Github sends a slack message and an email to notify users.
 
 
-### security_veracode_policy_scan
+### ***security_veracode_policy_scan***
 
 #### What to comment out:
 
@@ -210,7 +212,7 @@ security-weekly:
 
 #### What to add
 
-Within templates copy `security_veracode_policy_scan.yml` into `./github/workflows` of the target project.
+Within templates copy `security_veracode_policy_scan.yml` into `.github/workflows` of the target project.
 
 To ensure all the scans don't run at the same time, please change the time of this scan.
 
