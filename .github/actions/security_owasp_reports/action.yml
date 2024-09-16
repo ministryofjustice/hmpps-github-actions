@@ -3,7 +3,7 @@ description: 'action to create and upload OWASP dependency reports'
 inputs:
   channel_id:
     description: 'Slack channel ID'
-    default: 'NONE'
+    default: 'NO_SLACK'
     required: false
   SLACK_BOT_TOKEN:
     description: 'Slack bot token'
@@ -22,7 +22,7 @@ runs:
       name: gradle-owasp-dependency-check-${{ github.event.repository.name }}
       path: build/reports/dependency-check-report.html
   - uses: ministryofjustice/hmpps-github-actions/.github/actions/slack_codescan_notification@0.2 # WORKFLOW_VERSION
-    if: inputs.channel_id != 'NONE'
+    if: inputs.channel_id != 'NO_SLACK'
     with:
       channel_id: ${{ inputs.channel_id}}
       title: "OWASP issues"

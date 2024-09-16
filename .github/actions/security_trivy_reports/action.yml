@@ -3,7 +3,7 @@ description: 'action to create and upload Trivy dependency reports'
 inputs:
   channel_id:
     description: 'Slack channel ID'
-    default: 'NONE'
+    default: 'NO_SLACK'
     required: false
   SLACK_BOT_TOKEN:
     description: 'Slack bot token'
@@ -16,7 +16,7 @@ runs:
       sarif_file: 'trivy-results.sarif'
       category: trivy-dependency-check
   - uses: ministryofjustice/hmpps-github-actions/.github/actions/slack_codescan_notification@0.2 # WORKFLOW_VERSION
-    if: inputs.channel_id != 'NONE'
+    if: inputs.channel_id != 'NO_SLACK'
     with:
       channel_id: ${{ inputs.channel_id}}
       title: "Trivy issues identified"

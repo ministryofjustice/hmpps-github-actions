@@ -5,7 +5,7 @@ on:
     inputs:
       channel_id:
         required: false
-        default: 'NONE'
+        default: 'NO_SLACK'
         type: string
       node_version:
         required: false
@@ -45,7 +45,7 @@ jobs:
         channel_id: ${{ inputs.channel_id }}
         SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
     - uses: slackapi/slack-github-action@e28cf165c92ffef168d23c5c9000cffc8a25e117 # v1.24.0
-      if: failure() && inputs.channel_id != 'NONE'
+      if: failure() && inputs.channel_id != 'NO_SLACK'
       with:
         channel-id: ${{ inputs.channel_id}}
         payload: |

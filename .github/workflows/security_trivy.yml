@@ -5,7 +5,7 @@ on:
     inputs:
       channel_id:
         required: false
-        default: 'NONE'
+        default: 'NO_SLACK'
         type: string
     secrets:
       SLACK_BOT_TOKEN:
@@ -44,7 +44,7 @@ jobs:
         SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
     - name: Slack failure notification
       uses: slackapi/slack-github-action@70cd7be8e40a46e8b0eced40b0de447bdb42f68e # v1.26.0
-      if: failure() && inputs.channel_id != 'NONE'
+      if: failure() && inputs.channel_id != 'NO_SLACK'
       with:
         channel-id: ${{ inputs.channel_id}}
         payload: |

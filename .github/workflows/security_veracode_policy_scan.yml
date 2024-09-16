@@ -5,7 +5,7 @@ on:
     inputs:
       channel_id:
         required: false
-        default: 'NONE'
+        default: 'NO_SLACK'
         type: string
       teams:
         required: false
@@ -112,7 +112,7 @@ jobs:
         name: veracode-policy-check-${{ github.event.repository.name }}
         path: output.txt
     - name: send a failure slack message
-      if: failure()  && inputs.channel_id != 'NONE'
+      if: failure()  && inputs.channel_id != 'NO_SLACK'
       uses: ministryofjustice/hmpps-github-actions/.github/actions/slack_failure_results@0.2 # WORKFLOW_VERSION
       with:
         SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
