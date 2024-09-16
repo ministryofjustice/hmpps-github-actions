@@ -17,11 +17,11 @@ Template workflows can be found in the `templates` directory of this repository.
 
 Currently the only common component that's required for all action is the **Security Alerts Slack Channel ID**. 
 
-This needs to be added as the repository variables with the name: **`SECURITY_ALERTS_SLACK_CHANNEL_ID`** with the appropriate Channel ID.
+This needs to be added to the Actions variables of the project's Github repository, with the name **`SECURITY_ALERTS_SLACK_CHANNEL_ID`**, and the appropriate Slack channel ID as the value.
 
 Then, the **[HMPPS SRE App](https://moj.enterprise.slack.com/archives/D07FR26BRBL)** needs to be added to the selected Slack channel.
 
-If the Slack Channel ID variable is empty, no slack messages will be sent within any of these workflows below. Only failed workflow emails will be sent (Veracode scans codescanning uploads will continue).
+If the Slack Channel ID variable is empty, no slack messages will be sent within any of these workflows below. Only failed workflow emails will be sent (Veracode scans and code scanning uploads will continue).
 
 
 ### ***security_trivy***
