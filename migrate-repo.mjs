@@ -14,16 +14,16 @@ if (!directoryExists(repo)) {
     throw Error(`'${repo}' should be an existing directory`)
 }
 
-const destActions = `${repo}/.github/actions`
+const destWorkflows = `${repo}/.github/workflows`
 const destScripts = `${repo}/.github/scripts`
 
-createIfDoesNotExist(destActions)
+createIfDoesNotExist(destWorkflows)
 createIfDoesNotExist(destScripts)
 
 fs.cpSync('templates/scripts', destScripts, { recursive: true})
 
 fs.readdirSync('templates').forEach(file => {
     if (file.endsWith('yml')){
-        fs.cpSync(`templates/${file}`, `${destActions}/${file}`)
+        fs.cpSync(`templates/${file}`, `${destWorkflows}/${file}`)
     }
 })
