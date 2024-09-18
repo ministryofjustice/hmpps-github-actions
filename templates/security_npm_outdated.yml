@@ -3,7 +3,7 @@ name: Security npm outdated check
 on:
   workflow_dispatch:
   schedule:
-    - cron: "40 5 * * MON-FRI" # Every weekday at 05:35 UTC
+    - cron: "40 5 * * MON-FRI" # Every weekday at 05:40 UTC
 
 jobs:
   security-npm-depencency-check:
