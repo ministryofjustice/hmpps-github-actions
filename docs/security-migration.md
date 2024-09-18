@@ -225,6 +225,29 @@ Veracode processes the reports, which are ultimately made available in the [Deve
 
 If the workfow fails, Github sends a slack message and an email to notify users.
 
+### Automation
+
+You can set the repo variable using [gh client](https://cli.github.com/):
+
+```bash
+CHANNEL_NAME=...
+REPO_NAME=...
+
+gh variable set SECURITY_ALERTS_SLACK_CHANNEL_ID --body "${CHANNEL_NAME}" -R "ministryofjustice/${REPO_NAME}"
+```
+
+To copy all scripts and workflows across into a new repo, you can run: 
+
+```bash
+REPO_NAME=...
+./migrate-repo.mjs "${REPO_NAME}" 
+```
+
+Some manual steps will remain:
+* Need to comment out circleci config
+* Need to delete unwanted jobs
+* Need to tweak cron job times
+
 
 ### TODO:
 
