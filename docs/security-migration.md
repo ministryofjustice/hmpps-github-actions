@@ -19,9 +19,12 @@ Currently the only common component that's required for all action is the **Secu
 
 This needs to be added to the Actions variables of the project's Github repository, with the name **`SECURITY_ALERTS_SLACK_CHANNEL_ID`**, and the appropriate Slack channel ID as the value.
 
-Then, the **[HMPPS SRE App](https://moj.enterprise.slack.com/archives/D07FR26BRBL)** needs to be added to the selected Slack channel.
+The **HMPPS SRE App Slack bot** then needs to be added to the channel - using `/invite`, select "Add apps to this channel", and look for **hmpps-sre-app**. Click 'Add' - this will enable messages to be sent by the bot.
 
-If the Slack Channel ID variable is empty, no slack messages will be sent within any of these workflows below. Only failed workflow emails will be sent (Veracode scans and code scanning uploads will continue).
+![Invite apps to the channel](pics/slack-invite.png) 
+![Search for hmpps-sre-app](pics/slack-app.png)
+
+Note: if the Slack Channel ID variable is empty, no slack messages will be sent within any of these workflows below. Only failed workflow emails will be sent (Veracode scans and code scanning uploads will continue).
 
 
 ### ***security_trivy***
