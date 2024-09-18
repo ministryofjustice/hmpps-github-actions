@@ -40,7 +40,7 @@ jobs:
       continue-on-error: true
 
     - uses: ministryofjustice/hmpps-github-actions/.github/actions/security_owasp_reports@0.2 # WORKFLOW_VERSION
-      if: success() || steps.owasp-analyse.conclusion == 'failure'
+      if: steps.owasp-analyse.conclusion == 'failure'
       with:
         channel_id: ${{ inputs.channel_id }}
         SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
