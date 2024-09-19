@@ -29,6 +29,15 @@ jobs:
       parent_directory: ${{ github.event.repository.name == '' && '.' || github.event.repository.name}}
     steps:
     - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
+      with:
+        node-version: ${{ inputs.node_version }}
+    - id: npm-version
+      name: Show npm version
+      run: 'npm -v'
+    - id: node-version
+      name: Show node version
+      run: 'node -v'
     - name: Audit for vulnerabilities
       id: npm
       run: npx audit-ci@^7 --config ./audit-ci.json -o json > npm-security-check-reports.json
