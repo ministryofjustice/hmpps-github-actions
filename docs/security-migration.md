@@ -125,43 +125,6 @@ If the workflow runs successfully, and the scan identifies issues:
 If the workfow fails, Github sends a slack message and an email to notify users.
 
 
-
-### security_npm_outdated
-
-*(note: generally only used on the templates project)*
-
-#### What to comment out:
-
-within `.circleci/config.yml` of the target project, comment out or remove the following:
-
-```
-     - hmpps/npm_outdated:
-         slack_channel: << pipeline.parameters.alerts-slack-channel >>
-         node_tag: << pipeline.parameters.node-version >>
-         context:
-           - hmpps-common-vars
-```
-
-#### What to add
-
-Within templates copy `security_npm_outdated.yml` into `.github/workflows` of the target project.
-
-Furthermore, to translate the npm audit report into SARIF format, a python script needs to be copied:
-- from `scripts/outdated_to_slack.py`
-- to `.github/scripts` on the target project.
-
-
-#### Outputs
-
-If the workflow runs successfully, and the scan identifies issues:
-
-- A text file is uploaded which gets uploaded to Github as an Action artifact
-
-- It will also send a Slack message to notify that the workflow has identified issues, along with a table of the outdated components.
-
-If the workfow fails, Github sends a slack message and an email to notify users.
-
-
 ### ***security_veracode_pipeline_scan***
 
 #### What to comment out:
@@ -255,3 +218,40 @@ Some manual steps will remain:
 - Update the bootstrap to add SECURITY_ALERTS_SLACK_CHANNEL_ID to the repo based on Service Catalogue configuration
 - Optionally create a Github issue (and notify) when a code scan identifies a vulnerability - as per [this project](https://github.com/ministryofjustice/hmpps-probation-integration-services/blob/main/.github/workflows/security.yml) 
 
+
+---
+
+### security_npm_outdated
+
+*(note: generally only used on the templates project)*
+
+#### What to comment out:
+
+within `.circleci/config.yml` of the target project, comment out or remove the following:
+
+```
+     - hmpps/npm_outdated:
+         slack_channel: << pipeline.parameters.alerts-slack-channel >>
+         node_tag: << pipeline.parameters.node-version >>
+         context:
+           - hmpps-common-vars
+```
+
+#### What to add
+
+Within templates copy `security_npm_outdated.yml` into `.github/workflows` of the target project.
+
+Furthermore, to translate the npm audit report into SARIF format, a python script needs to be copied:
+- from `scripts/outdated_to_slack.py`
+- to `.github/scripts` on the target project.
+
+
+#### Outputs
+
+If the workflow runs successfully, and the scan identifies issues:
+
+- A text file is uploaded which gets uploaded to Github as an Action artifact
+
+- It will also send a Slack message to notify that the workflow has identified issues, along with a table of the outdated components.
+
+If the workfow fails, Github sends a slack message and an email to notify users.
