@@ -40,13 +40,13 @@ jobs:
       continue-on-error: true
 
     - uses: ministryofjustice/hmpps-github-actions/.github/actions/security_owasp_reports@0.2 # WORKFLOW_VERSION
-      if: steps.owasp-analyse.conclusion == 'failure'
+      if: steps.owasp-analyse.outcome == 'failure'
       with:
         channel_id: ${{ inputs.channel_id }}
         SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
 
     - uses: slackapi/slack-github-action@e28cf165c92ffef168d23c5c9000cffc8a25e117 # v1.24.0
-      if: failure() && inputs.channel_id != 'NO_SLACK'
+      if: steps.owasp-analyse.conclusion == 'failure' && inputs.channel_id != 'NO_SLACK'
       with:
         channel-id: ${{ inputs.channel_id}}
         payload: |
