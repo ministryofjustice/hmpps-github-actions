@@ -49,12 +49,12 @@ jobs:
       env:
         NO_COLOR: TRUE
     - uses: ministryofjustice/hmpps-github-actions/.github/actions/security_npm_dependency_reports@0.2 # WORKFLOW_VERSION
-      if: steps.npm.conclusion == 'failure'
+      if: steps.npm.outcome == 'failure'
       with:
         channel_id: ${{ inputs.channel_id }}
         SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
     - uses: slackapi/slack-github-action@e28cf165c92ffef168d23c5c9000cffc8a25e117 # v1.24.0
-      if: failure() && inputs.channel_id != 'NO_SLACK'
+      if: steps.npm.conclusion == 'failure' && inputs.channel_id != 'NO_SLACK'
       with:
         channel-id: ${{ inputs.channel_id}}
         payload: |
