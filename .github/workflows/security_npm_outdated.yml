@@ -36,8 +36,17 @@ jobs:
       parent_directory: ${{ github.event.repository.name == '' && '.' || github.event.repository.name}}
     steps:
     - uses: actions/checkout@v4
-    - id: install-npm
-      name: install-npm
+    - uses: actions/setup-node@v4
+      with:
+        node-version: ${{ inputs.node_version }}
+    - id: npm-version
+      name: Show npm version
+      run: 'npm -v'
+    - id: node-version
+      name: Show node version
+      run: 'node -v'
+    - id: npm-ci
+      name: run npm ci 
       run: 'npm ci --no-audit'
     - name: Audit for vulnerabilities
       id: npm
