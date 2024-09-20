@@ -18,6 +18,7 @@ Template workflows can be found in the `templates` directory of this repository.
 Currently the only common component that's required for all action is the **Security Alerts Slack Channel ID**. 
 
 This needs to be added to the Actions variables of the project's Github repository, with the name **`SECURITY_ALERTS_SLACK_CHANNEL_ID`**, and the appropriate Slack channel ID as the value.
+Note that this should be the channel ID, as reported at the bottom of _View channel details_ and not the channel name as the channel name can be changed at any point.
 
 The **HMPPS SRE App Slack bot** then needs to be added to the channel - using `/invite`, select "Add apps to this channel", and look for **hmpps-sre-app**. Click 'Add' - this will enable messages to be sent by the bot.
 
@@ -193,10 +194,10 @@ If the workfow fails, Github sends a slack message and an email to notify users.
 You can set the repo variable using [gh client](https://cli.github.com/):
 
 ```bash
-CHANNEL_NAME=...
+CHANNEL_ID=...
 REPO_NAME=...
 
-gh variable set SECURITY_ALERTS_SLACK_CHANNEL_ID --body "${CHANNEL_NAME}" -R "ministryofjustice/${REPO_NAME}"
+gh variable set SECURITY_ALERTS_SLACK_CHANNEL_ID --body "${CHANNEL_ID}" -R "ministryofjustice/${REPO_NAME}"
 ```
 
 To copy all scripts and workflows across into a new repo, you can run: 
