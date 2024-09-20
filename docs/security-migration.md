@@ -2,31 +2,35 @@
 
 ## Introduction
 
-Periodic (so non-pipeline) security scans have, for a long while, been run by CircleCI. Towards the bottom of the `.circleci/config.yml` file in a number of projects, there is a collection of jobs that are instigated on a schedule.
+Periodic (so non-pipeline) security scans have, for a long while, been run by CircleCI. Towards the bottom of the
+`.circleci/config.yml` file in a number of projects, there is a collection of jobs that are instigated on a schedule.
 
-It's now possible to run scans and upload them (when appropriate) to the Code Scanning section of the repo and send a Slack notification using Github actions.
+It's now possible to run scans and upload them (when appropriate) to the Code Scanning section of the repo and send a
+Slack notification using Github actions.
 
 This document details how to move over from CircleCI for each scan and what files and configurations are required.
 
 Template workflows can be found in the `templates` directory of this repository.
 
-
 ## Components
 
 ### Common components
 
-Currently the only common component that's required for all action is the **Security Alerts Slack Channel ID**. 
+Currently the only common component that's required for all action is the **Security Alerts Slack Channel ID**.
 
-This needs to be added to the Actions variables of the project's Github repository, with the name **`SECURITY_ALERTS_SLACK_CHANNEL_ID`**, and the appropriate Slack channel ID as the value.
-Note that this should be the channel ID, as reported at the bottom of _View channel details_ and not the channel name as the channel name can be changed at any point.
+This needs to be added to the Actions variables of the project's Github repository, with the name *
+*`SECURITY_ALERTS_SLACK_CHANNEL_ID`**, and the appropriate Slack channel ID as the value.
+Note that this should be the channel ID, as reported at the bottom of _View channel details_ and not the channel name as
+the channel name can be changed at any point.
 
-The **HMPPS SRE App Slack bot** then needs to be added to the channel - using `/invite`, select "Add apps to this channel", and look for **hmpps-sre-app**. Click 'Add' - this will enable messages to be sent by the bot.
+The **HMPPS SRE App Slack bot** then needs to be added to the channel - using `/invite`, select "Add apps to this
+channel", and look for **hmpps-sre-app**. Click 'Add' - this will enable messages to be sent by the bot.
 
-![Invite apps to the channel](pics/slack-invite.png) 
+![Invite apps to the channel](pics/slack-invite.png)
 ![Search for hmpps-sre-app](pics/slack-app.png)
 
-Note: if the Slack Channel ID variable is empty, no slack messages will be sent within any of these workflows below. Only failed workflow emails will be sent (Veracode scans and code scanning uploads will continue).
-
+Note: if the Slack Channel ID variable is empty, no slack messages will be sent within any of these workflows below.
+Only failed workflow emails will be sent (Veracode scans and code scanning uploads will continue).
 
 ### ***security_trivy***
 
@@ -44,19 +48,21 @@ within `.circleci/config.yml` of the target project, comment out or remove the f
 #### What to add
 
 From this repo, copy:
-- from `/templates/security_trivy.yml` 
+
+- from `/templates/security_trivy.yml`
 - to `.github/workflows/security_trivy.yml` of the target project.
 
 #### Outputs
 
 If the workflow runs successfully, and the scan identifies issues:
 
-- Trivy automatically creates a Sarif file which gets uploaded to Github, and generates an open alert for each item, within Code Scanning
+- Trivy automatically creates a Sarif file which gets uploaded to Github, and generates an open alert for each item,
+  within Code Scanning
 
-- It will also send a Slack message to notify that the workflow has identified issues, and links to Code Scanning for that repository.
+- It will also send a Slack message to notify that the workflow has identified issues, and links to Code Scanning for
+  that repository.
 
 If the workfow fails, Github sends a slack message and an email to notify users.
-
 
 ### ***security_owasp***
 
@@ -76,19 +82,21 @@ within `.circleci/config.yml` of the target project, comment out or remove the f
 #### What to add
 
 From this repo, copy:
-- from `/templates/security_owasp.yml` 
+
+- from `/templates/security_owasp.yml`
 - to`.github/workflows/security_owasp.yml` of the target project.
 
 #### Outputs
 
 If the workflow runs successfully, and the scan identifies issues:
 
-- OWASP automatically creates a Sarif file which gets uploaded to Github, and generates an open alert for each item, within Code Scanning
+- OWASP automatically creates a Sarif file which gets uploaded to Github, and generates an open alert for each item,
+  within Code Scanning
 
-- It will also send a Slack message to notify that the workflow has identified issues, and links to Code Scanning for that repository.
+- It will also send a Slack message to notify that the workflow has identified issues, and links to Code Scanning for
+  that repository.
 
 If the workfow fails, Github sends a slack message and an email to notify users.
-
 
 ### ***security_npm_dependency***
 
@@ -109,9 +117,9 @@ within `.circleci/config.yml` of the target project, comment out or remove the f
 Within templates copy `security_npm_dependency.yml` into `.github/workflows` of the target project.
 
 Furthermore, to translate the npm audit report into SARIF format, a python script needs to be copied:
+
 - from `scripts/auditjson_to_sarif.py`
 - to a new directory: `.github/scripts` on the target project.
-
 
 #### Outputs
 
@@ -119,12 +127,12 @@ If the workflow runs successfully, and the scan identifies issues:
 
 - The workflow runs a script to translate the json response into SARIF format and uploads it to Code Scanning
 
-- It will also send a Slack message to notify that the workflow has identified issues, and links to Code Scanning for that repository.
+- It will also send a Slack message to notify that the workflow has identified issues, and links to Code Scanning for
+  that repository.
 
 - The Slack message will also display a table of the vunerable components.
 
 If the workfow fails, Github sends a slack message and an email to notify users.
-
 
 ### ***security_veracode_pipeline_scan***
 
@@ -148,10 +156,10 @@ To ensure all the scans don't run at the same time, please change the time of th
 
 #### Outputs
 
-Veracode processes the reports, which are ultimately made available in the [Developer Portal](https://developer-portal.hmpps.service.justice.gov.uk/reports/veracode).
+Veracode processes the reports, which are ultimately made available in
+the [Developer Portal](https://developer-portal.hmpps.service.justice.gov.uk/reports/veracode).
 
 If the workfow fails, Github sends a slack message and an email to notify users.
-
 
 ### ***security_veracode_policy_scan***
 
@@ -185,11 +193,12 @@ To ensure all the scans don't run at the same time, please change the time of th
 
 #### Outputs
 
-Veracode processes the reports, which are ultimately made available in the [Developer Portal](https://developer-portal.hmpps.service.justice.gov.uk/reports/veracode).
+Veracode processes the reports, which are ultimately made available in
+the [Developer Portal](https://developer-portal.hmpps.service.justice.gov.uk/reports/veracode).
 
 If the workfow fails, Github sends a slack message and an email to notify users.
 
-### Automation
+## Automation
 
 You can set the repo variable using [gh client](https://cli.github.com/):
 
@@ -200,7 +209,7 @@ REPO_NAME=...
 gh variable set SECURITY_ALERTS_SLACK_CHANNEL_ID --body "${CHANNEL_ID}" -R "ministryofjustice/${REPO_NAME}"
 ```
 
-To copy all scripts and workflows across into a new repo, you can run: 
+To copy all scripts and workflows across into a new repo, you can run:
 
 ```bash
 REPO_NAME=...
@@ -208,17 +217,24 @@ REPO_NAME=...
 ```
 
 Some manual steps will remain:
+
 * Need to comment out circleci config
 * Need to delete unwanted jobs
 * Need to tweak cron job times
 
+Alternatively for kotlin projects you can run:
+```bash
+../hmpps-github-actions/migrate-kotlin-security-jobs.bash
+```
+from the github directory - see the script for more information.
 
 ### TODO:
 
-- Update the bootstrap to change the random time value from making changes within config.yml to the specific github actions
+- Update the bootstrap to change the random time value from making changes within config.yml to the specific github
+  actions
 - Update the bootstrap to add SECURITY_ALERTS_SLACK_CHANNEL_ID to the repo based on Service Catalogue configuration
-- Optionally create a Github issue (and notify) when a code scan identifies a vulnerability - as per [this project](https://github.com/ministryofjustice/hmpps-probation-integration-services/blob/main/.github/workflows/security.yml) 
-
+- Optionally create a Github issue (and notify) when a code scan identifies a vulnerability - as
+  per [this project](https://github.com/ministryofjustice/hmpps-probation-integration-services/blob/main/.github/workflows/security.yml)
 
 ---
 
@@ -243,9 +259,9 @@ within `.circleci/config.yml` of the target project, comment out or remove the f
 Within templates copy `security_npm_outdated.yml` into `.github/workflows` of the target project.
 
 Furthermore, to translate the npm audit report into SARIF format, a python script needs to be copied:
+
 - from `scripts/outdated_to_slack.py`
 - to `.github/scripts` on the target project.
-
 
 #### Outputs
 
@@ -253,6 +269,7 @@ If the workflow runs successfully, and the scan identifies issues:
 
 - A text file is uploaded which gets uploaded to Github as an Action artifact
 
-- It will also send a Slack message to notify that the workflow has identified issues, along with a table of the outdated components.
+- It will also send a Slack message to notify that the workflow has identified issues, along with a table of the
+  outdated components.
 
 If the workfow fails, Github sends a slack message and an email to notify users.
