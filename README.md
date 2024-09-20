@@ -22,7 +22,7 @@ This contains a library of Github actions for use by other projects. These inclu
 
 #### Migrating from CircleCI
 
-Documentation for migrating security scans from CircleCI to Github Actions can be found in [this document](docs/security.md)
+Documentation for migrating security scans from CircleCI to Github Actions can be found in [this document](docs/security-migration.md)
 
 
 ### Slack actions
