@@ -226,7 +226,11 @@ Alternatively for kotlin projects you can run:
 ```bash
 ../hmpps-github-actions/migrate-kotlin-security-jobs.bash
 ```
-from the github directory - see the script for more information.
+from the github repository.  For typescript projects there is also:
+```bash
+../hmpps-github-actions/migrate-typescript-security-jobs.bash
+```
+see the scripts for more information.
 
 ### TODO:
 
