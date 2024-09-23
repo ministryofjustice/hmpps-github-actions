@@ -91,7 +91,7 @@ jobs:
           -appname ${{ github.event.repository.name }} \
           -createprofile true \
           -deleteincompletescan 2 \
-          -version "${{ github.ref}}" \
+          -version "GITHUB-${{ github.run_id}}" \
           -filepath source.zip \
           2>&1 | tee output.txt 
 #      continue-on-error: true
