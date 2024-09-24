@@ -7,6 +7,11 @@ on:
         required: false
         default: 'NO_SLACK'
         type: string
+      subproject:
+        description: 'For gradle multi module projects, leave blank for single module projects'
+        required: false
+        default: ''
+        type: string
     secrets:
       HMPPS_SRE_SLACK_BOT_TOKEN:
         description: Slack bot token
@@ -21,15 +26,13 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       security-events: write
-    env:
-      parent_directory: ${{ github.event.repository.name == '' && '.' || github.event.repository.name }}
     steps:
     - uses: actions/checkout@v4
     - name: Trivy Image Vulnerability Scanner
       id: trivy
       uses: aquasecurity/trivy-action@b5f4977b78f81fa3d48865ff0efcc6e279210235 # v0.50.2
       with:
-        image-ref: 'quay.io/hmpps/${{ github.event.repository.name }}:latest'
+        image-ref: "quay.io/hmpps/${{ inputs.subproject == '' && github.event.repository.name || inputs.subproject}}:latest"
         severity: 'HIGH,CRITICAL'
         ignore-unfixed: true
         skip-files: /app/agent.jar
@@ -38,11 +41,12 @@ jobs:
         # exit-code: 1
         limit-severities-for-sarif: true
       continue-on-error: true
-    - uses: ministryofjustice/hmpps-github-actions/.github/actions/security_trivy_reports@v0.4 # WORKFLOW_VERSION
+    - uses: ministryofjustice/hmpps-github-actions/.github/actions/security_trivy_reports@pgp-SDIT-2050-allow-subprojects-2 # WORKFLOW_VERSION
       if: steps.trivy.outcome == 'failure'
       with:
         channel_id: ${{ inputs.channel_id}}
         SLACK_BOT_TOKEN: ${{ secrets.HMPPS_SRE_SLACK_BOT_TOKEN }}
+        subproject: ${{ inputs.subproject }}
     - name: Slack failure notification
       uses: slackapi/slack-github-action@70cd7be8e40a46e8b0eced40b0de447bdb42f68e # v1.26.0
       if: steps.trivy.conclusion == 'failure' && inputs.channel_id != 'NO_SLACK'
@@ -75,7 +79,7 @@ jobs:
                   },
                   {
                     "type": "mrkdwn",
-                    "text": "*Project:*\n${{ github.event.repository.name }}"
+                    "text": "*Project:*\n${{ inputs.subproject == '' && github.event.repository.name || inputs.subproject }}"
                   }
                 ]
               }
