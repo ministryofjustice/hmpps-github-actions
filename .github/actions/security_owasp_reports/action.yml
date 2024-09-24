@@ -8,18 +8,26 @@ inputs:
   SLACK_BOT_TOKEN:
     description: 'Slack bot token'
     required: false
+  subproject:
+    description: 'For gradle multi module projects, leave blank for single module projects'
+    required: false
+    default: ''
 runs:
   using: "composite"
   steps:
   - uses: github/codeql-action/upload-sarif@v3
     with:
-      sarif_file: build/reports/dependency-check-report.sarif
+      sarif_file: ${{ env.PARENT_DIRECTORY }}/build/reports/dependency-check-report.sarif
       category: gradle-owasp-dependency-check
+    env:
+      PARENT_DIRECTORY: ${{ inputs.subproject == '' && '.' || inputs.subproject }}
   - uses: actions/upload-artifact@v3
     with:
-      name: gradle-owasp-dependency-check-${{ github.event.repository.name }}
-      path: build/reports/dependency-check-report.html
-  - uses: ministryofjustice/hmpps-github-actions/.github/actions/slack_codescan_notification@0.2 # WORKFLOW_VERSION
+      name: gradle-owasp-dependency-check-${{ inputs.subproject == '' && github.event.repository.name || inputs.subproject }}
+      path: ${{ env.PARENT_DIRECTORY }}/build/reports/dependency-check-report.html
+    env:
+      PARENT_DIRECTORY: ${{ inputs.subproject == '' && '.' || inputs.subproject }}
+  - uses: .github/actions/slack_codescan_notification
     if: inputs.channel_id != 'NO_SLACK'
     with:
       channel_id: ${{ inputs.channel_id}}
