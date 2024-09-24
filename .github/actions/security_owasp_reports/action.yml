@@ -27,7 +27,7 @@ runs:
       path: ${{ env.PARENT_DIRECTORY }}/build/reports/dependency-check-report.html
     env:
       PARENT_DIRECTORY: ${{ inputs.subproject == '' && '.' || inputs.subproject }}
-  - uses: ministryofjustice/hmpps-github-actions/.github/actions/slack_codescan_notification@v0.3 # WORKFLOW_VERSION
+  - uses: ministryofjustice/hmpps-github-actions/.github/actions/slack_codescan_notification@pgp-SDIT-2050-allow-subprojects # WORKFLOW_VERSION
     if: inputs.channel_id != 'NO_SLACK'
     with:
       channel_id: ${{ inputs.channel_id}}

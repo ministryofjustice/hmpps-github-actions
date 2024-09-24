@@ -15,7 +15,7 @@ on:
         type: string
     secrets:
       HMPPS_SRE_SLACK_BOT_TOKEN:
-        description: Slack bot token
+        description: 'Slack bot token'
         required: false
 
 permissions:
@@ -39,7 +39,7 @@ jobs:
       run: ./gradlew ${{ inputs.subproject }}:dependencyCheckAnalyze --info
       continue-on-error: true
 
-    - uses: ministryofjustice/hmpps-github-actions/.github/actions/security_owasp_reports@v0.3 # WORKFLOW_VERSION
+    - uses: ministryofjustice/hmpps-github-actions/.github/actions/security_owasp_reports@pgp-SDIT-2050-allow-subprojects # WORKFLOW_VERSION
       if: steps.owasp-analyse.outcome == 'failure'
       with:
         channel_id: ${{ inputs.channel_id }}
