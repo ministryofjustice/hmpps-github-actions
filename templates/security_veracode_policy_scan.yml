@@ -1,4 +1,4 @@
-name: Security veracode policy check
+name: Security veracode policy scan
 
 on:
   workflow_dispatch:
