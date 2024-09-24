@@ -4,8 +4,14 @@ on:
   workflow_call:
     inputs:
       channel_id:
+        description: 'The slack channel ID to send a message on failure. If this is not provided then no message is sent.'
         required: false
         default: 'NO_SLACK'
+        type: string
+      subproject:
+        description: 'For gradle multi module projects, leave blank for single module projects'
+        required: false
+        default: ''
         type: string
     secrets:
       HMPPS_SRE_SLACK_BOT_TOKEN:
@@ -21,9 +27,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       security-events: write
-    env:
-      # parent_directory: ${{ github.event.repository.name == '' && '.' || github.event.repository.name}}
-      serif_directory:  "${{ github.event.repository.name == '' && '.' || github.event.repository.name}}"
     steps:
     - uses: actions/checkout@v4
     - name: Set up JDK 21
@@ -31,12 +34,9 @@ jobs:
       with:
         java-version: '21'
         distribution: 'temurin'
-    # - name: Run gradle OWASP Dependency Check Update
-    #   id: owasp-update
-    #   run: ./gradlew dependencyCheckUpdate --info
     - name: Run gradle OWASP Dependency Check Analyse
       id: owasp-analyse
-      run: ./gradlew dependencyCheckAnalyze --info
+      run: ./gradlew ${{ inputs.subproject }}:dependencyCheckAnalyze --info
       continue-on-error: true
 
     - uses: ministryofjustice/hmpps-github-actions/.github/actions/security_owasp_reports@v0.3 # WORKFLOW_VERSION
@@ -44,13 +44,13 @@ jobs:
       with:
         channel_id: ${{ inputs.channel_id }}
         SLACK_BOT_TOKEN: ${{ secrets.HMPPS_SRE_SLACK_BOT_TOKEN }}
-
+        subproject: ${{ inputs.subproject }}
     - uses: slackapi/slack-github-action@e28cf165c92ffef168d23c5c9000cffc8a25e117 # v1.24.0
       if: steps.owasp-analyse.conclusion == 'failure' && inputs.channel_id != 'NO_SLACK'
       with:
         channel-id: ${{ inputs.channel_id}}
         payload: |
-          { "text": "Owasp check failed",
+          { "text": "OWASP check failed",
             "blocks": [
               {
                 "type": "section",
@@ -76,7 +76,7 @@ jobs:
                   },
                   {
                     "type": "mrkdwn",
-                    "text": "*Project:*\n${{ github.event.repository.name }}"
+                    "text": "*Project:*\n${{ inputs.subproject == '' && github.event.repository.name || inputs.subproject }}"
                   }
                 ]
               }
