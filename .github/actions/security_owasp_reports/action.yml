@@ -33,3 +33,4 @@ runs:
       channel_id: ${{ inputs.channel_id}}
       title: "OWASP issues"
       SLACK_BOT_TOKEN: ${{ inputs.SLACK_BOT_TOKEN }}
+      subproject: ${{ inputs.subproject }}
