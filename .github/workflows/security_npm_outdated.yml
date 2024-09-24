@@ -46,13 +46,13 @@ jobs:
       name: Show node version
       run: 'node -v'
     - id: npm-ci
-      name: run npm ci 
+      name: run npm ci
       run: 'npm ci --no-audit'
     - name: Audit for vulnerabilities
       id: npm
       run: npm outdated ${{ inputs.dependencies_to_check }} > npm-outdated-reports.txt
       continue-on-error: true
-    - uses: ministryofjustice/hmpps-github-actions/.github/actions/security_npm_outdated@v0.3 # WORKFLOW_VERSION 
+    - uses: ministryofjustice/hmpps-github-actions/.github/actions/security_npm_outdated@v0.4 # WORKFLOW_VERSION
       if: steps.npm.outcome == 'failure'
       with:
         channel_id: ${{ inputs.channel_id }}

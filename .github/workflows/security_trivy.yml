@@ -38,7 +38,7 @@ jobs:
         # exit-code: 1
         limit-severities-for-sarif: true
       continue-on-error: true
-    - uses: ministryofjustice/hmpps-github-actions/.github/actions/security_trivy_reports@v0.3 # WORKFLOW_VERSION
+    - uses: ministryofjustice/hmpps-github-actions/.github/actions/security_trivy_reports@v0.4 # WORKFLOW_VERSION
       if: steps.trivy.outcome == 'failure'
       with:
         channel_id: ${{ inputs.channel_id}}

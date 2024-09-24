@@ -39,7 +39,7 @@ jobs:
       run: ./gradlew ${{ inputs.subproject }}:dependencyCheckAnalyze --info
       continue-on-error: true
 
-    - uses: ministryofjustice/hmpps-github-actions/.github/actions/security_owasp_reports@pgp-SDIT-2050-allow-subprojects # WORKFLOW_VERSION
+    - uses: ministryofjustice/hmpps-github-actions/.github/actions/security_owasp_reports@v0.4 # WORKFLOW_VERSION
       if: steps.owasp-analyse.outcome == 'failure'
       with:
         channel_id: ${{ inputs.channel_id }}
