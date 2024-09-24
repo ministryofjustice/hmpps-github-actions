@@ -65,7 +65,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Set up JDK 21
-      uses: actions/setup-java@v3
+      uses: actions/setup-java@v4
       with:
         java-version: '21'
         distribution: 'temurin'
@@ -106,7 +106,7 @@ jobs:
         VERACODE_API_KEY_2: ${{ secrets.VERACODE_API_KEY_2 }}
         VERACODE_API_KEY_3: ${{ secrets.VERACODE_API_KEY_3 }}
         VERACODE_API_KEY_4: ${{ secrets.VERACODE_API_KEY_4 }}
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
       if: success() 
       with:
         name: veracode-policy-check-${{ github.event.repository.name }}

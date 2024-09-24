@@ -49,7 +49,7 @@ within `.circleci/config.yml` of the target project, comment out or remove the f
 
 From this repo, copy:
 
-- from `/templates/security_trivy.yml`
+- from `templates/workflows/security_trivy.yml`
 - to `.github/workflows/security_trivy.yml` of the target project.
 
 #### Outputs
@@ -83,7 +83,7 @@ within `.circleci/config.yml` of the target project, comment out or remove the f
 
 From this repo, copy:
 
-- from `/templates/security_owasp.yml`
+- from `templates/workflows/security_owasp.yml`
 - to`.github/workflows/security_owasp.yml` of the target project.
 
 #### Outputs
@@ -114,12 +114,15 @@ within `.circleci/config.yml` of the target project, comment out or remove the f
 
 #### What to add
 
-Within templates copy `security_npm_dependency.yml` into `.github/workflows` of the target project.
+From this repo, copy:
+
+- from `templates/workflows/security_npm_dependency.yml`
+- to `.github/workflows/security_npm_dependency.yml` of the target project.
 
 Furthermore, to translate the npm audit report into SARIF format, a python script needs to be copied:
 
 - from `scripts/auditjson_to_sarif.py`
-- to a new directory: `.github/scripts` on the target project.
+- to a new directory: `.github/scripts/auditjson_to_sarif.py` on the target project.
 
 #### Outputs
 
@@ -150,7 +153,10 @@ within `.circleci/config.yml` of the target project, comment out or remove the f
 
 #### What to add
 
-Within templates copy `security_veracode_pipeline_scan.yml` into `.github/workflows` of the target project.
+From this repo, copy:
+
+- from `templates/workflows/security_veracode_pipeline_scan.yml`
+- to `.github/workflows/security_veracode_pipeline_scan.yml` of the target project.
 
 To ensure all the scans don't run at the same time, please change the time of this scan.
 
@@ -187,7 +193,10 @@ security-weekly:
 
 #### What to add
 
-Within templates copy `security_veracode_policy_scan.yml` into `.github/workflows` of the target project.
+From this repo, copy:
+
+- from `templates/workflows/security_veracode_policy_scan.yml`
+- to `.github/workflows/security_veracode_policy_scan.yml` of the target project.
 
 To ensure all the scans don't run at the same time, please change the time of this scan.
 
@@ -260,12 +269,15 @@ within `.circleci/config.yml` of the target project, comment out or remove the f
 
 #### What to add
 
-Within templates copy `security_npm_outdated.yml` into `.github/workflows` of the target project.
+From this repo, copy:
+
+- from `templates/workflows/security_npm_outdated.yml`
+- to `.github/workflows/security_npm_outdated.yml` of the target project.
 
 Furthermore, to translate the npm audit report into SARIF format, a python script needs to be copied:
 
 - from `scripts/outdated_to_slack.py`
-- to `.github/scripts` on the target project.
+- to `.github/scripts/outdated_to_slack.py` on the target project.
 
 #### Outputs
 
