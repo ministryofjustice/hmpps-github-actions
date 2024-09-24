@@ -39,7 +39,7 @@ jobs:
       run: ./gradlew dependencyCheckAnalyze --info
       continue-on-error: true
 
-    - uses: ministryofjustice/hmpps-github-actions/.github/actions/security_owasp_reports@0.3 # WORKFLOW_VERSION
+    - uses: ministryofjustice/hmpps-github-actions/.github/actions/security_owasp_reports@v0.3 # WORKFLOW_VERSION
       if: steps.owasp-analyse.outcome == 'failure'
       with:
         channel_id: ${{ inputs.channel_id }}

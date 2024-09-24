@@ -15,7 +15,7 @@ runs:
     with:
       sarif_file: 'trivy-results.sarif'
       category: trivy-dependency-check
-  - uses: ministryofjustice/hmpps-github-actions/.github/actions/slack_codescan_notification@0.3 # WORKFLOW_VERSION
+  - uses: ministryofjustice/hmpps-github-actions/.github/actions/slack_codescan_notification@v0.3 # WORKFLOW_VERSION
     if: inputs.channel_id != 'NO_SLACK'
     with:
       channel_id: ${{ inputs.channel_id}}

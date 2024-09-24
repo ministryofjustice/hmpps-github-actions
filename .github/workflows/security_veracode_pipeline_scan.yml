@@ -26,7 +26,7 @@ on:
       HMPPS_VERACODE_API_ID_4:
         description: Veracode app secret
         required: true
-      HMPPS_ERACODE_API_KEY_0:
+      HMPPS_VERACODE_API_KEY_0:
         description: Veracode app secret
         required: true
       HMPPS_VERACODE_API_KEY_1:
@@ -65,7 +65,7 @@ jobs:
         java-version: '21'
         distribution: 'temurin'
     - name: prepare assets
-      uses: ministryofjustice/hmpps-github-actions/.github/actions/security_veracode_prepare_artifacts@0.3 # WORKFLOW_VERSION
+      uses: ministryofjustice/hmpps-github-actions/.github/actions/security_veracode_prepare_artifacts@v0.3 # WORKFLOW_VERSION
     - name: "Download/Extract pipeline scanner"
       shell: bash
       run: |
@@ -138,7 +138,7 @@ jobs:
         path: results.txt
     - name: send a failure slack message
       if: steps.veracode-pipeline-scan.outcome == 'failure' && inputs.channel_id != 'NO_SLACK'
-      uses: ministryofjustice/hmpps-github-actions/.github/actions/slack_failure_results@0.3 # WORKFLOW_VERSION
+      uses: ministryofjustice/hmpps-github-actions/.github/actions/slack_failure_results@v0.3 # WORKFLOW_VERSION
       with:
         SLACK_BOT_TOKEN: ${{ secrets.HMPPS_SRE_SLACK_BOT_TOKEN }}
         channel_id: ${{ inputs.channel_id }}
