@@ -8,6 +8,10 @@ inputs:
   SLACK_BOT_TOKEN:
     description: 'Slack bot token'
     required: false
+  subproject:
+    description: 'For gradle multi module projects, leave blank for single module projects'
+    required: false
+    default: ''
 runs:
   using: "composite"
   steps:
@@ -21,3 +25,4 @@ runs:
       channel_id: ${{ inputs.channel_id}}
       title: "Trivy issues identified"
       SLACK_BOT_TOKEN: ${{ inputs.SLACK_BOT_TOKEN }}
+      subproject: ${{ inputs.subproject }}
