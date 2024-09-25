@@ -38,7 +38,7 @@ jobs:
         skip-files: /app/agent.jar
         format: 'sarif'
         output: 'trivy-results.sarif'
-        # exit-code: 1
+        exit-code: 1
         limit-severities-for-sarif: true
       continue-on-error: true
     - uses: ministryofjustice/hmpps-github-actions/.github/actions/security_trivy_reports@pgp-SDIT-2050-allow-subprojects-2 # WORKFLOW_VERSION
