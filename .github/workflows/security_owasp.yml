@@ -38,49 +38,22 @@ jobs:
       id: owasp-analyse
       run: ./gradlew ${{ inputs.subproject }}:dependencyCheckAnalyze --info
       continue-on-error: true
-
-    - uses: ministryofjustice/hmpps-github-actions/.github/actions/security_owasp_reports@v0.4 # WORKFLOW_VERSION
-      if: steps.owasp-analyse.outcome == 'failure'
+    - uses: github/codeql-action/upload-sarif@v3
+      id: owasp-upload-sarif
       with:
-        channel_id: ${{ inputs.channel_id }}
+        sarif_file: ${{ inputs.subproject == '' && '.' || inputs.subproject }}/build/reports/dependency-check-report.sarif
+        category: gradle-owasp-dependency-check
+    - uses: actions/upload-artifact@v4
+      id: owasp-upload-artifact
+      with:
+        name: gradle-owasp-dependency-check-${{ inputs.subproject == '' && github.event.repository.name || inputs.subproject }}
+        path: ${{ inputs.subproject == '' && '.' || inputs.subproject }}/build/reports/dependency-check-report.html
+    - name: Gradle OWASP slack notification
+      uses: ministryofjustice/hmpps-github-actions/.github/actions/slack_codescan_notification@pgp-SDIT-2050-improve-slack-messages # WORKFLOW_VERSION
+      if: (failure() || steps.owasp-analyse.outcome == 'failure') && inputs.channel_id != 'NO_SLACK'
+      with:
+        title: "Gradle OWASP"
+        warningOnly: ${{ steps.owasp-upload-sarif.outcome == 'success' && steps.owasp-upload-artifact.outcome == 'success' }}
+        channel_id: ${{ inputs.channel_id}}
         SLACK_BOT_TOKEN: ${{ secrets.HMPPS_SRE_SLACK_BOT_TOKEN }}
         subproject: ${{ inputs.subproject }}
-    - uses: slackapi/slack-github-action@e28cf165c92ffef168d23c5c9000cffc8a25e117 # v1.24.0
-      if: steps.owasp-analyse.conclusion == 'failure' && inputs.channel_id != 'NO_SLACK'
-      with:
-        channel-id: ${{ inputs.channel_id}}
-        payload: |
-          { "text": "OWASP check failed",
-            "blocks": [
-              {
-                "type": "section",
-                "text": {
-                  "type": "mrkdwn",
-                  "text": ":no_entry: Failed GitHub Action:"
-                }
-              },
-              {
-                "type": "section",
-                "fields": [
-                  {
-                    "type": "mrkdwn",
-                    "text": "*Workflow:*\n<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|${{ github.workflow }}>"
-                  },
-                  {
-                    "type": "mrkdwn",
-                    "text": "*Job:*\n${{ github.job }}"
-                  },
-                  {
-                    "type": "mrkdwn",
-                    "text": "*Repo:*\n${{ github.repository }}"
-                  },
-                  {
-                    "type": "mrkdwn",
-                    "text": "*Project:*\n${{ inputs.subproject == '' && github.event.repository.name || inputs.subproject }}"
-                  }
-                ]
-              }
-            ]
-          }
-      env:
-        SLACK_BOT_TOKEN: ${{ secrets.HMPPS_SRE_SLACK_BOT_TOKEN }}
