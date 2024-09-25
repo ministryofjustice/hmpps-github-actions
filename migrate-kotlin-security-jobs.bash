@@ -18,9 +18,9 @@
 yq -i 'del(.workflows.security) | del(.workflows.security-weekly)' .circleci/config.yml
 mkdir -p .github/workflows
 
-cp -a ../hmpps-github-actions/templates/security_owasp.yml .github/workflows
-cp -a ../hmpps-github-actions/templates/security_trivy.yml .github/workflows
-cp -a ../hmpps-github-actions/templates/security_vera*.yml .github/workflows
+cp -a ../hmpps-github-actions/templates/workflows/security_owasp.yml .github/workflows
+cp -a ../hmpps-github-actions/templates/workflows/security_trivy.yml .github/workflows
+cp -a ../hmpps-github-actions/templates/workflows/security_vera*.yml .github/workflows
 
 RANDOM_HOUR=$((RANDOM % (9 - 3 + 1) + 3))
 RANDOM_MINUTE=$((RANDOM%60))
