@@ -23,7 +23,7 @@ runs:
       sarif_file: 'npm-security-check-reports.sarif'
       category: npm-dependency-check
   - name: process slack message results # returns SLACK_TXT
-    uses: ministryofjustice/hmpps-github-actions/.github/actions/slack_prepare_results@v0.4 # WORKFLOW_VERSION
+    uses: ministryofjustice/hmpps-github-actions/.github/actions/slack_prepare_results@v0.5 # WORKFLOW_VERSION
     id: slack_message_result 
     with:
       input_file: npm-security-check-reports.txt
