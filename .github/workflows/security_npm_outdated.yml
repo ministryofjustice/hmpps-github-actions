@@ -25,7 +25,8 @@ on:
 
 permissions:
   contents: read
-
+  actions: read
+  
 jobs:
   security-npm-check:
     name: Security npm outdated check

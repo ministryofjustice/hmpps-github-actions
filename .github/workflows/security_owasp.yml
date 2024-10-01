@@ -20,7 +20,8 @@ on:
 
 permissions:
   contents: read
-
+  actions: read
+  
 jobs:
   security-owasp-check:
     name: Security OWASP dependency check

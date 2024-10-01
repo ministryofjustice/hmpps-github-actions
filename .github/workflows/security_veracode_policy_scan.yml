@@ -49,6 +49,7 @@ on:
 
 permissions:
   contents: read
+  actions: read
 
 jobs:
   security-veracode-policy-scan:

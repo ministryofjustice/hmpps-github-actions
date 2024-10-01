@@ -20,6 +20,7 @@ on:
 
 permissions:
   contents: read
+  actions: read
 
 jobs:
   security-trivy-check:

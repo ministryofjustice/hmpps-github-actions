@@ -44,7 +44,8 @@ on:
 
 permissions:
   contents: read
-
+  actions: read
+  
 jobs:
   security-veracode-pipeline-scan:
     name: Security veracode pipeline scan
