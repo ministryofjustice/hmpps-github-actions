@@ -4,6 +4,7 @@ on:
   workflow_call:
     inputs:
       channel_id:
+        description: 'The slack channel ID to send a message on failure. If this is not provided then no message is sent.'
         required: false
         default: 'NO_SLACK'
         type: string
@@ -14,7 +15,7 @@ on:
         type: string
     secrets:
       HMPPS_SRE_SLACK_BOT_TOKEN:
-        description: Slack bot token
+        description: 'Slack bot token'
         required: false
 
 permissions:
@@ -29,7 +30,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Trivy Image Vulnerability Scanner
-      id: trivy
+      id: trivy-analyse
       uses: aquasecurity/trivy-action@b5f4977b78f81fa3d48865ff0efcc6e279210235 # v0.50.2
       with:
         image-ref: "quay.io/hmpps/${{ inputs.subproject == '' && github.event.repository.name || inputs.subproject}}:latest"
@@ -41,49 +42,18 @@ jobs:
         exit-code: 1
         limit-severities-for-sarif: true
       continue-on-error: true
-    - uses: ministryofjustice/hmpps-github-actions/.github/actions/security_trivy_reports@pgp-SDIT-2050-allow-subprojects-2 # WORKFLOW_VERSION
-      if: steps.trivy.outcome == 'failure'
+    - name: Trivy upload sarif
+      id: trivy-upload
+      uses: github/codeql-action/upload-sarif@v3
       with:
+        sarif_file: 'trivy-results.sarif'
+        category: trivy-dependency-check
+    - name: Trivy slack notification
+      uses: ministryofjustice/hmpps-github-actions/.github/actions/slack_codescan_notification@v0.5 # WORKFLOW_VERSION
+      if: (failure() || steps.trivy-analyse.outcome == 'failure') && inputs.channel_id != 'NO_SLACK'
+      with:
+        title: "Trivy"
+        warningOnly: ${{ steps.trivy-upload.outcome == 'success' }}
         channel_id: ${{ inputs.channel_id}}
         SLACK_BOT_TOKEN: ${{ secrets.HMPPS_SRE_SLACK_BOT_TOKEN }}
         subproject: ${{ inputs.subproject }}
-    - name: Slack failure notification
-      uses: slackapi/slack-github-action@70cd7be8e40a46e8b0eced40b0de447bdb42f68e # v1.26.0
-      if: steps.trivy.conclusion == 'failure' && inputs.channel_id != 'NO_SLACK'
-      with:
-        channel-id: ${{ inputs.channel_id}}
-        payload: |
-          { "text": "Trivy scan failed",
-            "blocks": [
-              {
-                "type": "section",
-                "text": {
-                  "type": "mrkdwn",
-                  "text": ":no_entry: Failed GitHub Action:"
-                }
-              },
-              {
-                "type": "section",
-                "fields": [
-                  {
-                    "type": "mrkdwn",
-                    "text": "*Workflow:*\n<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|${{ github.workflow }}>"
-                  },
-                  {
-                    "type": "mrkdwn",
-                    "text": "*Job:*\n${{ github.job }}"
-                  },
-                  {
-                    "type": "mrkdwn",
-                    "text": "*Repo:*\n${{ github.repository }}"
-                  },
-                  {
-                    "type": "mrkdwn",
-                    "text": "*Project:*\n${{ inputs.subproject == '' && github.event.repository.name || inputs.subproject }}"
-                  }
-                ]
-              }
-            ]
-          }
-      env:
-        SLACK_BOT_TOKEN: ${{ secrets.HMPPS_SRE_SLACK_BOT_TOKEN }}

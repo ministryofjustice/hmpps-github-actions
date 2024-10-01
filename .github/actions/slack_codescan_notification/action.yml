@@ -4,6 +4,9 @@ inputs:
   title:
     description: "Title of the failed workflow"
     required: true
+  warningOnly:
+    description: "If true then emit a warning, else emit a failure"
+    required: true
   channel_id:
     description: "Slack channel to send to"
     required: true
@@ -21,13 +24,13 @@ runs:
       with:
         channel-id: ${{ inputs.channel_id}}
         payload: |
-          { "text": "*${{ inputs.title }}* - issues identified",
+          { "text": "*${{ inputs.title }}* ${{ inputs.warningOnly == 'true' && 'issues identified' || 'failed' }}",
             "blocks": [
               {
                 "type": "section",
                 "text": {
                   "type": "mrkdwn",
-                  "text": ":warning: Github Workflow ${{ github.workflow }} ran and identified issues"
+                  "text": "${{ inputs.warningOnly == 'true' && ':warning:' || ':no_entry:' }} Github Workflow ${{ github.workflow }} ${{ inputs.warningOnly == 'true' && 'ran and identified issues' || 'failed' }}"
                 }
               },
               {
