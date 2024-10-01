@@ -15,3 +15,5 @@ jobs:
     permissions:
       contents: read
       actions: read
+      security-events: write
+      id-token: write
