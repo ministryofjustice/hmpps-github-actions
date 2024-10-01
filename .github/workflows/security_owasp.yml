@@ -21,7 +21,9 @@ on:
 permissions:
   contents: read
   actions: read
-  
+  security-events: write
+  id-token: write
+
 jobs:
   security-owasp-check:
     name: Security OWASP dependency check
