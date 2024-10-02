@@ -47,6 +47,6 @@ jobs:
     - name: 'Run helm lint commands'
       shell: bash
       run: | 
-          cd ${{ inputs.helm_dir}}
+          cd ${{ inputs.helm_dir }}
           helm dependency update "${{ inputs.chart_name }}"
           helm lint "${{ inputs.chart_name }}" --values=values-"${{ inputs.env }}".yaml ${{ inputs.helm_additional_args }}
