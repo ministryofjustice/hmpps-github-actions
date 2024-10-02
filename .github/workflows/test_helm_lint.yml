@@ -3,7 +3,7 @@ name: Test - helm lint
 on:
   workflow_call:
     inputs:
-      env:
+      environment:
         description: environment for deployment
         required: false
         default: 'dev'
@@ -49,4 +49,4 @@ jobs:
       run: | 
           cd ${{ inputs.helm_dir }}
           helm dependency update "${{ inputs.chart_name }}"
-          helm lint "${{ inputs.chart_name }}" --values=values-"${{ inputs.env }}".yaml ${{ inputs.helm_additional_args }}
+          helm lint "${{ inputs.chart_name }}" --values=values-"${{ inputs.environment }}".yaml ${{ inputs.helm_additional_args }}
