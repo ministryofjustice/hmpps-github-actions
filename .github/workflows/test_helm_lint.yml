@@ -11,7 +11,7 @@ on:
       chart_name:
         description: name of the helm chart - defaults to the repo name
         required: false
-        default: ${{ github.repository }}
+        default: ${{ github.event.repository.name  }}
         type: string
       helm_dir:
         description: directory of the helm charts
