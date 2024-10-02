@@ -6,7 +6,7 @@ on:
       env:
         description: environment for deployment
         required: false
-        default: env
+        default: 'dev'
         type: string
       chart_name:
         description: name of the helm chart - defaults to the repo name
@@ -20,7 +20,7 @@ on:
         type: string
       helm_additional_args:
         required: false
-        default: ""
+        default: ''
         type: string
       helm_version:
         required: false
