@@ -35,7 +35,6 @@ jobs:
         path: ~/.npm
         key: dependency-cache-${{ hashFiles('**/package-lock.json') }}
         restore-keys: | 
-          dependency-cache-${{ hashFiles('**/package-lock.json') }}
           dependency-cache-
     - name: install dependencies
       shell: bash
@@ -81,10 +80,11 @@ jobs:
       env:
         cache-name: 'npm'
       with:
-        path: ~/.npm
+        path: |
+          node_modules
+          ~/.cache
         key: dependency-cache-${{ hashFiles('**/package-lock.json') }}
         restore-keys: |
-          dependency-cache-${{ hashFiles('**/package-lock.json') }}
           dependency-cache-
     - name: unit tests
       shell: bash
@@ -117,10 +117,11 @@ jobs:
       env:
         cache-name: 'npm'
       with:
-        path: ~/.npm
+        path: |
+          node_modules
+          ~/.cache
         key: dependency-cache-${{ hashFiles('**/package-lock.json') }}
         restore-keys: |
-          dependency-cache-${{ hashFiles('**/package-lock.json') }}
           dependency-cache-
     - name: Get wiremock
       shell: bash
