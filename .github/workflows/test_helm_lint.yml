@@ -1,0 +1,52 @@
+name: Test - helm lint
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        description: environment for deployment
+        required: false
+        default: 'dev'
+        type: string
+      chart_name:
+        description: name of the helm chart - defaults to the repo name
+        required: false
+        default: ${{ github.event.repository.name  }}
+        type: string
+      helm_dir:
+        description: directory of the helm charts
+        required: false
+        default: 'helm_deploy'
+        type: string
+      helm_additional_args:
+        required: false
+        default: ''
+        type: string
+      helm_version:
+        required: false
+        default: 'v3.4.2'
+        type: string
+    secrets:
+      HMPPS_SRE_SLACK_BOT_TOKEN:
+        description: 'Slack bot token'
+        required: false
+
+permissions:
+  contents: read
+
+jobs:
+  helm_lint:
+    name: Helm lint
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: azure/setup-helm@v4.2.0
+      with:
+        version: ${{ inputs.helm_version }} 
+      id: install_helm
+    - name: 'Run helm lint commands'
+      shell: bash
+      run: | 
+          cd ${{ inputs.helm_dir }}
+          helm dependency update "${{ inputs.chart_name }}"
+          helm lint "${{ inputs.chart_name }}" --values=values-"${{ inputs.environment }}".yaml ${{ inputs.helm_additional_args }}
