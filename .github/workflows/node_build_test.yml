@@ -28,7 +28,7 @@ jobs:
       run: |
         sudo npm install -g npm@latest
     - name: restore cache
-      uses: actions/cache/restore@v4
+      uses: actions/cache/restore@v3s
       env:
         cache-name: 'npm'
       with:
@@ -42,7 +42,9 @@ jobs:
         npm ci --no-audit
     - name: Save cache
       id: cache-dependencies
-      uses: actions/cache/save@v4
+      uses: actions/cache/save@v3
+      env:
+        cache-name: 'npm'
       with:
           path: |
             node_modules/
@@ -76,7 +78,7 @@ jobs:
       with:
         node-version: ${{ inputs.node_version }}
     - name: restore cache
-      uses: actions/cache/restore@v4
+      uses: actions/cache/restore@v3s
       env:
         cache-name: 'npm'
       with:
@@ -113,7 +115,7 @@ jobs:
     #       name: Install missing OS dependency
     #       command: sudo apt-get install libxss1
     - name: restore cache
-      uses: actions/cache/restore@v4
+      uses: actions/cache/restore@v3
       env:
         cache-name: 'npm'
       with:
