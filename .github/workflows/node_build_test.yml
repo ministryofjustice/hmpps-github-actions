@@ -27,12 +27,16 @@ jobs:
       shell: bash
       run: |
         sudo npm install -g npm@latest
-    - name: restore cache
-      uses: actions/cache/restore@v3
-      env:
-        cache-name: 'npm'
+    - name: Get npm cache directory
+      id: npm-cache-dir
+      shell: bash
+      run: echo "dir=$(npm config get cache)" >> ${GITHUB_OUTPUT}
+    - name: refresh cache
+      uses: actions/cache@v4
       with:
-        path: ~/.npm
+        path: | 
+          ${{ steps.npm-cache-dir.outputs.dir }}
+          node_modules/
         key: dependency-cache-${{ hashFiles('**/package-lock.json') }}
         restore-keys: | 
           dependency-cache-
@@ -40,16 +44,15 @@ jobs:
       shell: bash
       run: |
         npm ci --no-audit
-    - name: Save cache
-      id: cache-dependencies
-      uses: actions/cache/save@v3
-      env:
-        cache-name: 'npm'
+    - name: refresh cache
+      uses: actions/cache@v4
       with:
-          path: |
-            node_modules/
-            ~/.cache
-          key: dependency-cache-${{ hashFiles('**/package-lock.json') }}
+        path: | 
+          ${{ steps.npm-cache-dir.outputs.dir }}
+          node_modules/
+        key: dependency-cache-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: | 
+          dependency-cache-
     - name: build npm
       shell: bash
       run: |
@@ -77,16 +80,18 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: ${{ inputs.node_version }}
-    - name: restore cache
-      uses: actions/cache/restore@v3s
-      env:
-        cache-name: 'npm'
+    - name: Get npm cache directory
+      id: npm-cache-dir
+      shell: bash
+      run: echo "dir=$(npm config get cache)" >> ${GITHUB_OUTPUT}
+    - name: refresh cache
+      uses: actions/cache@v4
       with:
-        path: |
-          node_modules
-          ~/.cache
+        path: | 
+          ${{ steps.npm-cache-dir.outputs.dir }}
+          node_modules/
         key: dependency-cache-${{ hashFiles('**/package-lock.json') }}
-        restore-keys: |
+        restore-keys: | 
           dependency-cache-
     - name: unit tests
       shell: bash
@@ -114,16 +119,18 @@ jobs:
     # - run:
     #       name: Install missing OS dependency
     #       command: sudo apt-get install libxss1
-    - name: restore cache
-      uses: actions/cache/restore@v3
-      env:
-        cache-name: 'npm'
+    - name: Get npm cache directory
+      id: npm-cache-dir
+      shell: bash
+      run: echo "dir=$(npm config get cache)" >> ${GITHUB_OUTPUT}
+    - name: refresh cache
+      uses: actions/cache@v4
       with:
-        path: |
-          node_modules
-          ~/.cache
+        path: | 
+          ${{ steps.npm-cache-dir.outputs.dir }}
+          node_modules/
         key: dependency-cache-${{ hashFiles('**/package-lock.json') }}
-        restore-keys: |
+        restore-keys: | 
           dependency-cache-
     - name: Get wiremock
       shell: bash
