@@ -86,10 +86,6 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: ${{ inputs.node_version }}
-    - name: unit tests
-      shell: bash
-      run: |
-        sudo npm run test:ci
     - name: restore cache
       uses: actions/cache@v3
       env:
@@ -98,6 +94,10 @@ jobs:
         path: ~/.npm
         key: v1-npm-deps-${{ hashFiles('**/package-lock.json') }}
         restore-keys: dependency-cache-{{ checksum "package-lock.json" }}
+    - name: unit tests
+      shell: bash
+      run: |
+        sudo npm run test:ci
     - name: upload the artifacts
       uses: actions/upload-artifact@v4
       with: 
