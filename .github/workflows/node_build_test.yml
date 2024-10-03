@@ -23,25 +23,12 @@ jobs:
         node-version: ${{ inputs.node_version }}
         cache: 'npm'
   # Caching 
-    - name: Cache node modules # from https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/caching-dependencies-to-speed-up-workflows
-      id: cache-npm
-      uses: actions/cache@v3
-      env:
-        cache-name: 'npm'
-      with:
-      # npm cache files are stored in `~/.npm` on Linux/macOS
-        path: ~/.npm
-        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
-        restore-keys: |
-          ${{ runner.os }}-build-${{ env.cache-name }}-
-          ${{ runner.os }}-build-
-          ${{ runner.os }}-
     - name: update npm
       shell: bash
       run: |
         sudo npm install -g npm@latest
     - name: restore cache
-      uses: actions/cache@v3
+      uses: actions/cache/restore@v4
       env:
         cache-name: 'npm'
       with:
@@ -51,8 +38,9 @@ jobs:
       shell: bash
       run: |
         npm ci --no-audit
-    - name: save cache
-      uses: actions/cache@v3
+    - name: Save cache
+      id: cache-dependencies
+      uses: actions/cache/save@v4
       with:
           path: |
             node_modules/
@@ -86,7 +74,7 @@ jobs:
       with:
         node-version: ${{ inputs.node_version }}
     - name: restore cache
-      uses: actions/cache@v3
+      uses: actions/cache/restore@v4
       env:
         cache-name: 'npm'
       with:
@@ -119,7 +107,7 @@ jobs:
     #       name: Install missing OS dependency
     #       command: sudo apt-get install libxss1
     - name: restore cache
-      uses: actions/cache@v3
+      uses: actions/cache/restore@v4
       env:
         cache-name: 'npm'
       with:
