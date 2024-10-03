@@ -1,4 +1,4 @@
-name: Build
+name: Build and test node
 
 on:
   workflow_call:
