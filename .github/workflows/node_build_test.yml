@@ -28,7 +28,7 @@ jobs:
       run: |
         sudo npm install -g npm@latest
     - name: restore cache
-      uses: actions/cache/restore@v3s
+      uses: actions/cache/restore@v3
       env:
         cache-name: 'npm'
       with:
