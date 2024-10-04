@@ -34,7 +34,7 @@ permissions:
   packages: write
 
 jobs:
-  docker_build:
+  multiplatform_docker_build:
     name: Build multiplatform docker image
     runs-on: ubuntu-latest
     steps:
@@ -63,5 +63,5 @@ jobs:
           provenance: false
           tags: |
             ${{ inputs.docker_registry}}/${{ inputs.registry_org }}//${{ github.event.repository.name }}:latest
-            ${{ inputs.docker_registry}}/${{ inputs.registry_org }}/${{ github.event.repository.name }}:${VERSION}
+            ${{ inputs.docker_registry}}/${{ inputs.registry_org }}/${{ github.event.repository.name }}:"${VERSION}"
           
