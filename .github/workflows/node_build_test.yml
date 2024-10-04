@@ -28,7 +28,7 @@ jobs:
         sudo npm install -g npm@latest
     - name: refresh cache
       id: initial-cache
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       env: 
         cache-name: node-modules
       with:
@@ -47,7 +47,7 @@ jobs:
         npm ci --no-audit
     - name: refresh cache
       id: refresh-cache
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       env: 
         cache-name: node-modules
       with:
@@ -88,7 +88,7 @@ jobs:
         node-version: ${{ inputs.node_version }}
     - name: refresh cache
       id: refresh-cache
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       env: 
         cache-name: node-modules
       with:
@@ -122,13 +122,12 @@ jobs:
       uses: actions/download-artifact@v4
       with:
         name: npm_build_artifacts
-        path: ~/work
     # - run:
     #       name: Install missing OS dependency
     #       command: sudo apt-get install libxss1
     - name: refresh cache
       id: refresh-cache
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       env: 
         cache-name: node-modules
       with:
