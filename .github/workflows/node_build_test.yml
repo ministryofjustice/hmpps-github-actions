@@ -133,7 +133,7 @@ jobs:
       uses: actions/download-artifact@v4
       with:
         name: npm_build_artifacts
-        path: ~/app
+        path: ~/work
     # - run:
     #       name: Install missing OS dependency
     #       command: sudo apt-get install libxss1
