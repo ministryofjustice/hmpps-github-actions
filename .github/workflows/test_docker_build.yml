@@ -6,22 +6,22 @@ on:
       docker_registry:
         description: Docker registry
         required: false
-        default: 'ghcr.io'
+        # default: 'ghcr.io'
         type: string
       registry_org:
         description: Docker registry organisation
         required: false
-        default: 'ministryofjustice'
+        # default: 'ministryofjustice'
         type: string
       additional_docker_tag:
         description: Additional docker tag that can be used to specify stable tags
         required: false
-        default: ''
+        # default: ''
         type: string
       push:
         description: Push docker image to registry flag
         required: true
-        default: 'true'
+        # default: ''
         type: boolean
         
     secrets:
@@ -56,10 +56,10 @@ jobs:
         with:
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          context: .
+          # context: .
           push: ${{ inputs.push }}
           provenance: false
           tags: |
-            ${{ inputs.docker_registry}}/${{ inputs.registry_org }}/${{ github.event.repository.name }}:latest
-            ${{ inputs.docker_registry}}/${{ inputs.registry_org }}/${{ github.event.repository.name }}:${{ inputs.version }}
-            # ${{ inputs.docker_registry }}/${{ inputs.registry_org }}/${{ github.event.repository.name }}:${{ inputs.additional_docker_tags }}
+            ghcr.io/ministryofjustice/${{ github.event.repository.name }}:latest
+    # ${{ inputs.docker_registry}}/${{ inputs.registry_org }}/${{ github.event.repository.name }}:${VERSION}
+          
