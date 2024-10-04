@@ -60,6 +60,6 @@ jobs:
           push: ${{ inputs.push }}
           provenance: false
           tags: |
-            ${{ inputs.docker_registry}}/${{ inputs.registry_org }}/${{ inputs.project }}:latest
-            ${{ inputs.docker_registry}}/${{ inputs.registry_org }}/${{ inputs.project }}:${{ inputs.version }}
-            # ${{ inputs.docker_registry }}/${{ inputs.registry_org }}/${{ inputs.project }}:${{ inputs.additional_docker_tags }}
+            ${{ inputs.docker_registry}}/${{ inputs.registry_org }}/${{ github.event.repository.name }}:latest
+            ${{ inputs.docker_registry}}/${{ inputs.registry_org }}/${{ github.event.repository.name }}:${{ inputs.version }}
+            # ${{ inputs.docker_registry }}/${{ inputs.registry_org }}/${{ github.event.repository.name }}:${{ inputs.additional_docker_tags }}
