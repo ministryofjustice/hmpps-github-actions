@@ -23,12 +23,7 @@ on:
         required: true
         default: 'true'
         type: boolean
-      project:
-        description: Repository name
-        required: false
-        default: ${{ github.event.repository.name }}
-        type: string
-
+        
     secrets:
       HMPPS_SRE_SLACK_BOT_TOKEN:
         description: 'Slack bot token'
