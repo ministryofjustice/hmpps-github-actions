@@ -21,7 +21,6 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: ${{ inputs.node_version }}
-        cache: 'npm'
   # Caching 
     - name: update npm
       shell: bash
@@ -32,27 +31,40 @@ jobs:
       shell: bash
       run: echo "dir=$(npm config get cache)" >> ${GITHUB_OUTPUT}
     - name: refresh cache
-      uses: actions/cache@v4
+      id: initial-cache
+      uses: actions/cache@v3
+      env: 
+        cache-name: node-modules
       with:
         path: | 
+          ~/.npm
           ${{ steps.npm-cache-dir.outputs.dir }}
-          node_modules/
-        key: dependency-cache-${{ hashFiles('**/package-lock.json') }}
+          node_modules
+        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
         restore-keys: | 
-          dependency-cache-
+          ${{ runner.os }}-build-${{ env.cache-name }}-
+          ${{ runner.os }}-build-
+          ${{ runner.os }}-
     - name: install dependencies
+      if: steps.initial-cache.outputs.cache-hit != 'true'
       shell: bash
       run: |
         npm ci --no-audit
     - name: refresh cache
-      uses: actions/cache@v4
+      id: refresh-cache
+      uses: actions/cache@v3
+      env: 
+        cache-name: node-modules
       with:
         path: | 
+          ~/.npm
           ${{ steps.npm-cache-dir.outputs.dir }}
-          node_modules/
-        key: dependency-cache-${{ hashFiles('**/package-lock.json') }}
+          node_modules
+        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
         restore-keys: | 
-          dependency-cache-
+          ${{ runner.os }}-build-${{ env.cache-name }}-
+          ${{ runner.os }}-build-
+          ${{ runner.os }}-
     - name: build npm
       shell: bash
       run: |
@@ -85,14 +97,20 @@ jobs:
       shell: bash
       run: echo "dir=$(npm config get cache)" >> ${GITHUB_OUTPUT}
     - name: refresh cache
-      uses: actions/cache@v4
+      id: refresh-cache
+      uses: actions/cache@v3
+      env: 
+        cache-name: node-modules
       with:
         path: | 
+          ~/.npm
           ${{ steps.npm-cache-dir.outputs.dir }}
-          node_modules/
-        key: dependency-cache-${{ hashFiles('**/package-lock.json') }}
+          node_modules
+        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
         restore-keys: | 
-          dependency-cache-
+          ${{ runner.os }}-build-${{ env.cache-name }}-
+          ${{ runner.os }}-build-
+          ${{ runner.os }}-
     - name: unit tests
       shell: bash
       run: |
@@ -124,14 +142,20 @@ jobs:
       shell: bash
       run: echo "dir=$(npm config get cache)" >> ${GITHUB_OUTPUT}
     - name: refresh cache
-      uses: actions/cache@v4
+      id: refresh-cache
+      uses: actions/cache@v3
+      env: 
+        cache-name: node-modules
       with:
         path: | 
+          ~/.npm
           ${{ steps.npm-cache-dir.outputs.dir }}
-          node_modules/
-        key: dependency-cache-${{ hashFiles('**/package-lock.json') }}
+          node_modules
+        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
         restore-keys: | 
-          dependency-cache-
+          ${{ runner.os }}-build-${{ env.cache-name }}-
+          ${{ runner.os }}-build-
+          ${{ runner.os }}-
     - name: Get wiremock
       shell: bash
       run: |
