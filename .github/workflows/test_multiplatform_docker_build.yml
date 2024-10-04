@@ -62,5 +62,5 @@ jobs:
           push: ${{ inputs.push }}
           provenance: false
           tags: |
-            ${{ inputs.docker_registry}}/${{ inputs.registry_org }}//${{ github.event.repository.name }}:latest
+            ${{ inputs.docker_registry}}/${{ inputs.registry_org }}/${{ github.event.repository.name }}:latest
             ${{ inputs.docker_registry}}/${{ inputs.registry_org }}/${{ github.event.repository.name }}:steps.version.outputs.version
