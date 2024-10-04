@@ -21,7 +21,7 @@ on:
       push:
         description: Push docker image to registry flag
         required: true
-        default: 'true'
+        default: TRUE
         type: boolean
         
     secrets:
