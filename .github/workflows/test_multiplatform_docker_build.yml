@@ -1,4 +1,4 @@
-name: Build docker image & push to registry.
+name: Build multiplatform docker image & push to registry.
 
 on:
   workflow_call:
@@ -35,7 +35,7 @@ permissions:
 
 jobs:
   docker_build:
-    name: Build docker image
+    name: Build multiplatform docker image
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -57,6 +57,7 @@ jobs:
         with:
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          platform: linux/amd64,linux/arm64
           context: .
           push: ${{ inputs.push }}
           provenance: false
