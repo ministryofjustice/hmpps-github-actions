@@ -52,7 +52,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ github.token }}
 
-      - name: Build Docker images to ${{ inputs.publish }}
+      - name: Build multiplatform Docker images 
         uses: docker/build-push-action@v4
         with:
           cache-from: type=gha
@@ -63,4 +63,4 @@ jobs:
           provenance: false
           tags: |
             ${{ inputs.docker_registry}}/${{ inputs.registry_org }}/${{ github.event.repository.name }}:latest
-            ${{ inputs.docker_registry}}/${{ inputs.registry_org }}/${{ github.event.repository.name }}:steps.version.outputs.version
+            ${{ inputs.docker_registry}}/${{ inputs.registry_org }}/${{ github.event.repository.name }}:${{ steps.version.outputs.version }}
