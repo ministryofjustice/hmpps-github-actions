@@ -42,7 +42,7 @@ jobs:
       - name: Set username and password 
         id: docker_login
         run: |
-          if 
+          if ${{ inputs.docker_registry }} == 'quay.io'
           then 
             username=${{ secrets.HMPPS_QUAYIO_USER }}
             token=${{ secrets.HMPPS_QUAYIO_TOKEN }}
