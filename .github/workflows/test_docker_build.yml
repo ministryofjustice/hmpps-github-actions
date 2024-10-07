@@ -63,24 +63,3 @@ jobs:
           tags: |
             ${{ inputs.docker_registry}}/${{ inputs.registry_org }}/${{ github.event.repository.name }}:latest
             ${{ inputs.docker_registry}}/${{ inputs.registry_org }}/${{ github.event.repository.name }}:${{ steps.version.outputs.version }}
-          
-      # - name: Run Snyk to check Docker image for vulnerabilities
-      #   uses: snyk/actions/docker@master
-      #   continue-on-error: true
-      #   env:
-      #     SNYK_TOKEN: ${{ secrets.snyk-token }}
-      #   with:
-      #     image: ${{ inputs.image }}
-      #     args: ${{ inputs.severity }} ${{ inputs.dockerfile }} ${{ inputs.app-vulns }} --username=${{ secrets.registry-username }} --password=${{ secrets.registry-password }}
-      
-      # - name: Upload result to GitHub Code Scanning
-      #   uses: github/codeql-action/upload-sarif@v3
-      #   if: always() && inputs.upload-results
-      #   with:
-      #     sarif_file: snyk.sarif
-
-      # - name: Send notification to JIRA
-      #   uses: alstn2468/jira-publish-notification@v1.0.0
-      #   if: ${{ github.event_name == 'push' }}
-      #   with:
-      #     GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
