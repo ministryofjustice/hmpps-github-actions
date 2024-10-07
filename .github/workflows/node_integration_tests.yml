@@ -44,6 +44,7 @@ jobs:
       run: |
         curl -o wiremock.jar https://repo1.maven.org/maven2/org/wiremock/wiremock-standalone/3.9.1/wiremock-standalone-3.9.1.jar
     - name: Prepare and run integration tests
+      id: integration-tests
       shell: bash
       run: |
         nohup java -jar wiremock.jar --port 9091 &
@@ -58,3 +59,10 @@ jobs:
         path: |
           integration-tests/videos/
           integration_tests/screenshots/
+          - name: fail the action ic the tests failed
+    - name: fail the action ic the tests failed
+      if: ${{ steps.integration-tests.outcome == 'failure' }}
+      uses: actions/github-script@v7
+      with:
+        script: |
+            core.setFailed('Integration tests failed')

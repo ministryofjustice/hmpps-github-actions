@@ -36,6 +36,7 @@ jobs:
           ${{ runner.os }}-build-
           ${{ runner.os }}-
     - name: unit tests
+      id: unit-tests
       shell: bash
       run: |
         sudo npm run test:ci
@@ -45,3 +46,9 @@ jobs:
       with: 
         name: npm_unit_test_artifacts
         path: test_results/
+    - name: fail the action ic the tests failed
+      if: ${{ steps.unit-tests.outcome == 'failure' }}
+      uses: actions/github-script@v7
+      with:
+        script: |
+            core.setFailed('Unit tests failed')
