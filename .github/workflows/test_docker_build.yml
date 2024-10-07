@@ -5,23 +5,19 @@ on:
     inputs:
       docker_registry:
         description: Docker registry
-        required: false
-        default: 'ghcr.io'
+        required: true
         type: string
       registry_org:
         description: Docker registry organisation
-        required: false
-        default: 'ministryofjustice'
+        required: true
         type: string
       additional_docker_tag:
         description: Additional docker tag that can be used to specify stable tags
-        required: false
-        default: ''
+        required: true
         type: string
       push:
         description: Push docker image to registry flag
         required: true
-        default: true
         type: boolean
 
 permissions:
