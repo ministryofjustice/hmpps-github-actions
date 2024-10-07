@@ -41,6 +41,7 @@ jobs:
           echo "version=$version" | tee -a "$GITHUB_OUTPUT"
 
       - name: Set quay.io variables if docker registry is ghcr.io
+        if: ${{ inputs.docker_registry }} == 'ghcr.io'
         env:
           username: ${{ secrets.HMPPS_QUAYIO_USER }}
           token: ${{ secrets.HMPPS_QUAYIO_TOKEN }}
