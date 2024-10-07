@@ -13,7 +13,7 @@ permissions:
 
 jobs:
   node-unit-test:
-    name: Run the node unit test
+    name: Run the node unit tests
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
