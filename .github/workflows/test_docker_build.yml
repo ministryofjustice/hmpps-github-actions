@@ -23,11 +23,6 @@ on:
         required: true
         default: true
         type: boolean
-        
-    secrets:
-      HMPPS_SRE_SLACK_BOT_TOKEN:
-        description: 'Slack bot token'
-        required: false
       HMPPS_QUAYIO_USER:
         description: 'quay.io username'
         required: false
@@ -64,8 +59,8 @@ jobs:
         if: ${{ inputs.docker_registry }} == 'quay.io'
         with:
           registry: ${{ inputs.docker_registry }}
-          username: ${{ secrets.HMPPS_QUAYIO_USER }}
-          password: ${{ secrets.HMPPS_QUAYIO_TOKEN }}
+          username: ${{ inputs.HMPPS_QUAYIO_USER }}
+          password: ${{ inputs.HMPPS_QUAYIO_TOKEN }}
 
       - name: Build Docker images 
         uses: docker/build-push-action@v4
