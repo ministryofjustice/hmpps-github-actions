@@ -51,6 +51,7 @@ jobs:
             token=${{ github.token }}
           fi 
           echo "username=$username" | tee -a "$GITHUB_OUTPUT"
+          echo "password=$password" | tee -a "$GITHUB_OUTPUT"
 
       - uses: docker/setup-qemu-action@v2
       - uses: docker/setup-buildx-action@v2
