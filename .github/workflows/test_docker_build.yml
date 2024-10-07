@@ -62,6 +62,7 @@ jobs:
           context: .
           push: ${{ inputs.push }}
           provenance: false
+          build-args: BUILD_NUMBER=${{ steps.version.outputs.version }}
           tags: |
             ${{ inputs.docker_registry}}/${{ inputs.registry_org }}/${{ github.event.repository.name }}:latest
             ${{ inputs.docker_registry}}/${{ inputs.registry_org }}/${{ github.event.repository.name }}:${{ steps.version.outputs.version }}
