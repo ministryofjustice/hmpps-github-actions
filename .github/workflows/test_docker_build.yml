@@ -23,12 +23,7 @@ on:
         required: true
         default: true
         type: boolean
-      HMPPS_QUAYIO_USER:
-        description: 'quay.io username'
-        required: false
-      HMPPS_QUAYIO_TOKEN:
-        description: 'quay.io token'
-        required: false
+
 
 permissions:
   contents: read
