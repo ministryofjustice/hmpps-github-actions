@@ -5,29 +5,20 @@ on:
     inputs:
       docker_registry:
         description: Docker registry
-        required: false
-        default: 'ghcr.io'
+        required: true
         type: string
       registry_org:
         description: Docker registry organisation
-        required: false
-        default: 'ministryofjustice'
+        required: true
         type: string
       additional_docker_tag:
         description: Additional docker tag that can be used to specify stable tags
-        required: false
-        default: ''
+        required: true
         type: string
       push:
         description: Push docker image to registry flag
         required: true
-        default: true
         type: boolean
-
-    secrets:
-      HMPPS_SRE_SLACK_BOT_TOKEN:
-        description: 'Slack bot token'
-        required: false
 
 permissions:
   contents: read
@@ -46,7 +37,17 @@ jobs:
           echo "version=$version" | tee -a "$GITHUB_OUTPUT"
       - uses: docker/setup-qemu-action@v2
       - uses: docker/setup-buildx-action@v2
-      - uses: docker/login-action@v2
+      - name: Docker login if Docker registry is quay.io
+        if: ${{ inputs.docker_registry  == 'quay.io' }}
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ inputs.docker_registry }}
+          username: ${{ secrets.HMPPS_QUAYIO_USER }}
+          password: ${{ secrets.HMPPS_QUAYIO_TOKEN }}
+        
+      - name: Docker login if Docker registry is ghcr.io
+        if: ${{ inputs.docker_registry  == 'ghcr.io' }}
+        uses: docker/login-action@v2
         with:
           registry: ${{ inputs.docker_registry }}
           username: ${{ github.actor }}
@@ -61,6 +62,10 @@ jobs:
           context: .
           push: ${{ inputs.push }}
           provenance: false
+          build-args: |
+            "BUILD_NUMBER=${{ steps.version.outputs.version }}"
+            "GIT_REF=$${{ github.head_ref }}"
+            "GIT_BRANCH=$${{ github.ref_name }}"
           tags: |
             ${{ inputs.docker_registry}}/${{ inputs.registry_org }}/${{ github.event.repository.name }}:latest
             ${{ inputs.docker_registry}}/${{ inputs.registry_org }}/${{ github.event.repository.name }}:${{ steps.version.outputs.version }}
