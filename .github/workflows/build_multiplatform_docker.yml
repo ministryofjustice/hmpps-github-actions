@@ -37,7 +37,7 @@ jobs:
           echo "version=$version" | tee -a "$GITHUB_OUTPUT"
 
   multiplatform_docker_build:
-    needs: create_app_version
+    needs: [ create_app_version ]
     name: Build multiplatform docker image
     runs-on: ubuntu-latest
     steps:
