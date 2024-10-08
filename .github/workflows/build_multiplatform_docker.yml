@@ -68,6 +68,8 @@ jobs:
           app_version: ${{ needs.create_app_version.outputs.version }}
           HMPPS_QUAYIO_USER: ${{ secrets.HMPPS_QUAYIO_USER }}
           HMPPS_QUAYIO_TOKEN: ${{ secrets.HMPPS_QUAYIO_TOKEN}}
+          git_head_ref: ${{ github.head_ref }}
+          git_branch_ref: ${{ github.ref_name }}
 
 
 
