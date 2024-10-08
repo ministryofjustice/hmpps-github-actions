@@ -1,8 +1,12 @@
-name: Build multiplatform docker image & push to registry.
+name: Build docker image & push to registry.
 
 on:
   workflow_call:
     inputs:
+      repository_name: 
+        description: Repository name
+        required: true
+        type: string
       docker_registry:
         description: Docker registry
         required: true
@@ -20,7 +24,23 @@ on:
         required: true
         type: boolean
       app_version: 
-        description: Appp version
+        description: App version
+        required: true
+        type: string
+      docker_registry_username:
+        description: Docker registry username
+        required: true
+        type: string
+      docker_registry_token:
+        description: Docker registry username
+        required: true
+        type: string
+      git_head_ref:
+        description: git head ref 
+        required: true
+        type: string
+      git_ref_name:
+        description: git branch name
         required: true
         type: string
 
@@ -29,30 +49,29 @@ permissions:
   packages: write
 
 jobs:
-  multiplatform_docker_build:
-    name: Build multiplatform docker image
+  docker_build:
+    name: Build docker image
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: docker/setup-qemu-action@v2
       - uses: docker/setup-buildx-action@v2
       - name: Docker login if Docker registry is quay.io
-        if: ${{ inputs.docker_registry  == 'quay.io' }}
         uses: docker/login-action@v2
         with:
           registry: ${{ inputs.docker_registry }}
-          username: ${{ secrets.HMPPS_QUAYIO_USER }}
-          password: ${{ secrets.HMPPS_QUAYIO_TOKEN }}
+          username: ${{ inputs.docker_registry_username }}
+          password: ${{ inputs.docker_registry_token }}
         
       - name: Docker login if Docker registry is ghcr.io
         if: ${{ inputs.docker_registry  == 'ghcr.io' }}
         uses: docker/login-action@v2
         with:
           registry: ${{ inputs.docker_registry }}
-          username: ${{ github.actor }}
-          password: ${{ github.token }}
+          username: ${{ input.docker_registry_username }}
+          password: ${{ input.input.docker_registry_token }}
 
-      - name: Build multiplatform Docker images 
+      - name: Build Docker images 
         uses: docker/build-push-action@v4
         with:
           cache-from: type=gha
@@ -63,8 +82,8 @@ jobs:
           provenance: false
           build-args: |
             "BUILD_NUMBER=${{ inputs.app_version }}"
-            "GIT_REF=$${{ github.head_ref }}"
-            "GIT_BRANCH=$${{ github.ref_name }}"
+            "GIT_REF=$${{ inputs.git_head_ref }}"
+            "GIT_BRANCH=$${{ inputs.git_ref_name }}"
           tags: |
-            ${{ inputs.docker_registry}}/${{ inputs.registry_org }}/${{ github.event.repository.name }}:latest
-            ${{ inputs.docker_registry}}/${{ inputs.registry_org }}/${{ github.event.repository.name }}:${{ inputs.app_version }}
+            ${{ inputs.docker_registry}}/${{ inputs.registry_org }}/${{ inputs.repository_name }}:latest
+            ${{ inputs.docker_registry}}/${{ inputs.registry_org }}/${{ inputs.repository_name }}:${{ inputs.app_version }}

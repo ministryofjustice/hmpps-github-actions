@@ -1,4 +1,4 @@
-name: Build docker image, test and deploy to environments. 
+name: Build multiplatform docker image & push to registry.
 
 on:
   workflow_call:
@@ -27,7 +27,7 @@ permissions:
 jobs:
   create_app_version:
     runs-on: ubuntu-latest
-    outputs:
+    outputs: 
       version: ${{ steps.create_app_version.outputs.version }}
     steps:
       - name: Set version
@@ -36,15 +36,35 @@ jobs:
           version=$(date '+%Y-%m-%d').${{ github.run_number }}.$(echo ${{ github.sha }} | cut -c1-7)
           echo "version=$version" | tee -a "$GITHUB_OUTPUT"
 
-  docker_build:
+  multiplatform_docker_build:
     name: Build docker image
     needs: [ create_app_version ]
     runs-on: ubuntu-latest
     steps:
       - uses: ministryofjustice/hmpps-github-actions/.github/actions/build-test-and-deploy/build_docker@feat/HEAT-344-share-app-version-across-jobs
+        if: ${{ inputs.docker_registry  == 'ghcr.io' }}
         with:
+          repository_name: ${{ github.event.repository.name }}
           docker_registry: ${{ inputs.docker_registry }}
           registry_org: ${{ inputs.registry_org }}
           additional_docker_tag: ${{ inputs.additional_docker_tag }}
           push: ${{ inputs.push }}
           app_version: ${{ needs.create_app_version.outputs.version }}
+          docker_registry_username: ${{ secrets.HMPPS_QUAYIO_USER }}
+          docker_registry_token:  ${{ secrets.HMPPS_QUAYIO_TOKEN }}
+          git_head_ref: ${{ github.head_ref }}
+          git_ref_name: ${{ github.ref_name }}"
+
+      - uses: ministryofjustice/hmpps-github-actions/.github/actions/build-test-and-deploy/build_docker@feat/HEAT-344-share-app-version-across-jobs
+        if: ${{ inputs.docker_registry  == 'quay.io' }}
+        with:
+          repository_name: ${{ github.event.repository.name }}
+          docker_registry: ${{ inputs.docker_registry }}
+          registry_org: ${{ inputs.registry_org }}
+          additional_docker_tag: ${{ inputs.additional_docker_tag }}
+          push: ${{ inputs.push }}
+          app_version: ${{ needs.create_app_version.outputs.version }}
+          docker_registry_username: ${{ secrets.HMPPS_QUAYIO_USER }}
+          docker_registry_token:  ${{ secrets.HMPPS_QUAYIO_TOKEN }}
+          git_head_ref: ${{ github.head_ref }}
+          git_ref_name: ${{ github.ref_name }}"
