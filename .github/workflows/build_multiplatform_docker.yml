@@ -57,7 +57,6 @@ jobs:
           push: ${{ inputs.push }}
           app_version: ${{ needs.create_app_version.outputs.version }}
 
-
       - uses: ministryofjustice/hmpps-github-actions/.github/actions/build-test-and-deploy/build_multiplatform_docker@feat/HEAT-344-share-app-version-across-jobs
         if: ${{ inputs.docker_registry  == 'quay.io' }}
         with:
@@ -67,6 +66,8 @@ jobs:
           additional_docker_tag: ${{ inputs.additional_docker_tag }}
           push: ${{ inputs.push }}
           app_version: ${{ needs.create_app_version.outputs.version }}
+          HMPPS_QUAYIO_USER: ${{ secrets.HMPPS_QUAYIO_USER }}
+          HMPPS_QUAYIO_TOKEN: ${{ secrets.HMPPS_QUAYIO_TOKEN}}
 
 
 
