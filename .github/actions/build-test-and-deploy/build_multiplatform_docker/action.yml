@@ -73,6 +73,7 @@ runs:
       uses: docker/build-push-action@v4
       with:
         cache-from: type=gha
+        platform: linux/amd64,linux/arm64
         cache-to: type=gha,mode=max
         context: .
         push: ${{ inputs.push }}
