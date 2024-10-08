@@ -25,6 +25,14 @@ inputs:
     description: App version
     required: true
     type: string
+  docker_registry_username:
+    description: Docker registry username 
+    required: true
+    type: string
+  docker_registry_token:
+    description: Docker registry token
+    required: true
+    type: string
     
 # secrets:
 #   HMPPS_QUAYIO_USER:
@@ -51,8 +59,8 @@ runs:
       uses: docker/login-action@v2
       with:
         registry: ${{ inputs.docker_registry }}
-        username: ${{ github.actor }}
-        password: ${{ github.token }}
+        username: ${{ inputs.docker_registry_user }}
+        password: ${{ inputs.docker_registry_token }}
 
     - name: Build Docker images 
       uses: docker/build-push-action@v4
