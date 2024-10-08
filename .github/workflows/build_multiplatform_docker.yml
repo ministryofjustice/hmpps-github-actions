@@ -45,7 +45,7 @@ jobs:
     needs: [ create_app_version ]
     runs-on: ubuntu-latest
     steps:
-      - uses: ministryofjustice/hmpps-github-actions/.github/actions/build_test_deploy/build_multiplatform_docker.yml
+      - uses: ministryofjustice/hmpps-github-actions/.github/actions/build-test-and-deploy/build_multiplatform_docker.yml
         if: steps.npm.outcome == 'failure'
         with:
           docker_registry: ${{ inputs.docker_registry }}
