@@ -46,7 +46,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: ministryofjustice/hmpps-github-actions/.github/actions/build-test-and-deploy/build_multiplatform_docker.yml
-        if: steps.npm.outcome == 'failure'
         with:
           docker_registry: ${{ inputs.docker_registry }}
           registry_org: ${{ inputs.registry_org }}
