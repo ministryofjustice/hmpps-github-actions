@@ -63,9 +63,9 @@ runs:
         push: ${{ inputs.push }}
         provenance: false
       build-args: |
-        "BUILD_NUMBER=${{ steps.version.outputs.version }}"
+        "BUILD_NUMBER=${{ inputs.app_version }}"
         "GIT_REF=$${{ github.head_ref }}"
         "GIT_BRANCH=$${{ github.ref_name }}"
       tags: |
         ${{ inputs.docker_registry}}/${{ inputs.registry_org }}/${{ github.event.repository.name }}:latest
-        ${{ inputs.docker_registry}}/${{ inputs.registry_org }}/${{ github.event.repository.name }}:${{ steps.version.outputs.version }}
+        ${{ inputs.docker_registry}}/${{ inputs.registry_org }}/${{ github.event.repository.name }}:${{ inputs.app_version }}
