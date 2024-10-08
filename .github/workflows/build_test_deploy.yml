@@ -1,4 +1,4 @@
-name: Build multiplatform docker image & push to registry.
+name: Build docker image, test and deploy to environments. 
 
 on:
   workflow_call:
@@ -19,10 +19,6 @@ on:
         description: Push docker image to registry flag
         required: true
         type: boolean
-      app_version: 
-        description: App version
-        required: true
-        type: string
 
 permissions:
   contents: read
@@ -31,7 +27,7 @@ permissions:
 jobs:
   create_app_version:
     runs-on: ubuntu-latest
-    outputs: 
+    outputs:
       version: ${{ steps.create_app_version.outputs.version }}
     steps:
       - name: Set version
@@ -40,12 +36,12 @@ jobs:
           version=$(date '+%Y-%m-%d').${{ github.run_number }}.$(echo ${{ github.sha }} | cut -c1-7)
           echo "version=$version" | tee -a "$GITHUB_OUTPUT"
 
-  multiplatform_docker_build:
+  docker_build:
     name: Build docker image
     needs: [ create_app_version ]
     runs-on: ubuntu-latest
     steps:
-      - uses: ministryofjustice/hmpps-github-actions/.github/actions/build_test_deploy/build_multiplatform_docker.yml
+      - uses: ministryofjustice/hmpps-github-actions/.github/actions/build_test_deploy/build_docker.yml
         if: steps.npm.outcome == 'failure'
         with:
           docker_registry: ${{ inputs.docker_registry }}

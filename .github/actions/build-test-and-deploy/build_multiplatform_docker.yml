@@ -1,4 +1,4 @@
-name: Build docker image & push to registry.
+name: Build multiplatform docker image & push to registry.
 
 on:
   workflow_call:
@@ -19,23 +19,21 @@ on:
         description: Push docker image to registry flag
         required: true
         type: boolean
+      app_version: 
+        description: Appp version
+        required: true
+        type: string
 
 permissions:
   contents: read
   packages: write
 
 jobs:
-  docker_build:
-    name: Build docker image
+  multiplatform_docker_build:
+    name: Build multiplatform docker image
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Set version
-        id: version
-        run: |
-          version=$(date '+%Y-%m-%d').${{ github.run_number }}.$(echo ${{ github.sha }} | cut -c1-7)
-          echo "version=$version" | tee -a "$GITHUB_OUTPUT"
-
       - uses: docker/setup-qemu-action@v2
       - uses: docker/setup-buildx-action@v2
       - name: Docker login if Docker registry is quay.io
@@ -54,18 +52,19 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ github.token }}
 
-      - name: Build Docker images 
+      - name: Build multiplatform Docker images 
         uses: docker/build-push-action@v4
         with:
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          platform: linux/amd64,linux/arm64
           context: .
           push: ${{ inputs.push }}
           provenance: false
           build-args: |
-            "BUILD_NUMBER=${{ steps.version.outputs.version }}"
+            "BUILD_NUMBER=${{ inputs.app_version }}"
             "GIT_REF=$${{ github.head_ref }}"
             "GIT_BRANCH=$${{ github.ref_name }}"
           tags: |
             ${{ inputs.docker_registry}}/${{ inputs.registry_org }}/${{ github.event.repository.name }}:latest
-            ${{ inputs.docker_registry}}/${{ inputs.registry_org }}/${{ github.event.repository.name }}:${{ steps.version.outputs.version }}
+            ${{ inputs.docker_registry}}/${{ inputs.registry_org }}/${{ github.event.repository.name }}:${{ inputs.app_version }}
