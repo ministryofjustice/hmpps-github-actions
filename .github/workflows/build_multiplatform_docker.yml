@@ -70,7 +70,7 @@ jobs:
           push: ${{ inputs.push }}
           provenance: false
           build-args: |
-            "BUILD_NUMBER=${{ needs.create_app_version.outputs.version }}
+            "BUILD_NUMBER=${{ needs.create_app_version.outputs.version }}"
             "GIT_REF=$${{ github.head_ref }}"
             "GIT_BRANCH=$${{ github.ref_name }}"
           tags: |
