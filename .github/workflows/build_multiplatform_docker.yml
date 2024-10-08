@@ -54,7 +54,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: ministryofjustice/hmpps-github-actions/.github/actions/build-test-and-deploy/build_docker@feat/HEAT-344-share-app-version-across-jobs
-        if: ${{ inputs.docker_registry  == 'ghcr.io' }}
+        if: ${{ ( inputs.docker_registry  == 'ghcr.io' ) && ( ! inputs.docker_multiplatform )}}
         with:
           repository_name: ${{ github.event.repository.name }}
           docker_registry: ${{ inputs.docker_registry }}
@@ -64,7 +64,7 @@ jobs:
           app_version: ${{ needs.create_app_version.outputs.version }}
 
       - uses: ministryofjustice/hmpps-github-actions/.github/actions/build-test-and-deploy/build_docker@feat/HEAT-344-share-app-version-across-jobs
-        if: ${{ inputs.docker_registry  == 'quay.io' }}
+        if: ${{ ( inputs.docker_registry  == 'quay.io' ) && ( ! inputs.docker_multiplatform )}}
         with:
           repository_name: ${{ github.event.repository.name }}
           docker_registry: ${{ inputs.docker_registry }}
@@ -77,14 +77,8 @@ jobs:
           git_head_ref: ${{ github.head_ref }}
           git_branch_ref: ${{ github.ref_name }}
 
-  multiplatform_docker_build:
-    name: Build multiplatform docker image
-    if: ${{ docker_multiplatform == true }}
-    needs: [ create_app_version ]
-    runs-on: ubuntu-latest
-    steps:
       - uses: ministryofjustice/hmpps-github-actions/.github/actions/build-test-and-deploy/build_multiplatform_docker@feat/HEAT-344-share-app-version-across-jobs
-        if: ${{ inputs.docker_registry  == 'ghcr.io' }}
+        if: ${{ ( inputs.docker_registry  == 'ghcr.io' ) && ( inputs.docker_multiplatform )}}
         with:
           repository_name: ${{ github.event.repository.name }}
           docker_registry: ${{ inputs.docker_registry }}
@@ -94,7 +88,7 @@ jobs:
           app_version: ${{ needs.create_app_version.outputs.version }}
 
       - uses: ministryofjustice/hmpps-github-actions/.github/actions/build-test-and-deploy/build_multiplatform_docker@feat/HEAT-344-share-app-version-across-jobs
-        if: ${{ inputs.docker_registry  == 'quay.io' }}
+        if: ${{ ( inputs.docker_registry  == 'quay.io' ) && ( inputs.docker_multiplatform )}}
         with:
           repository_name: ${{ github.event.repository.name }}
           docker_registry: ${{ inputs.docker_registry }}
