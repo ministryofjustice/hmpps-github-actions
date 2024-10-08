@@ -26,11 +26,11 @@ inputs:
     required: true
     type: string
     
-secrets:
-  HMPPS_QUAYIO_USER:
-    required: false 
-  HMPPS_QUAYIO_TOKEN:
-    required: false 
+# secrets:
+#   HMPPS_QUAYIO_USER:
+#     required: false 
+#   HMPPS_QUAYIO_TOKEN:
+#     required: false 
 
 runs:
   using: "composite"

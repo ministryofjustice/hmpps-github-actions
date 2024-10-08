@@ -20,6 +20,12 @@ on:
         required: true
         type: boolean
 
+    secrets:
+      HMPPS_QUAYIO_USER:
+        required: false 
+      HMPPS_QUAYIO_TOKEN:
+        required: false 
+        
 permissions:
   contents: read
   packages: write
