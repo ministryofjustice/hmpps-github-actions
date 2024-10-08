@@ -31,7 +31,7 @@ jobs:
       version: ${{ steps.create_app_version.outputs.version }}
     steps:
       - name: Set version
-        id: version
+        id: create_app_version
         run: |
           version=$(date '+%Y-%m-%d').${{ github.run_number }}.$(echo ${{ github.sha }} | cut -c1-7)
           echo "version=$version" | tee -a "$GITHUB_OUTPUT"
