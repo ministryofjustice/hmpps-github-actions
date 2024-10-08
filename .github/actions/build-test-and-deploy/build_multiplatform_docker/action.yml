@@ -70,10 +70,10 @@ runs:
         context: .
         push: ${{ inputs.push }}
         provenance: false
-      build-args: |
-        "BUILD_NUMBER=${{ inputs.app_version }}"
-        "GIT_REF=$${{ github.head_ref }}"
-        "GIT_BRANCH=$${{ github.ref_name }}"
-      tags: |
-        ${{ inputs.docker_registry}}/${{ inputs.registry_org }}/${{ github.event.repository.name }}:latest
-        ${{ inputs.docker_registry}}/${{ inputs.registry_org }}/${{ github.event.repository.name }}:${{ inputs.app_version }}
+        build-args: |
+          "BUILD_NUMBER=${{ inputs.app_version }}"
+          "GIT_REF=$${{ github.head_ref }}"
+          "GIT_BRANCH=$${{ github.ref_name }}"
+        tags: |
+          ${{ inputs.docker_registry}}/${{ inputs.registry_org }}/${{ github.event.repository.name }}:latest
+          ${{ inputs.docker_registry}}/${{ inputs.registry_org }}/${{ github.event.repository.name }}:${{ inputs.app_version }}
