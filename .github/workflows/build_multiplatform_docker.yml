@@ -56,8 +56,6 @@ jobs:
           additional_docker_tag: ${{ inputs.additional_docker_tag }}
           push: ${{ inputs.push }}
           app_version: ${{ needs.create_app_version.outputs.version }}
-          docker_registry_username: ${{ github.actor }}
-          docker_registry_token: ${{ github.token }}
 
 
       - uses: ministryofjustice/hmpps-github-actions/.github/actions/build-test-and-deploy/build_multiplatform_docker@feat/HEAT-344-share-app-version-across-jobs
@@ -69,8 +67,6 @@ jobs:
           additional_docker_tag: ${{ inputs.additional_docker_tag }}
           push: ${{ inputs.push }}
           app_version: ${{ needs.create_app_version.outputs.version }}
-          docker_registry_username: ${{ secrets.HMPPS_QUAYIO_USER }}
-          docker_registry_token: ${{ secrets.HMPPS_QUAYIO_TOKEN }}
 
 
 
