@@ -1,48 +1,46 @@
 name: Build docker image & push to registry.
 
-on:
-  workflow_run:
-    inputs:
-      repository_name: 
-        description: Repository name
-        required: true
-        type: string
-      docker_registry:
-        description: Docker registry
-        required: true
-        type: string
-      registry_org:
-        description: Docker registry organisation
-        required: true
-        type: string
-      additional_docker_tag:
-        description: Additional docker tag that can be used to specify stable tags
-        required: false
-        type: string
-      push:
-        description: Push docker image to registry flag
-        required: true
-        type: boolean
-      app_version: 
-        description: App version
-        required: true
-        type: string
-      docker_registry_username:
-        description: Docker registry username
-        required: true
-        type: string
-      docker_registry_token:
-        description: Docker registry username
-        required: true
-        type: string
-      git_head_ref:
-        description: git head ref 
-        required: true
-        type: string
-      git_ref_name:
-        description: git branch name
-        required: true
-        type: string
+inputs:
+  repository_name: 
+    description: Repository name
+    required: true
+    type: string
+  docker_registry:
+    description: Docker registry
+    required: true
+    type: string
+  registry_org:
+    description: Docker registry organisation
+    required: true
+    type: string
+  additional_docker_tag:
+    description: Additional docker tag that can be used to specify stable tags
+    required: false
+    type: string
+  push:
+    description: Push docker image to registry flag
+    required: true
+    type: boolean
+  app_version: 
+    description: App version
+    required: true
+    type: string
+  docker_registry_username:
+    description: Docker registry username
+    required: true
+    type: string
+  docker_registry_token:
+    description: Docker registry username
+    required: true
+    type: string
+  git_head_ref:
+    description: git head ref 
+    required: true
+    type: string
+  git_ref_name:
+    description: git branch name
+    required: true
+    type: string
 
 permissions:
   contents: read
