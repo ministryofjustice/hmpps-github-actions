@@ -19,10 +19,6 @@ on:
         description: Push docker image to registry flag
         required: true
         type: boolean
-      app_version: 
-        description: App version
-        required: true
-        type: string
 
 permissions:
   contents: read
