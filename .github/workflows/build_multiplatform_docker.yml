@@ -62,7 +62,6 @@ jobs:
 
       - uses: ministryofjustice/hmpps-github-actions/.github/actions/build-test-and-deploy/build_multiplatform_docker@feat/HEAT-344-share-app-version-across-jobs
         if: ${{ inputs.docker_registry  == 'quay.io' }}
-        secrets: inherit
         with:
           repository_name: ${{ github.event.repository.name }}
           docker_registry: ${{ inputs.docker_registry }}
