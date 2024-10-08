@@ -1,7 +1,7 @@
 name: Build docker image & push to registry.
 
 on:
-  workflow_call:
+  workflow_run:
     inputs:
       repository_name: 
         description: Repository name
