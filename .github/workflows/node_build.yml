@@ -15,6 +15,9 @@ jobs:
   node-build:
     name: Run the node build 
     runs-on: ubuntu-latest
+    defaults:
+      run: 
+        working-directory: ~/app
     steps:
     - uses: actions/checkout@v4
     - name: Use Node.js ${{ inputs.node_version }}
