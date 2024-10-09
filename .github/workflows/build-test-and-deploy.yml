@@ -46,6 +46,8 @@ jobs:
         run: |
           version=$(date '+%Y-%m-%d').${{ github.run_number }}.$(echo ${{ github.sha }} | cut -c1-7)
           echo "version=$version" | tee -a "$GITHUB_OUTPUT"
+          echo "github_ref=${{ github.head_ref }}" | tee -a "$GITHUB_OUTPUT"
+          echo "github_beanch=${{ github.ref_name }}" | tee -a "$GITHUB_OUTPUT"
 
   docker_build:
     name: Build docker image
