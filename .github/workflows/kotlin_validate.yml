@@ -17,7 +17,7 @@ permissions:
 
 jobs:
   kotlin-validate:
-    name: Build the Kotlin app
+    name: validat the Kotlin app
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
