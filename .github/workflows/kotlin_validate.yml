@@ -1,0 +1,53 @@
+name: Build and test kotlin
+
+on:
+  workflow_call:
+    inputs:
+      java_version:
+        type: string
+        required: false
+        default: '21'
+      java_options:
+        type: string
+        default: '-Xmx512m -XX:ParallelGCThreads=2 -XX:ConcGCThreads=2 -Djava.util.concurrent.ForkJoinPool.common.parallelism=2 -Dorg.gradle.daemon=false -Dkotlin.compiler.execution.strategy=in-process'
+        required: false
+
+permissions:
+  contents: read
+
+jobs:
+  kotlin-validate:
+    name: Build the Kotlin app
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: refresh cache
+      id: initial-cache
+      uses: actions/cache@v4
+      env: 
+        cache-name: kotlin-cache
+      with:
+        path: | 
+            - gradle-{{ checksum "build.gradle.kts" }}
+            - gradle-
+        key: ${{ runner.os }}-gradle-${{ env.cache-name }}-${{ hashFiles('build.gradle.kts') }}
+    - uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: '{{ inputs.java_version}}'
+        cache: 'gradle'
+        cache-dependency-path: | 
+          *.gradle*
+          **/gradle-wrapper.properties
+    - name: gradlew check
+      shell: bash
+      run: |
+        export JAVA_OPTS="${{ inputs.java_options }}"
+        ./gradlew check
+    - name: upload the artifacts
+      uses: actions/upload-artifact@v4
+      with: 
+        name: kotlin_validare_artifacts
+        path: |
+          build/test-results
+          build/reports/tests
