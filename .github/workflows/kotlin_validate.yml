@@ -47,7 +47,7 @@ jobs:
     - name: upload the artifacts
       uses: actions/upload-artifact@v4
       with: 
-        name: kotlin_validare_artifacts
+        name: upload kotlin valdation results
         path: |
           build/test-results
           build/reports/tests
