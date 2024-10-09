@@ -15,11 +15,11 @@ runs:
   using: "composite"
   steps:
     - name: process slack message results # returns SLACK_TXT
-      uses: ministryofjustice/hmpps-github-actions/.github/actions/slack_prepare_results@v0.5 # WORKFLOW_VERSION
+      uses: ministryofjustice/hmpps-github-actions/.github/actions/slack_prepare_results@v0.6 # WORKFLOW_VERSION
       id: slack_message_result 
       with:
         input_file: ${{ inputs.input_file }}
-    - uses: slackapi/slack-github-action@e28cf165c92ffef168d23c5c9000cffc8a25e117 # v1.24.0
+    - uses: slackapi/slack-github-action@37ebaef184d7626c5f204ab8d3baff4262dd30f0 # v1.27.0
       with:
         channel-id: ${{ inputs.channel_id}}
         payload: |
