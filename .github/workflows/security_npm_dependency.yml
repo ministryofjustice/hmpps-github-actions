@@ -4,6 +4,7 @@ on:
   workflow_call:
     inputs:
       channel_id:
+        description: 'The slack channel ID to send a message on failure. If this is not provided then no message is sent.'
         required: false
         default: 'NO_SLACK'
         type: string
@@ -25,70 +26,63 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       security-events: write
-    env:
-      parent_directory: ${{ github.event.repository.name == '' && '.' || github.event.repository.name}}
     steps:
     - uses: actions/checkout@v4
     - uses: actions/setup-node@v4
       with:
         node-version: ${{ inputs.node_version }}
-    - id: npm-version
-      name: Show npm version
+    - name: Show npm version
+      id: npm-version
       run: 'npm -v'
-    - id: node-version
-      name: Show node version
+    - name: Show node version
+      id: node-version
       run: 'node -v'
     - name: Audit for vulnerabilities
       id: npm
       run: npx audit-ci@^7 --config ./audit-ci.json -o json > npm-security-check-reports.json
       continue-on-error: true
+    - uses: actions/upload-artifact@v4
+      with:
+        name: npm-security-check-${{ github.event.repository.name }}
+        path: npm-security-check-reports.json
+    - name: Run translator to convert to sarif format
+      shell: bash
+      run: python .github/scripts/auditjson_to_sarif.py npm-security-check-reports.json
+    - uses: github/codeql-action/upload-sarif@v3
+      id: npm-upload-sarif
+      with:
+        sarif_file: 'npm-security-check-reports.sarif'
+        category: npm-dependency-check
     - name: Audit for vulnerabilities - better
       id: npm-better
+      if: steps.npm.outcome == 'failure'
       run: npx better-npm-audit audit --level low --include-columns ID,Module,Paths,Severity,URL > npm-security-check-reports.txt
       continue-on-error: true
       env:
         NO_COLOR: TRUE
-    - uses: ministryofjustice/hmpps-github-actions/.github/actions/security_npm_dependency_reports@v0.5 # WORKFLOW_VERSION
-      if: steps.npm.outcome == 'failure'
+    - name: Process slack message results from npm better audit # returns SLACK_TXT
+      id: slack-message-result
+      if: steps.npm-better.outcome == 'failure' && inputs.channel_id != 'NO_SLACK'
+      uses: ministryofjustice/hmpps-github-actions/.github/actions/slack_prepare_results@v0.6 # WORKFLOW_VERSION
       with:
-        channel_id: ${{ inputs.channel_id }}
+        input_file: npm-security-check-reports.txt
+    - name: npm audit slack notification
+      uses: ministryofjustice/hmpps-github-actions/.github/actions/slack_codescan_notification@v0.6 # WORKFLOW_VERSION
+      if: (failure() || steps.npm.outcome == 'failure' || steps.npm-better.outcome == 'failure') && inputs.channel_id != 'NO_SLACK'
+      with:
+        title: "npm dependency scan"
+        warningOnly: ${{ steps.npm-upload-sarif.outcome == 'success' && steps.slack-message-result.outcome == 'success' }}
+        channel_id: ${{ inputs.channel_id}}
         SLACK_BOT_TOKEN: ${{ secrets.HMPPS_SRE_SLACK_BOT_TOKEN }}
-    - uses: slackapi/slack-github-action@e28cf165c92ffef168d23c5c9000cffc8a25e117 # v1.24.0
-      if: steps.npm.conclusion == 'failure' && inputs.channel_id != 'NO_SLACK'
+    - name: npm better audit slack output results 
+      uses: slackapi/slack-github-action@37ebaef184d7626c5f204ab8d3baff4262dd30f0 # v1.27.0
+      if: inputs.channel_id != 'NO_SLACK' && steps.slack-message-result.outcome == 'success'
       with:
         channel-id: ${{ inputs.channel_id}}
         payload: |
-          { "text": "Github actions *npm dependency check* failed",
-            "blocks": [
-              {
-                "type": "section",
-                "text": {
-                  "type": "mrkdwn",
-                  "text": ":no_entry: Failed GitHub Action:"
-                }
-              },
-              {
-                "type": "section",
-                "fields": [
-                  {
-                    "type": "mrkdwn",
-                    "text": "*Workflow:*\n<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|${{ github.workflow }}>"
-                  },
-                  {
-                    "type": "mrkdwn",
-                    "text": "*Job:*\n${{ github.job }}"
-                  },
-                  {
-                    "type": "mrkdwn",
-                    "text": "*Repo:*\n${{ github.repository }}"
-                  },
-                  {
-                    "type": "mrkdwn",
-                    "text": "*Project:*\n${{ github.event.repository.name }}"
-                  }
-                ]
-              }
-            ]
+          { 
+            "type": "mrkdwn",
+            "text": "Output: ```${{ steps.slack-message-result.outputs.SLACK_TXT }}```"
           }
       env:
         SLACK_BOT_TOKEN: ${{ secrets.HMPPS_SRE_SLACK_BOT_TOKEN }}
