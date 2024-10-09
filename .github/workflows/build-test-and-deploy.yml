@@ -1,4 +1,4 @@
-name: Build multiplatform docker image & push to registry.
+name: Build & push docker image and deploy to environment. 
 
 on:
   workflow_call:

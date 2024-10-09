@@ -1,4 +1,4 @@
-name: Build docker image & push to registry.
+name: Build and push docker image to registry.
 
 inputs:
   repository_name: 

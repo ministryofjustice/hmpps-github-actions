@@ -1,4 +1,4 @@
-name: Build docker image & push to registry.
+name: Build and push multiplatform docker image to registry.
 
 inputs:
   repository_name: 
@@ -41,11 +41,6 @@ inputs:
     description: Github source branch name 
     required: false
     type: string
-# secrets:
-#   HMPPS_QUAYIO_USER:
-#     required: false 
-#   HMPPS_QUAYIO_TOKEN:
-#     required: false 
 
 runs:
   using: "composite"
