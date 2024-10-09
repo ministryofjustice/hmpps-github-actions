@@ -1,4 +1,4 @@
-name: Build & push docker image and deploy to environment. 
+name: Build & push docker image and deploy to environment
 
 on:
   workflow_call:
