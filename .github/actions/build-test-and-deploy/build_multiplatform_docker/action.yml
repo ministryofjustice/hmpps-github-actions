@@ -33,14 +33,6 @@ inputs:
     description: Docker registry token
     required: false
     type: string
-  git_head_ref:
-    description: Github source branch ref
-    required: false
-    type: string
-  git_branch_ref:
-    description: Github source branch name 
-    required: false
-    type: string
 
 runs:
   using: "composite"
@@ -75,8 +67,8 @@ runs:
         provenance: false
         build-args: |
           "BUILD_NUMBER=${{ inputs.app_version }}"
-            "GIT_REF=${{ github.head_ref }}"
-            "GIT_BRANCH=${{ github.ref_name }}"
+          "GIT_REF=${{ github.sha }}"
+          "GIT_BRANCH=${{ github.ref_name }}"
         tags: |
           ${{ inputs.docker_registry}}/${{ inputs.registry_org }}/${{ github.event.repository.name }}:latest
           ${{ inputs.docker_registry}}/${{ inputs.registry_org }}/${{ github.event.repository.name }}:${{ inputs.app_version }}
