@@ -1,4 +1,4 @@
-name: Build and push multiplatform docker image to registry.
+name: Build and push multi-platform docker image to registry.
 
 inputs:
   repository_name: 
@@ -68,7 +68,7 @@ runs:
       uses: docker/build-push-action@v4
       with:
         cache-from: type=gha
-        platform: linux/amd64,linux/arm64
+        platforms: linux/amd64,linux/arm64
         cache-to: type=gha,mode=max
         context: .
         push: ${{ inputs.push }}
