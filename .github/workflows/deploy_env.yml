@@ -59,20 +59,15 @@ jobs:
         id: install
         with:
           version: latest
-      - name: display variables
-        run: |
-          echo "${{ secrets.KUBE_CLUSTER }}"  | sed 's/./& /g'
-          echo "${{ secrets.KUBE_NAMESPACE }}" | sed 's/./& /g'
-
-      # - uses:  ministryofjustice/hmpps-github-actions/.github/actions/build-test-and-deploy/cloud-platform-deploy@feat/HEAT-344-create-deploy_env_workflow
-      #   with:
-      #     environment: ${{ needs.get_environment.outputs.environment}}
-      #     version: ${{ inputs.app_version }}
-      #     api: https://${{ secrets.KUBE_CLUSTER }}
-      #     cert: ${{ secrets.KUBE_CERT }}
-      #     cluster: ${{ secrets.KUBE_CLUSTER }}
-      #     namespace: ${{ secrets.KUBE_NAMESPACE }}
-      #     token: ${{ secrets.KUBE_TOKEN }}
+      - uses:  ministryofjustice/hmpps-github-actions/.github/actions/build-test-and-deploy/cloud-platform-deploy@feat/HEAT-344-create-deploy_env_workflow
+        with:
+          environment: ${{ needs.get_environment.outputs.environment}}
+          version: ${{ inputs.app_version }}
+          api: https://${{ secrets.KUBE_CLUSTER }}
+          cert: ${{ secrets.KUBE_CERT }}
+          cluster: ${{ secrets.KUBE_CLUSTER }}
+          namespace: ${{ secrets.KUBE_NAMESPACE }}
+          token: ${{ secrets.KUBE_TOKEN }}
 
   # # slack_notify:
   # #   name: Notify slack if deploy_env job failed 
