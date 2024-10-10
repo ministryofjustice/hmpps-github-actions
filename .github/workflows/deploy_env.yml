@@ -35,9 +35,15 @@ jobs:
       - name: Get environment details 
         id: env
         run: |
-          if [[ ${{ inputs.environment == 'development' }} || ${{ inputs.environment == 'dev' }} ]];    then echo "dev"; fi
-          if [[ ${{ inputs.environment == 'production' }}  ||  ${{ inputs.environment == 'prod' }} ]];    then  echo 'prod'; fi
-          if [[ ${{ inputs.environment == 'preproduction' }}  ||  ${{ inputs.environment == 'preprod' }} ]];    then echo 'preprod'; fi
+          case ${{ inputs.environment }} in
+            'development') environment='dev' ;;
+            'dev') environment='dev' ;;
+            'preprod') environment='preprod' ;;
+            'preproduction') environment='preprod' ;;
+            'prod') environment='prod' ;;
+            'production') environment='prod' ;;     
+            *) environment='invalid' ;;
+          esac
           echo "environment=${environment}" | tee -a "$GITHUB_OUTPUT"
 
   # deploy_env:
