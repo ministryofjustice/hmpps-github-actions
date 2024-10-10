@@ -35,61 +35,61 @@ jobs:
       - name: Get environment details 
         id: env
         run: |
-          if [ ${{ inputs.environment == 'development' }} ] || [ ${{ inputs.environment == 'dev' }} ];    then environment='dev'; fi
-          if [ ${{ inputs.environment == 'production' }} ] || [ ${{ inputs.environment == 'prod' }} ];    then environment='prod'; fi
-          if [ ${{ inputs.environment == 'preproduction' }} ] || [ ${{ inputs.environment == 'preprod' }} ];    then environment='preprod'; fi
+          if [[ ${{ inputs.environment == 'development' }} || ${{ inputs.environment == 'dev' }} ]];    then environment='dev'; fi
+          if [[ ${{ inputs.environment == 'production' }}  ||  ${{ inputs.environment == 'prod' }} ]];    then environment='prod'; fi
+          if [[ ${{ inputs.environment == 'preproduction' }}  ||  ${{ inputs.environment == 'preprod' }} ]];    then environment='preprod'; fi
           echo "environment=${environment}" | tee -a "$GITHUB_OUTPUT"
 
-  deploy_env:
-    name: Deploy to ${{ inputs.environment }}
-    needs: [ get_environment ]
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-    environment: ${{ needs.get_environment.outputs.environment}}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: azure/setup-kubectl@v4
-        id: install
-        with:
-          version: latest
-      - name: display variables
-        run: |
-          echo "${{ secrets.KUBE_CLUSTER }}"  | sed 's/./& /g'
-          echo "${{ secrets.KUBE_NAMESPACE }}" | sed 's/./& /g'
-
-      - uses:  ministryofjustice/hmpps-github-actions/.github/actions/build-test-and-deploy/cloud-platform-deploy@feat/HEAT-344-create-deploy_env_workflow
-        with:
-          environment: ${{ needs.get_environment.outputs.environment}}
-          version: ${{ inputs.app_version }}
-          api: https://${{ secrets.KUBE_CLUSTER }}
-          cert: ${{ secrets.KUBE_CERT }}
-          cluster: ${{ secrets.KUBE_CLUSTER }}
-          namespace: ${{ secrets.KUBE_NAMESPACE }}
-          token: ${{ secrets.KUBE_TOKEN }}
-
-  # slack_notify:
-  #   name: Notify slack if deploy_env job failed 
+  # deploy_env:
+  #   name: Deploy to ${{ inputs.environment }}
+  #   needs: [ get_environment ]
   #   runs-on: ubuntu-latest
-  #   if: ${{ steps.deploy_env.outcome == 'failure' }}
+  #   strategy:
+  #     fail-fast: false
+  #   environment: ${{ needs.get_environment.outputs.environment}}
   #   steps:
-  #     - name: Notify slack on failure of job  
-  #       uses: slackapi/slack-github-action@37ebaef184d7626c5f204ab8d3baff4262dd30f0 # v1.27.0
-  #       if: ${{ inputs.channel_id != 'NO_SLACK' }}
+  #     - uses: actions/checkout@v4
+  #     - uses: azure/setup-kubectl@v4
+  #       id: install
   #       with:
-  #         channel-id: ${{ inputs.channel_id }}
-  #         payload: |
-  #         {
-  #           "text": "GitHub Action build result: ${{ job.status }}\n${{ github.event.pull_request.html_url || github.event.head_commit.url }}",
-  #           "blocks": [
-  #             {
-  #               "type": "section",
-  #               "text": {
-  #                 "type": "mrkdwn",
-  #                 "text": "GitHub Action build result: ${{ job.status }}\n${{ github.event.pull_request.html_url || github.event.head_commit.url }}"
-  #               }
-  #             }
-  #           ]
-  #         }
-  #       env:
-  #         SLACK_BOT_TOKEN: ${{ secrets.HMPPS_SRE_SLACK_BOT_TOKEN }}
+  #         version: latest
+  #     - name: display variables
+  #       run: |
+  #         echo "${{ secrets.KUBE_CLUSTER }}"  | sed 's/./& /g'
+  #         echo "${{ secrets.KUBE_NAMESPACE }}" | sed 's/./& /g'
+
+  #     - uses:  ministryofjustice/hmpps-github-actions/.github/actions/build-test-and-deploy/cloud-platform-deploy@feat/HEAT-344-create-deploy_env_workflow
+  #       with:
+  #         environment: ${{ needs.get_environment.outputs.environment}}
+  #         version: ${{ inputs.app_version }}
+  #         api: https://${{ secrets.KUBE_CLUSTER }}
+  #         cert: ${{ secrets.KUBE_CERT }}
+  #         cluster: ${{ secrets.KUBE_CLUSTER }}
+  #         namespace: ${{ secrets.KUBE_NAMESPACE }}
+  #         token: ${{ secrets.KUBE_TOKEN }}
+
+  # # slack_notify:
+  # #   name: Notify slack if deploy_env job failed 
+  # #   runs-on: ubuntu-latest
+  # #   if: ${{ steps.deploy_env.outcome == 'failure' }}
+  # #   steps:
+  # #     - name: Notify slack on failure of job  
+  # #       uses: slackapi/slack-github-action@37ebaef184d7626c5f204ab8d3baff4262dd30f0 # v1.27.0
+  # #       if: ${{ inputs.channel_id != 'NO_SLACK' }}
+  # #       with:
+  # #         channel-id: ${{ inputs.channel_id }}
+  # #         payload: |
+  # #         {
+  # #           "text": "GitHub Action build result: ${{ job.status }}\n${{ github.event.pull_request.html_url || github.event.head_commit.url }}",
+  # #           "blocks": [
+  # #             {
+  # #               "type": "section",
+  # #               "text": {
+  # #                 "type": "mrkdwn",
+  # #                 "text": "GitHub Action build result: ${{ job.status }}\n${{ github.event.pull_request.html_url || github.event.head_commit.url }}"
+  # #               }
+  # #             }
+  # #           ]
+  # #         }
+  # #       env:
+  # #         SLACK_BOT_TOKEN: ${{ secrets.HMPPS_SRE_SLACK_BOT_TOKEN }}
