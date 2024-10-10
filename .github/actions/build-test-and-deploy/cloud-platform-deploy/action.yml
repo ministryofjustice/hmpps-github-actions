@@ -53,5 +53,5 @@ runs:
           --set 'generic-service.image.tag=${{ inputs.version }}' \
           --set 'version=${{ inputs.version }}' \
           --timeout 10m \
-          --values 'helm_deploy/${{ inputs.environment }}' \
+          --values 'helm_deploy/values-${{ inputs.environment }}.yaml' \
           --wait
