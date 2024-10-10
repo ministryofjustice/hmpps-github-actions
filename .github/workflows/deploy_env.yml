@@ -35,10 +35,10 @@ jobs:
       - name: Get environment details 
         id: env
         run: |
-          if [ ${{ inputs.environment == 'development' }} || ${{ inputs.environment == 'dev' }} ];    then environment='dev'; fi
-          if [ ${{ inputs.environment == 'production' }} || ${{ inputs.environment == 'prod' }} ];    then environment='prod'; fi
-          if [ ${{ inputs.environment == 'preproduction' }} || ${{ inputs.environment == 'preprod' }} ];    then environment='preprod'; fi
-          if [ ${{ inputs.environment == 'stage' }} ];    then namespace='stage'; fi
+          if [ ${{ inputs.environment == 'development' }} ] || [ ${{ inputs.environment == 'dev' }} ];    then environment='dev'; fi
+          if [ ${{ inputs.environment == 'production' }} ] || [ ${{ inputs.environment == 'prod' }} ];    then environment='prod'; fi
+          if [ ${{ inputs.environment == 'preproduction' }} ] || [ ${{ inputs.environment == 'preprod' }} ];    then environment='preprod'; fi
+          if [ ${{ inputs.environment == 'stage' }} ];    then environment='stage'; fi
           echo "environment=${environment}" | tee -a "$GITHUB_OUTPUT"
 
   deploy_env:
