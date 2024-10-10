@@ -1,0 +1,82 @@
+name: Build & push docker image and deploy to environment
+
+on:
+  workflow_call:
+    inputs:
+      environment: 
+        description: Environment
+        required: true 
+        type: string
+      app_version:
+        description: App version
+        required: true 
+        type: string
+      channel_id:
+        description: 'The slack channel ID to send a message on failure. If this is not provided then no message is sent.'
+        required: false
+        default: 'NO_SLACK'
+        type: string
+
+    secrets:
+      HMPPS_SRE_SLACK_BOT_TOKEN:
+        description: Slack bot token
+        required: false
+
+permissions:
+  contents: read
+
+jobs:
+
+  deploy_env:
+    name: Deploy to ${{ inputs.environment }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+    environment:
+      name: ${{ inputs.environment }}  
+    steps:
+      - uses: actions/checkout@v4
+      - uses: azure/setup-kubectl@v4
+        id: install
+        with:
+          version: latest
+  #     - uses:  ./.github/actions/build-test-and-deploy/get-env-details@feat/HEAT-344-create-deploy_env_workflow
+  #       id: env
+  #       with:
+  #         environment: ${{ inputs.environment }}
+  #     - uses:  ./.github/actions/build-test-and-deploy/cloud-platform-deploy@feat/HEAT-344-create-deploy_env_workflow
+  #       id: env
+  #       with:
+  #         environment: ${{ inputs.environment }}
+  #         version: ${{ inputs.app_version }}
+  #         api: https://${{ secrets.KUBE_CLUSTER }}
+  #         cert: ${{ secrets.KUBE_CERT }}
+  #         cluster: ${{ secrets.KUBE_CLUSTER }}
+  #         namespace: ${{ secrets.KUBE_NAMESPACE }}
+  #         token: ${{ secrets.KUBE_TOKEN }}
+
+  # slack_notify:
+  #   name: Notify slack if deploy_env job failed 
+  #   runs-on: ubuntu-latest
+  #   if: ${{ steps.deploy_env.outcome == 'failure' }}
+  #   steps:
+  #     - name: Notify slack on failure of job  
+  #       uses: slackapi/slack-github-action@37ebaef184d7626c5f204ab8d3baff4262dd30f0 # v1.27.0
+  #       if: ${{ inputs.channel_id != 'NO_SLACK' }}
+  #       with:
+  #         channel-id: ${{ inputs.channel_id }}
+  #         payload: |
+  #         {
+  #           "text": "GitHub Action build result: ${{ job.status }}\n${{ github.event.pull_request.html_url || github.event.head_commit.url }}",
+  #           "blocks": [
+  #             {
+  #               "type": "section",
+  #               "text": {
+  #                 "type": "mrkdwn",
+  #                 "text": "GitHub Action build result: ${{ job.status }}\n${{ github.event.pull_request.html_url || github.event.head_commit.url }}"
+  #               }
+  #             }
+  #           ]
+  #         }
+  #       env:
+  #         SLACK_BOT_TOKEN: ${{ secrets.HMPPS_SRE_SLACK_BOT_TOKEN }}
