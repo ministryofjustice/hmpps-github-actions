@@ -36,6 +36,7 @@ runs:
         cluster: ${{ inputs.cluster }}
         namespace: ${{ inputs.namespace }}
         token: ${{ inputs.token }}
+
     - name: Deploy
       shell: bash
       run: |
@@ -52,5 +53,5 @@ runs:
           --set 'generic-service.image.tag=${{ inputs.version }}' \
           --set 'version=${{ inputs.version }}' \
           --timeout 10m \
-          --values 'helm_deploy/${{ steps.env.outputs.values-file }}' \
+          --values 'helm_deploy/${{ inputs.environment }}' \
           --wait

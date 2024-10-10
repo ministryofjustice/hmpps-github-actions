@@ -26,26 +26,42 @@ permissions:
   contents: read
 
 jobs:
+  get_environment:
+    name: Get environment 
+    runs-on: ubuntu-latest
+    outputs:
+      environment: ${{ steps.env.outputs.environment }}
+    steps:
+      - name: Get environment details 
+        id: env
+        run: |
+          if [ ${{ inputs.environment == 'development' }} || ${{ inputs.environment == 'dev' }} ];    then environment='dev'; fi
+          if [ ${{ inputs.environment == 'production' }} || ${{ inputs.environment == 'prod' }} ];    then environment='prod'; fi
+          if [ ${{ inputs.environment == 'preproduction' }} || ${{ inputs.environment == 'preprod' }} ];    then environment='preprod'; fi
+          if [ ${{ inputs.environment == 'stage' }} ];    then namespace='stage'; fi
+          echo "environment=${environment}" | tee -a "$GITHUB_OUTPUT"
 
   deploy_env:
     name: Deploy to ${{ inputs.environment }}
+    needs: [ get_environment ]
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
-    environment:
-      name: ${{ inputs.environment }}  
+    environment: ${{ jobs.get_environment.outputs.environment}}
     steps:
       - uses: actions/checkout@v4
       - uses: azure/setup-kubectl@v4
         id: install
         with:
           version: latest
-      - uses:  ministryofjustice/hmpps-github-actions/.github/actions/build-test-and-deploy/get-env-details@feat/HEAT-344-create-deploy_env_workflow
-        with:
-          environment: ${{ inputs.environment }}
+      - name: display variables
+        run: |
+          echo "${{ secrets.KUBE_CLUSTER }}"  | sed 's/./& /g'
+          echo "${{ secrets.KUBE_NAMESPACE }}" | sed 's/./& /g'
+
       - uses:  ministryofjustice/hmpps-github-actions/.github/actions/build-test-and-deploy/cloud-platform-deploy@feat/HEAT-344-create-deploy_env_workflow
         with:
-          environment: ${{ inputs.environment }}
+          environment: ${{ needs.get_environment.outputs.environment}}
           version: ${{ inputs.app_version }}
           api: https://${{ secrets.KUBE_CLUSTER }}
           cert: ${{ secrets.KUBE_CERT }}
