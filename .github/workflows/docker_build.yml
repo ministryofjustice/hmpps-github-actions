@@ -24,6 +24,10 @@ on:
         required: true
         type: boolean
         default: true
+      app_version:
+        description: App version 
+        required: true
+        type: string
 
     secrets:
       HMPPS_QUAYIO_USER:
@@ -39,7 +43,6 @@ jobs:
 
   docker_build:
     name: Build docker image
-    needs: [ create_app_version ]
     runs-on: ubuntu-latest
     steps:
       - uses: ministryofjustice/hmpps-github-actions/.github/actions/build-test-and-deploy/build_docker@main
