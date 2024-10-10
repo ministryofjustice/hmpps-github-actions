@@ -28,22 +28,19 @@ runs:
   using: composite
   steps:
     - uses: actions/checkout@v3
-
     - name: Get environment details
-      uses: ./.github/actions/get-env-details
+      uses: ministryofjustice/hmpps-github-actions/.github/actions/build-test-and-deploy/.github/actions/get-env-details
       id: env
       with:
         environment: ${{ inputs.environment }}
-
     - name: Authenticate
-      uses: ./.github/actions/cloud-platform-auth
+      uses: ministryofjustice/hmpps-github-actions/.github/actions/build-test-and-deploy/.github/actions/cloud-platform-auth
       with:
         api: ${{ inputs.api }}
         cert: ${{ inputs.cert }}
         cluster: ${{ inputs.cluster }}
         namespace: ${{ inputs.namespace }}
         token: ${{ inputs.token }}
-
     - name: Deploy
       shell: bash
       run: |
