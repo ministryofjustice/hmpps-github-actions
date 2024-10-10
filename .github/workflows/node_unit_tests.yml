@@ -40,8 +40,10 @@ jobs:
       shell: bash
       run: |
         sudo npm run test:ci
-      continue-on-error: true
+      # continue-on-error: true
+      # Replacing the above with if: always()
     - name: upload the artifacts
+      if: always()
       uses: actions/upload-artifact@v4
       with: 
         name: npm_unit_test_artifacts
