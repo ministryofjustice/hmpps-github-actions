@@ -27,6 +27,7 @@ inputs:
     description: Docker registry token
     required: false
 
+
 runs:
   using: "composite"
   steps:
