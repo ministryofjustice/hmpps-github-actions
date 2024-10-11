@@ -29,7 +29,7 @@ jobs:
         id: install
         with:
           version: latest
-      - uses:  ministryofjustice/hmpps-github-actions/.github/actions/build-test-and-deploy/cloud-platform-deploy@feat/HEAT-344-create-deploy_env_workflow
+      - uses:  ministryofjustice/hmpps-github-actions/.github/actions/build-test-and-deploy/cloud-platform-deploy@main
         id: deploy
         with:
           environment: ${{ inputs.environment }}
