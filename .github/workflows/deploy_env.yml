@@ -69,28 +69,28 @@ jobs:
           namespace: ${{ secrets.KUBE_NAMESPACE }}
           token: ${{ secrets.KUBE_TOKEN }}
 
-  # # slack_notify:
-  # #   name: Notify slack if deploy_env job failed 
-  # #   runs-on: ubuntu-latest
-  # #   if: ${{ steps.deploy_env.outcome == 'failure' }}
-  # #   steps:
-  # #     - name: Notify slack on failure of job  
-  # #       uses: slackapi/slack-github-action@37ebaef184d7626c5f204ab8d3baff4262dd30f0 # v1.27.0
-  # #       if: ${{ inputs.channel_id != 'NO_SLACK' }}
-  # #       with:
-  # #         channel-id: ${{ inputs.channel_id }}
-  # #         payload: |
-  # #         {
-  # #           "text": "GitHub Action build result: ${{ job.status }}\n${{ github.event.pull_request.html_url || github.event.head_commit.url }}",
-  # #           "blocks": [
-  # #             {
-  # #               "type": "section",
-  # #               "text": {
-  # #                 "type": "mrkdwn",
-  # #                 "text": "GitHub Action build result: ${{ job.status }}\n${{ github.event.pull_request.html_url || github.event.head_commit.url }}"
-  # #               }
-  # #             }
-  # #           ]
-  # #         }
-  # #       env:
-  # #         SLACK_BOT_TOKEN: ${{ secrets.HMPPS_SRE_SLACK_BOT_TOKEN }}
+  slack_notify:
+    name: Notify slack if deploy_env job failed 
+    runs-on: ubuntu-latest
+    if: ${{ steps.deploy_env.outcome == 'failure' }}
+    steps:
+      - name: Notify slack on failure of job  
+        uses: slackapi/slack-github-action@37ebaef184d7626c5f204ab8d3baff4262dd30f0 # v1.27.0
+        if: ${{ inputs.channel_id != 'NO_SLACK' }}
+        with:
+          channel-id: ${{ inputs.channel_id }}
+          payload: |
+          {
+            "text": "GitHub Action build result: ${{ job.status }}\n${{ github.event.pull_request.html_url || github.event.head_commit.url }}",
+            "blocks": [
+              {
+                "type": "section",
+                "text": {
+                  "type": "mrkdwn",
+                  "text": "GitHub Action build result: ${{ job.status }}\n${{ github.event.pull_request.html_url || github.event.head_commit.url }}"
+                }
+              }
+            ]
+          }
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.HMPPS_SRE_SLACK_BOT_TOKEN }}
