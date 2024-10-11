@@ -37,6 +37,17 @@ runs:
         namespace: ${{ inputs.namespace }}
         token: ${{ inputs.token }}
 
+    - name: Get environment details 
+      id: env
+      run: |
+        case ${{ inputs.environment }} in
+          'development') environment='dev' ;;
+          'preproduction') environment='preprod' ;;
+          'production') environment='prod' ;;     
+          *) environment=${{ inputs.environment }} ;;
+        esac
+        echo "environment=${environment}" | tee -a "$GITHUB_OUTPUT"
+
     - name: Deploy
       shell: bash
       run: |
@@ -53,5 +64,5 @@ runs:
           --set 'generic-service.image.tag=${{ inputs.version }}' \
           --set 'version=${{ inputs.version }}' \
           --timeout 10m \
-          --values 'helm_deploy/values-${{ inputs.environment }}.yaml' \
+          --values 'helm_deploy/values-${{ steps.env.outputs.environment }}.yaml' \
           --wait
