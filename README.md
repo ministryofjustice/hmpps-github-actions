@@ -41,7 +41,7 @@ These workflows are called by other repositories. Templates to call these are in
 Workflows and actions are referred to by the tags associated with the current release, eg:
 
 ```
-    - uses: ministryofjustice/hmpps-github-actions/.github/actions/security_owasp_reports@v0.6 # WORKFLOW_VERSION
+    - uses: ministryofjustice/hmpps-github-actions/.github/actions/security_owasp_reports@v0.7 # WORKFLOW_VERSION
 ```
 
 When a new release is issued, all of these referred workflows (as well as the calling ones within applications) will need to be updated as well.
