@@ -22,6 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
+    environment: ${{ inputs.environment }}
     steps:
       - uses: actions/checkout@v4
       - uses: azure/setup-kubectl@v4
