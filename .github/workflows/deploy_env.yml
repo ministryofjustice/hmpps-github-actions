@@ -1,0 +1,41 @@
+name: Build & push docker image and deploy to environment
+
+on:
+  workflow_call:
+    inputs:
+      environment: 
+        description: Environment
+        required: true 
+        type: string
+      app_version:
+        description: App version
+        required: true 
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+
+  deploy_env:
+    name: Deploy to ${{ inputs.environment }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+    environment: ${{ inputs.environment }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: azure/setup-kubectl@v4
+        id: install
+        with:
+          version: latest
+      - uses:  ministryofjustice/hmpps-github-actions/.github/actions/build-test-and-deploy/cloud-platform-deploy@main
+        id: deploy
+        with:
+          environment: ${{ inputs.environment }}
+          version: ${{ inputs.app_version }}
+          api: https://${{ secrets.KUBE_CLUSTER }}
+          cert: ${{ secrets.KUBE_CERT }}
+          cluster: ${{ secrets.KUBE_CLUSTER }}
+          namespace: ${{ secrets.KUBE_NAMESPACE }}
+          token: ${{ secrets.KUBE_TOKEN }}

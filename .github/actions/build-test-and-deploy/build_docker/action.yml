@@ -49,6 +49,18 @@ runs:
         username: ${{ github.actor }}
         password: ${{ github.token }}
 
+      # - name: Configure AWS credentials
+      #   if: ${{ inputs.docker_registry  == 'ecr' }}
+      #   uses: aws-actions/configure-aws-credentials@v2
+      #   with:
+      #     aws-access-key-id: ${{ secrets.AWS_MGMT_ECR_ID }}
+      #     aws-secret-access-key: ${{ secrets.AWS_MGMT_ECR_KEY }}
+      #     aws-region: eu-west-2
+
+      # - name: Login to Amazon ECR
+      #   if: ${{ inputs.docker_registry  == 'ecr' }}
+      #   uses: aws-actions/amazon-ecr-login@v1
+
     - name: Build Docker images 
       uses: docker/build-push-action@v6
       with:
@@ -64,3 +76,4 @@ runs:
         tags: |
           ${{ inputs.docker_registry}}/${{ inputs.registry_org }}/${{ github.event.repository.name }}:latest
           ${{ inputs.docker_registry}}/${{ inputs.registry_org }}/${{ github.event.repository.name }}:${{ inputs.app_version }}
+

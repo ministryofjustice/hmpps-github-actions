@@ -24,6 +24,10 @@ on:
         required: true
         type: boolean
         default: true
+      app_version:
+        description: App version 
+        required: true
+        type: string
 
     secrets:
       HMPPS_QUAYIO_USER:
@@ -36,20 +40,9 @@ permissions:
   packages: write
 
 jobs:
-  create_app_version:
-    runs-on: ubuntu-latest
-    outputs: 
-      version: ${{ steps.create_app_version.outputs.version }}
-    steps:
-      - name: Set version
-        id: create_app_version
-        run: |
-          version=$(date '+%Y-%m-%d').${{ github.run_number }}.$(echo ${{ github.sha }} | cut -c1-7)
-          echo "version=$version" | tee -a "$GITHUB_OUTPUT"
 
   docker_build:
     name: Build docker image
-    needs: [ create_app_version ]
     runs-on: ubuntu-latest
     steps:
       - uses: ministryofjustice/hmpps-github-actions/.github/actions/build-test-and-deploy/build_docker@main
@@ -60,7 +53,7 @@ jobs:
           registry_org: ${{ inputs.registry_org }}
           additional_docker_tag: ${{ inputs.additional_docker_tag }}
           push: ${{ inputs.push }}
-          app_version: ${{ needs.create_app_version.outputs.version }}
+          app_version: ${{ inputs.app_version }}
 
       - uses: ministryofjustice/hmpps-github-actions/.github/actions/build-test-and-deploy/build_docker@main
         if: ${{ ( inputs.docker_registry  == 'quay.io' ) && ( ! inputs.docker_multiplatform )}}
@@ -70,7 +63,7 @@ jobs:
           registry_org: ${{ inputs.registry_org }}
           additional_docker_tag: ${{ inputs.additional_docker_tag }}
           push: ${{ inputs.push }}
-          app_version: ${{ needs.create_app_version.outputs.version }}
+          app_version: ${{ inputs.app_version }}
           HMPPS_QUAYIO_USER: ${{ secrets.HMPPS_QUAYIO_USER }}
           HMPPS_QUAYIO_TOKEN: ${{ secrets.HMPPS_QUAYIO_TOKEN}}
           # git_head_ref: ${{ github.head_ref }}
@@ -84,7 +77,7 @@ jobs:
           registry_org: ${{ inputs.registry_org }}
           additional_docker_tag: ${{ inputs.additional_docker_tag }}
           push: ${{ inputs.push }}
-          app_version: ${{ needs.create_app_version.outputs.version }}
+          app_version: ${{ inputs.app_version }}
 
       - uses: ministryofjustice/hmpps-github-actions/.github/actions/build-test-and-deploy/build_multiplatform_docker@main
         if: ${{ ( inputs.docker_registry  == 'quay.io' ) && ( inputs.docker_multiplatform )}}
@@ -94,7 +87,7 @@ jobs:
           registry_org: ${{ inputs.registry_org }}
           additional_docker_tag: ${{ inputs.additional_docker_tag }}
           push: ${{ inputs.push }}
-          app_version: ${{ needs.create_app_version.outputs.version }}
+          app_version: ${{ inputs.app_version }}
           HMPPS_QUAYIO_USER: ${{ secrets.HMPPS_QUAYIO_USER }}
           HMPPS_QUAYIO_TOKEN: ${{ secrets.HMPPS_QUAYIO_TOKEN}}
 

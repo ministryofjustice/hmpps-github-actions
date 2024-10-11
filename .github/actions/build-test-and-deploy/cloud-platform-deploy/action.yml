@@ -1,0 +1,69 @@
+name: Cloud Platform Deploy
+description: Deploy to Cloud Platform using Helm
+
+inputs:
+  environment:
+    description: The environment to deploy to (dev/preprod/prod)
+    required: true
+  version:
+    description: The version of the service to deploy
+    required: true
+  api:
+    description: The KUBE_ENV_API
+    required: true
+  cert:
+    description: The KUBE_CERT
+    required: true
+  cluster:
+    description: The KUBE_CLUSTER
+    required: true
+  namespace:
+    description: The KUBE_NAMESPACE
+    required: true
+  token:
+    description: The KUBE_TOKEN
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/checkout@v4
+    - name: Authenticate
+      uses: ministryofjustice/hmpps-github-actions/.github/actions/build-test-and-deploy/cloud-platform-auth@main
+      with:
+        api: ${{ inputs.api }}
+        cert: ${{ inputs.cert }}
+        cluster: ${{ inputs.cluster }}
+        namespace: ${{ inputs.namespace }}
+        token: ${{ inputs.token }}
+
+    - name: Get environment details 
+      shell: bash
+      id: env
+      run: |
+        case ${{ inputs.environment }} in
+          'development') environment='dev' ;;
+          'preproduction') environment='preprod' ;;
+          'production') environment='prod' ;;     
+          *) environment=${{ inputs.environment }} ;;
+        esac
+        echo "environment=${environment}" | tee -a "$GITHUB_OUTPUT"
+
+    - name: Deploy
+      shell: bash
+      run: |
+        eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+        brew install helm
+        yq -i ".appVersion = \"${{ inputs.version }}\"" "helm_deploy/${{ github.event.repository.name }}/Chart.yaml"
+        helm dependency update "helm_deploy/${{ github.event.repository.name }}"
+        exec helm upgrade '${{ github.event.repository.name }}' 'helm_deploy/${{ github.event.repository.name }}' \
+          --atomic \
+          --history-max 10 \
+          --force \
+          --install \
+          --reset-values \
+          --set 'generic-service.image.tag=${{ inputs.version }}' \
+          --set 'version=${{ inputs.version }}' \
+          --timeout 10m \
+          --values 'helm_deploy/values-${{ steps.env.outputs.environment }}.yaml' \
+          --wait
