@@ -38,6 +38,7 @@ runs:
         token: ${{ inputs.token }}
 
     - name: Get environment details 
+      shell: bash
       id: env
       run: |
         case ${{ inputs.environment }} in
