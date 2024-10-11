@@ -72,7 +72,8 @@ jobs:
   slack_notify:
     name: Notify slack if deploy_env job failed 
     runs-on: ubuntu-latest
-    if: ${{ steps.deploy_env.outcome == 'failure' }}
+    needs: [ deploy_env ]
+    if: ${{ jobs.deploy_env.outcome == 'failure' }}
     steps:
       - name: Notify slack on failure of job  
         uses: slackapi/slack-github-action@37ebaef184d7626c5f204ab8d3baff4262dd30f0 # v1.27.0
