@@ -29,7 +29,7 @@ runs:
   steps:
     - uses: actions/checkout@v3
     - name: Authenticate
-      uses: ministryofjustice/hmpps-github-actions/.github/actions/build-test-and-deploy/cloud-platform-auth@feat/HEAT-344-create-deploy_env_workflow
+      uses: ministryofjustice/hmpps-github-actions/.github/actions/build-test-and-deploy/cloud-platform-auth@main
       with:
         api: ${{ inputs.api }}
         cert: ${{ inputs.cert }}
