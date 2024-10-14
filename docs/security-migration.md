@@ -119,11 +119,6 @@ From this repo, copy:
 - from `templates/workflows/security_npm_dependency.yml`
 - to `.github/workflows/security_npm_dependency.yml` of the target project.
 
-Furthermore, to translate the npm audit report into SARIF format, a python script needs to be copied:
-
-- from `scripts/auditjson_to_sarif.py`
-- to a new directory: `.github/scripts/auditjson_to_sarif.py` on the target project.
-
 #### Outputs
 
 If the workflow runs successfully, and the scan identifies issues:
@@ -273,11 +268,6 @@ From this repo, copy:
 
 - from `templates/workflows/security_npm_outdated.yml`
 - to `.github/workflows/security_npm_outdated.yml` of the target project.
-
-Furthermore, to translate the npm audit report into SARIF format, a python script needs to be copied:
-
-- from `scripts/outdated_to_slack.py`
-- to `.github/scripts/outdated_to_slack.py` on the target project.
 
 #### Outputs
 

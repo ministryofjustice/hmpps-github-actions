@@ -17,12 +17,10 @@
 
 yq -i 'del(.workflows.security) | del(.workflows.security-weekly)' .circleci/config.yml
 mkdir -p .github/workflows
-mkdir -p .github/scripts
 
 cp -a ../hmpps-github-actions/templates/workflows/security_npm_dependency.yml .github/workflows
 cp -a ../hmpps-github-actions/templates/workflows/security_trivy.yml .github/workflows
 cp -a ../hmpps-github-actions/templates/workflows/security_vera*.yml .github/workflows
-cp -a ../hmpps-github-actions/templates/scripts/auditjson_to_sarif.py .github/scripts
 
 RANDOM_HOUR=$((RANDOM % (9 - 3 + 1) + 3))
 RANDOM_MINUTE=$((RANDOM%60))
