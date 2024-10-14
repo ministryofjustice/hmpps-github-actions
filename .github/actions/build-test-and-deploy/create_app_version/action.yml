@@ -1,0 +1,11 @@
+name: Create app version to use it for docker build and deploy pipelines
+description: Derives the version of the app from the run number and checksum
+
+runs:
+  using: composite
+  steps:
+    - name: create_app_version
+      shell: bash
+      run: |
+        version=$(date '+%Y-%m-%d').${{ github.run_number }}.$(echo ${{ github.sha }} | cut -c1-7)
+        echo "version=$version" | tee -a "$GITHUB_OUTPUT"
