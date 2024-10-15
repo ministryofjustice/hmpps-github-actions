@@ -2,12 +2,14 @@ name: Create app version to use it for docker build and deploy pipelines
 description: Create app version to use it for docker build and deploy pipelines
 
 outputs:
-  version: ${{ steps.create_app_version.outputs.version }}
+  output_version: ${{ steps.create_version.outputs.version }}
+
 runs:
   using: composite
   steps:
     - name: create app version
+      id: create_version
       shell: bash
       run: |
         version=$(date '+%Y-%m-%d').${{ github.run_number }}.$(echo ${{ github.sha }} | cut -c1-7)
-        echo "version=$version" | tee -a "$GITHUB_OUTPUT"
+        echo "version=$version" >> $GITHUB_OUTPUT
