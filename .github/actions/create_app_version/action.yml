@@ -4,7 +4,8 @@ description: Create app version to use it for docker build and deploy pipelines
 outputs:
   output_version: 
     value: ${{ steps.create_version.outputs.version }}
-
+    description: this is what will be the version
+    
 runs:
   using: composite
   steps:
