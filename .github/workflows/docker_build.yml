@@ -45,9 +45,9 @@ jobs:
     name: Build docker image
     runs-on: ubuntu-latest
     outputs: 
-      version: ${{ steps.appversion.outputs.version }}
+      version: ${{ steps.app_version.outputs.version }}
     steps:
-      - id: appversion
+      - id: app_version
         name: Application version creators
         uses: ministryofjustice/hmpps-github-actions/.github/actions/build-test-and-deploy/create_app_version@move_create_app_version_in_action
       - uses: ministryofjustice/hmpps-github-actions/.github/actions/build-test-and-deploy/build_docker@main
@@ -58,7 +58,7 @@ jobs:
           registry_org: ${{ inputs.registry_org }}
           additional_docker_tag: ${{ inputs.additional_docker_tag }}
           push: ${{ inputs.push }}
-          app_version: ${{ steps.appversion.outputs.version }}
+          app_version: ${{ steps.app_version.outputs.version }}
 
       - uses: ministryofjustice/hmpps-github-actions/.github/actions/build-test-and-deploy/build_docker@main
         if: ${{ ( inputs.docker_registry  == 'quay.io' ) && ( ! inputs.docker_multiplatform )}}
