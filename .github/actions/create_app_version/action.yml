@@ -27,6 +27,7 @@ runs:
   steps:
     - name: create app version
       id: version
+      shell: bash
       run: |
         version=$(date '+%Y-%m-%d').${{ github.run_number }}.$(echo ${{ github.sha }} | cut -c1-7)
         echo "version=$version" | tee -a "$GITHUB_OUTPUT"
