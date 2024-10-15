@@ -24,6 +24,7 @@ name: Create app version to use it for docker build and deploy pipelines
 description: Create app version to use it for docker build and deploy pipelines
 
 runs:
+  using: composite
   steps:
     - name: create app version
       id: version
