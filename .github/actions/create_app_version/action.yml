@@ -25,9 +25,8 @@ description: Create app version to use it for docker build and deploy pipelines
 
 runs:
   steps:
-    - name: Authenticate
-      - name: Set version
-        id: version
-        run: |
-          version=$(date '+%Y-%m-%d').${{ github.run_number }}.$(echo ${{ github.sha }} | cut -c1-7)
-          echo "version=$version" | tee -a "$GITHUB_OUTPUT"
+    - name: create app version
+      id: version
+      run: |
+        version=$(date '+%Y-%m-%d').${{ github.run_number }}.$(echo ${{ github.sha }} | cut -c1-7)
+        echo "version=$version" | tee -a "$GITHUB_OUTPUT"
