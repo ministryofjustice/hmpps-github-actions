@@ -2,7 +2,8 @@ name: Create app version to use it for docker build and deploy pipelines
 description: Create app version to use it for docker build and deploy pipelines
 
 outputs:
-  output_version: ${{ steps.create_version.outputs.version }}
+  output_version: 
+    value: ${{ steps.create_version.outputs.version }}
 
 runs:
   using: composite
