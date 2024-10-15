@@ -24,10 +24,6 @@ on:
         required: true
         type: boolean
         default: true
-      app_version:
-        description: App version 
-        required: true
-        type: string
 
     secrets:
       HMPPS_QUAYIO_USER:
