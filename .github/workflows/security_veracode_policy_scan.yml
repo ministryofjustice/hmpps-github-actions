@@ -70,7 +70,7 @@ jobs:
         java-version: '21'
         distribution: 'temurin'
     - name: prepare assets
-      uses: ministryofjustice/hmpps-github-actions/.github/actions/security_veracode_prepare_artifacts@v0.7 # WORKFLOW_VERSION
+      uses: ministryofjustice/hmpps-github-actions/.github/actions/security_veracode_prepare_artifacts@v1 # WORKFLOW_VERSION
     - name: "Download/Extract veracode agent"
       run: wget https://repo1.maven.org/maven2/com/veracode/vosp/api/wrappers/vosp-api-wrappers-java/22.9.10.3/vosp-api-wrappers-java-22.9.10.3.jar -O VeracodeJavaAPI.jar
     - name: "Upload to Veracode"
@@ -113,7 +113,7 @@ jobs:
         path: output.txt
     - name: send a failure slack message
       if: failure()  && inputs.channel_id != 'NO_SLACK'
-      uses: ministryofjustice/hmpps-github-actions/.github/actions/slack_failure_results@v0.7.1 # WORKFLOW_VERSION
+      uses: ministryofjustice/hmpps-github-actions/.github/actions/slack_failure_results@v1 # WORKFLOW_VERSION
       with:
         SLACK_BOT_TOKEN: ${{ secrets.HMPPS_SRE_SLACK_BOT_TOKEN }}
         channel_id: ${{ inputs.channel_id }}
