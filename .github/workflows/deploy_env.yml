@@ -29,7 +29,7 @@ jobs:
         id: install
         with:
           version: latest
-      - uses:  ministryofjustice/hmpps-github-actions/.github/actions/build-test-and-deploy/cloud-platform-deploy@v1.0 # WORKFLOW_VERSION
+      - uses:  ministryofjustice/hmpps-github-actions/.github/actions/build-test-and-deploy/cloud-platform-deploy@v1 # WORKFLOW_VERSION
         id: deploy
         with:
           environment: ${{ inputs.environment }}

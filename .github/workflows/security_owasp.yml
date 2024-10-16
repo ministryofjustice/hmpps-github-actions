@@ -49,7 +49,7 @@ jobs:
         name: gradle-owasp-dependency-check-${{ inputs.subproject == '' && github.event.repository.name || inputs.subproject }}
         path: ${{ inputs.subproject == '' && '.' || inputs.subproject }}/build/reports/dependency-check-report.html
     - name: Gradle OWASP slack notification
-      uses: ministryofjustice/hmpps-github-actions/.github/actions/slack_codescan_notification@v1.0 # WORKFLOW_VERSION
+      uses: ministryofjustice/hmpps-github-actions/.github/actions/slack_codescan_notification@v1 # WORKFLOW_VERSION
       if: (failure() || steps.owasp-analyse.outcome == 'failure') && inputs.channel_id != 'NO_SLACK'
       with:
         title: "Gradle OWASP"

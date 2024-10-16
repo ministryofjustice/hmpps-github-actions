@@ -29,7 +29,7 @@ runs:
   steps:
     - uses: actions/checkout@v4
     - name: Authenticate
-      uses: ministryofjustice/hmpps-github-actions/.github/actions/build-test-and-deploy/cloud-platform-auth@v1.0 # WORKFLOW_VERSION
+      uses: ministryofjustice/hmpps-github-actions/.github/actions/build-test-and-deploy/cloud-platform-auth@v1 # WORKFLOW_VERSION
       with:
         api: ${{ inputs.api }}
         cert: ${{ inputs.cert }}
