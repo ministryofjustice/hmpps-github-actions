@@ -31,7 +31,7 @@ jobs:
     - uses: actions/checkout@v4
     - name: Trivy Image Vulnerability Scanner
       id: trivy-analyse
-      uses: aquasecurity/trivy-action@b5f4977b78f81fa3d48865ff0efcc6e279210235 # v0.50.2
+      uses: aquasecurity/trivy-action@915b19bbe73b92a6cf82a1bc12b087c9a19a5fe2 # v0.28.0
       with:
         image-ref: "quay.io/hmpps/${{ inputs.subproject == '' && github.event.repository.name || inputs.subproject}}:latest"
         severity: 'HIGH,CRITICAL'
