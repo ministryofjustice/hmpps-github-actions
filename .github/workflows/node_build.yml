@@ -35,10 +35,6 @@ jobs:
           ~/.cache
           node_modules
         key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
-        restore-keys: | 
-          ${{ runner.os }}-build-${{ env.cache-name }}-
-          ${{ runner.os }}-build-
-          ${{ runner.os }}-
     - name: install dependencies
       if: steps.initial-cache.outputs.cache-hit != 'true'
       shell: bash
@@ -54,10 +50,6 @@ jobs:
           ~/.cache
           node_modules
         key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
-        restore-keys: | 
-          ${{ runner.os }}-build-${{ env.cache-name }}-
-          ${{ runner.os }}-build-
-          ${{ runner.os }}-
     - name: build npm
       shell: bash
       run: |
