@@ -1,0 +1,54 @@
+name: 'send a slack release message'
+description: 'For a given channel ID and environment, send a slack message with the release status'
+inputs:
+  app_version:
+    description: "version of the app being deployed"
+    required: true
+  environment:
+    description: "deployment environment"
+    required: true
+  channel_id:
+    description: "Slack channel to send to"
+    required: true
+  deploy_outcome:
+    description: "The outcome of the deployment"
+    required: true
+runs:
+  using: "composite"
+  steps:
+  - name: Slack - Send a message
+    id: slack-release-message
+    uses: slackapi/slack-github-action@37ebaef184d7626c5f204ab8d3baff4262dd30f0 # v1.27.0
+    with:
+      channel-id: ${{ inputs.channel_id }}
+      payload: |
+          {
+            "blocks": [
+              {
+                "type": "section",
+                "text": {
+                  "type": "mrkdwn",
+                  "text": "*${{ github.event.repository.name }}* version `${{ inputs.app_version }}` deploy to *${{ inputs.environment }}*"
+                },
+                "accessory": {
+                  "type": "button",
+                  "text": {
+                    "type": "plain_text",
+                    "text": "View job"
+                  },
+                  "url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+                }
+              },
+              {
+                "type": "context",
+                "elements": [
+                  {
+                    "type": "mrkdwn",
+                    "text": "*Status:* ${{ inputs.deploy_outcome }}"
+                  }
+                ]
+              }
+            ]
+          }
+    env:
+      SLACK_BOT_TOKEN: ${{ secrets.HMPPS_SRE_SLACK_BOT_TOKEN }}
