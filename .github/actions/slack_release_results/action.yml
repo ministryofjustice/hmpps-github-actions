@@ -13,6 +13,9 @@ inputs:
   deploy_outcome:
     description: "The outcome of the deployment"
     required: true
+  slack_bot_token:
+    description: "Slack bot token"
+    required: true
 runs:
   using: "composite"
   steps:
@@ -51,4 +54,4 @@ runs:
             ]
           }
     env:
-      SLACK_BOT_TOKEN: ${{ secrets.HMPPS_SRE_SLACK_BOT_TOKEN }}
+      SLACK_BOT_TOKEN: ${{ inputs.slack_bot_token }}
