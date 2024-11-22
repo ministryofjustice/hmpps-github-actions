@@ -41,7 +41,7 @@ jobs:
           token: ${{ secrets.KUBE_TOKEN }}
         continue-on-error: true
 
-      - if: (${{ inputs.environment}} == 'prod' or ${{ inputs.environment }} == 'production') and ${{ vars.PROD_RELEASES_SLACK_CHANNEL }} != ''
+      - if: (${{ inputs.environment}} == 'prod' || ${{ inputs.environment }} == 'production') && ${{ vars.PROD_RELEASES_SLACK_CHANNEL }} != ''
         id: prod-slack
         uses: slackapi/slack-github-action@37ebaef184d7626c5f204ab8d3baff4262dd30f0 # v1.27.0
         with:
@@ -75,8 +75,10 @@ jobs:
                   }
                 ]
               }
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.HMPPS_SRE_SLACK_BOT_TOKEN }}
 
-      - if: (${{ inputs.environment}} != 'prod' and ${{ inputs.environment }} != 'production') and ${{ vars.NONPROD_RELEASES_SLACK_CHANNEL }} != ''
+      - if: (${{ inputs.environment}} != 'prod' && ${{ inputs.environment }} != 'production') && ${{ vars.NONPROD_RELEASES_SLACK_CHANNEL }} != ''
         id: nonprod-slack
         uses: slackapi/slack-github-action@37ebaef184d7626c5f204ab8d3baff4262dd30f0 # v1.27.0
         with:
@@ -110,3 +112,5 @@ jobs:
                   }
                 ]
               }
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.HMPPS_SRE_SLACK_BOT_TOKEN }}
