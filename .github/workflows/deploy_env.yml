@@ -53,7 +53,7 @@ jobs:
           slack_bot_token: ${{ secrets.HMPPS_SRE_SLACK_BOT_TOKEN }}
 
       
-      # Optional prod releases slack channel
+      # Optional prod releases slack channel (using PROD_RELEASES_SLACK_CHANNEL variable)
       - if: ${{ ( inputs.environment == 'prod' || inputs.environment == 'production' ) && vars.PROD_RELEASES_SLACK_CHANNEL != '' }}
         id: prod-slack
         uses: ministryofjustice/hmpps-github-actions/.github/actions/slack_release_results@v1 # WORKFLOW_VERSION 
@@ -64,9 +64,11 @@ jobs:
           deploy_outcome: ${{ steps.deploy.outcome }}
           slack_bot_token: ${{ secrets.HMPPS_SRE_SLACK_BOT_TOKEN }}
 
+      # Optional non-prod releases slack channel (using NONPROD_RELEASES_SLAC_CHANNEL variable)
       - if: ${{ (inputs.environment != 'prod' && inputs.environment != 'production') &&  vars.NONPROD_RELEASES_SLACK_CHANNEL != '' }}
         id: nonprod-slack
-        uses: ministryofjustice/hmpps-github-actions/.github/actions/slack_release_results@v1 # WORKFLOW_VERSION 
+        uses: ministryofjustice/hmpps-github-actions/.github/actions/slack_release_results@HEAT-429_slack_notification_on_deploy # WORKFLOW_VERSION 
+        # uses: ministryofjustice/hmpps-github-actions/.github/actions/slack_release_results@v1 # WORKFLOW_VERSION 
         with:
           channel_id: ${{ vars.NONPROD_RELEASES_SLACK_CHANNEL }}
           environment: ${{ inputs.environment }}
