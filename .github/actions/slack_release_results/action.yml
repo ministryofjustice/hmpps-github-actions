@@ -47,7 +47,7 @@ runs:
                 "elements": [
                   {
                     "type": "mrkdwn",
-                    "text": ":github-${{ inputs.deploy_outcome }}: *Deploy status:* ${{ inputs.deploy_outcome }} - ${{ github.event.head_commit.message }}"
+                    "text": ":github-${{ inputs.deploy_outcome }}: *Deploy status:* ${{ inputs.deploy_outcome }} - ${{ github.ref_name }} (${{ github.event.head_commit.message }})"
                   }
                 ]
               }
