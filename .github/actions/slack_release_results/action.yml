@@ -19,9 +19,8 @@ inputs:
 runs:
   using: "composite"
   steps:
-  - name: Slack - Send a message - success
-    id: slack-release-message-success
-    if: inputs.deploy_outcome == 'success'
+  - name: Slack - Send a message
+    id: slack-release-message
     uses: slackapi/slack-github-action@37ebaef184d7626c5f204ab8d3baff4262dd30f0 # v1.27.0
     with:
       channel-id: ${{ inputs.channel_id }}
@@ -48,44 +47,7 @@ runs:
                 "elements": [
                   {
                     "type": "mrkdwn",
-                    "text": ":github-green: *Deploy status:* ${{ inputs.deploy_outcome }} - ${{ github.event.head_commit.message }}"
-                  }
-                ]
-              }
-            ]
-          }
-    env:
-      SLACK_BOT_TOKEN: ${{ inputs.slack_bot_token }}
-  - name: Slack - Send a message - failure
-    id: slack-release-message-failure
-    if: inputs.deploy_outcome != 'success'
-    uses: slackapi/slack-github-action@37ebaef184d7626c5f204ab8d3baff4262dd30f0 # v1.27.0
-    with:
-      channel-id: ${{ inputs.channel_id }}
-      payload: |
-          {
-            "blocks": [
-              {
-                "type": "section",
-                "text": {
-                  "type": "mrkdwn",
-                  "text": "*${{ github.event.repository.name }}* version `${{ inputs.app_version }}` deploy to *${{ inputs.environment }}*"
-                },
-                "accessory": {
-                  "type": "button",
-                  "text": {
-                    "type": "plain_text",
-                    "text": "View job"
-                  },
-                  "url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-                }
-              },
-              {
-                "type": "context",
-                "elements": [
-                  {
-                    "type": "mrkdwn",
-                    "text": ":github-red: *Deploy status:* ${{ inputs.deploy_outcome }} - ${{ github.event.head_commit.message }}"
+                    "text": ":github-${{ inputs.deploy_outcome }}: *Deploy status:* ${{ inputs.deploy_outcome }} - ${{ github.event.head_commit.message }}"
                   }
                 ]
               }
