@@ -36,6 +36,7 @@ jobs:
         image-ref: "quay.io/hmpps/${{ inputs.subproject == '' && github.event.repository.name || inputs.subproject}}:latest"
         severity: 'HIGH,CRITICAL'
         ignore-unfixed: true
+        skip-dirs: '/usr/local/lib/node_modules/npm'
         skip-files: /app/agent.jar
         format: 'sarif'
         output: 'trivy-results.sarif'
