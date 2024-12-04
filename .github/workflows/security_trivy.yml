@@ -20,6 +20,7 @@ on:
 
 permissions:
   contents: read
+  security-events: write
 
 jobs:
   security-trivy-check:
@@ -27,13 +28,19 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       security-events: write
+      contents: read
+      actions: read
     steps:
     - uses: actions/checkout@v4
+    - name: Check repository in helm_deploy/values.yaml
+      id: check-package-repo
+      run: |
+        grep 'repository: ' helm_deploy/*/values.yaml | head -n1 | awk -F'[:/ ]+' '{print "repo="$3"/"$4}' >> $GITHUB_ENV
     - name: Trivy Image Vulnerability Scanner
       id: trivy-analyse
       uses: aquasecurity/trivy-action@915b19bbe73b92a6cf82a1bc12b087c9a19a5fe2 # v0.28.0
       with:
-        image-ref: "quay.io/hmpps/${{ inputs.subproject == '' && github.event.repository.name || inputs.subproject}}:latest"
+        image-ref: "${{ env.repo }}/${{ inputs.subproject == '' && github.event.repository.name || inputs.subproject}}:latest"
         severity: 'HIGH,CRITICAL'
         ignore-unfixed: true
         skip-dirs: '/usr/local/lib/node_modules/npm'
