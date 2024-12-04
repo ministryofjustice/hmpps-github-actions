@@ -29,11 +29,19 @@ jobs:
       security-events: write
     steps:
     - uses: actions/checkout@v4
+    - name: Check repository in helm_deploy/values.yaml
+      id: check-repo
+      run: |
+        if grep -q 'repository: ghcr.io' helm_deploy/*/values.yaml; then
+          echo "repo=ghcr.io/ministryofjustice" >> $GITHUB_ENV
+        else
+          echo "repo=quay.io/hmpps" >> $GITHUB_ENV
+        fi
     - name: Trivy Image Vulnerability Scanner
       id: trivy-analyse
       uses: aquasecurity/trivy-action@915b19bbe73b92a6cf82a1bc12b087c9a19a5fe2 # v0.28.0
       with:
-        image-ref: "quay.io/hmpps/${{ inputs.subproject == '' && github.event.repository.name || inputs.subproject}}:latest"
+        image-ref: "${{ env.repo }}/${{ inputs.subproject == '' && github.event.repository.name || inputs.subproject}}:latest"
         severity: 'HIGH,CRITICAL'
         ignore-unfixed: true
         skip-dirs: '/usr/local/lib/node_modules/npm'
