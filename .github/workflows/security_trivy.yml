@@ -35,7 +35,9 @@ jobs:
     - name: Check repository in helm_deploy/values.yaml
       id: check-package-repo
       run: |
-        grep -rh 'repository: ' --include="*/helm_deploy/*/values.yaml" --include="helm_deploy/*/values.yaml" | head -n1 | awk -F'[:/ ]+' '{print "repo="$3"/"$4}' >> $GITHUB_ENV
+        echo 'checking for repository name:'
+        grep -rh 'repository: ' --include="./*/helm_deploy/*/values.yaml" --include="./helm_deploy/*/values.yaml"
+        grep -rh 'repository: ' --include="./*/helm_deploy/*/values.yaml" --include="./helm_deploy/*/values.yaml" | head -n1 | awk -F'[:/ ]+' '{print "repo="$3"/"$4}' >> $GITHUB_ENV
     - name: Trivy Image Vulnerability Scanner
       id: trivy-analyse
       uses: aquasecurity/trivy-action@915b19bbe73b92a6cf82a1bc12b087c9a19a5fe2 # v0.28.0
