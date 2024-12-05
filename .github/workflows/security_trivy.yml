@@ -35,7 +35,7 @@ jobs:
     - name: Check repository in helm_deploy/values.yaml
       id: check-package-repo
       run: |
-        echo 'checking for repository name ${{ inputs.subproject == '' && github.event.repository.name || inputs.subproject}}:'
+        echo 'checking package repository for ${{ inputs.subproject == '' && github.event.repository.name || inputs.subproject}}:'
         grep -rh 'repository: ' --include="values.yaml" | grep ${{ inputs.subproject == '' && github.event.repository.name || inputs.subproject}} | head -n1 | awk -F'[:/ ]+' '{print "repo="$3"/"$4}' >> $GITHUB_ENV
     - name: Trivy Image Vulnerability Scanner
       id: trivy-analyse
