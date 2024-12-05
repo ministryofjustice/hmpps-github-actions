@@ -204,29 +204,7 @@ If the workfow fails, Github sends a slack message and an email to notify users.
 
 ## Automation
 
-You can set the repo variable using [gh client](https://cli.github.com/):
-
-```bash
-CHANNEL_ID=...
-REPO_NAME=...
-
-gh variable set SECURITY_ALERTS_SLACK_CHANNEL_ID --body "${CHANNEL_ID}" -R "ministryofjustice/${REPO_NAME}"
-```
-
-To copy all scripts and workflows across into a new repo, you can run:
-
-```bash
-REPO_NAME=...
-./migrate-repo.mjs "${REPO_NAME}" 
-```
-
-Some manual steps will remain:
-
-* Need to comment out circleci config
-* Need to delete unwanted jobs
-* Need to tweak cron job times
-
-Alternatively for kotlin projects you can run:
+For kotlin projects you can run:
 ```bash
 ../hmpps-github-actions/migrate-kotlin-security-jobs.bash
 ```
@@ -235,6 +213,11 @@ from the github repository.  For typescript projects there is also:
 ../hmpps-github-actions/migrate-typescript-security-jobs.bash
 ```
 see the scripts for more information.
+
+Alternatively you can run this from a checked out repo:
+```bash
+/bin/bash -c "$(curl -fsSL https://github.com/ministryofjustice/hmpps-github-actions/raw/refs/heads/main/migrate-repo.sh)
+```
 
 ### TODO:
 
