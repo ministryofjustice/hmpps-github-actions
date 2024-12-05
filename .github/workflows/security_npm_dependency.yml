@@ -8,10 +8,11 @@ on:
         required: false
         default: 'NO_SLACK'
         type: string
-      node_version:
+      node_version_file:
+        description: "Passed to setup-node action to specify where to source the version of node from"
         required: false
         type: string
-        default: '20.16'
+        default: ".nvmrc"
     secrets:
       HMPPS_SRE_SLACK_BOT_TOKEN:
         description: Slack bot token
@@ -30,7 +31,7 @@ jobs:
     - uses: actions/checkout@v4
     - uses: actions/setup-node@v4
       with:
-        node-version: ${{ inputs.node_version }}
+        node_version_file: ${{ inputs.node_version_file }}
     - name: Show npm version
       id: npm-version
       run: 'npm -v'

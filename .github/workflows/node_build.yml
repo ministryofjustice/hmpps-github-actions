@@ -3,10 +3,11 @@ name: Build and test node
 on:
   workflow_call:
     inputs:
-      node_version:
-        type: string
+      node_version_file:
+        description: "Passed to setup-node action to specify where to source the version of node from"
         required: false
-        default: '20.12'
+        type: string
+        default: ".nvmrc"
 
 permissions:
   contents: read
@@ -17,10 +18,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    - name: Use Node.js ${{ inputs.node_version }}
+    - name: Use Node.js ${{ inputs.node_version_file }}
       uses: actions/setup-node@v4
       with:
-        node-version: ${{ inputs.node_version }}
+        node-version-file: ${{ inputs.node_version_file }}
     - name: update npm
       shell: bash
       run: |

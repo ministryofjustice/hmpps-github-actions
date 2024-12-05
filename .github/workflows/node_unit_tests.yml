@@ -3,10 +3,11 @@ name: Build and test node
 on:
   workflow_call:
     inputs:
-      node_version:
-        type: string
+      node_version_file:
+        description: "Passed to setup-node action to specify where to source the version of node from"
         required: false
-        default: '20.12'
+        type: string
+        default: ".nvmrc"
 
 permissions:
   contents: read
@@ -16,41 +17,41 @@ jobs:
     name: Run the node unit tests
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
-    - name: Use Node.js ${{ inputs.node_version }}
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ inputs.node_version }}
-    - name: refresh cache
-      id: refresh-cache
-      uses: actions/cache@v4
-      env: 
-        cache-name: node-modules
-      with:
-        path: | 
-          ~/.cache
-          node_modules
-        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
-        restore-keys: | 
-          ${{ runner.os }}-build-${{ env.cache-name }}-
-          ${{ runner.os }}-build-
-          ${{ runner.os }}-
-    - name: unit tests
-      id: unit-tests
-      shell: bash
-      run: |
-        sudo npm run test:ci
-      # continue-on-error: true
-      # Replacing the above with if: always()
-    - name: upload the artifacts
-      if: always()
-      uses: actions/upload-artifact@v4
-      with: 
-        name: npm_unit_test_artifacts
-        path: test_results/
-    - name: fail the action if the tests failed
-      if: ${{ steps.unit-tests.outcome == 'failure' }}
-      uses: actions/github-script@v7
-      with:
-        script: |
+      - uses: actions/checkout@v4
+      - name: Use Node.js ${{ inputs.node_version_file }}
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ${{ inputs.node_version_file }}
+      - name: refresh cache
+        id: refresh-cache
+        uses: actions/cache@v4
+        env:
+          cache-name: node-modules
+        with:
+          path: |
+            ~/.cache
+            node_modules
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+            ${{ runner.os }}-build-
+            ${{ runner.os }}-
+      - name: unit tests
+        id: unit-tests
+        shell: bash
+        run: |
+          sudo npm run test:ci
+        # continue-on-error: true
+        # Replacing the above with if: always()
+      - name: upload the artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: npm_unit_test_artifacts
+          path: test_results/
+      - name: fail the action if the tests failed
+        if: ${{ steps.unit-tests.outcome == 'failure' }}
+        uses: actions/github-script@v7
+        with:
+          script: |
             core.setFailed('Unit tests failed')
