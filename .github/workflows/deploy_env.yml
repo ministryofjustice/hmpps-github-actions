@@ -51,7 +51,7 @@ jobs:
           if [[ "${{ inputs.environment }}" == "prod" ]]; then
             echo "slack_channel_id=${{ vars.PROD_RELEASES_SLACK_CHANNEL }}" >> $GITHUB_OUTPUT
           else
-            echo "slack_channel_id=${{ vars.NON_PROD_RELEASE_SLACK_CHANNEL }}" >> $GITHUB_OUTPUT
+            echo "slack_channel_id=${{ vars.NON_PROD_RELEASES_SLACK_CHANNEL }}" >> $GITHUB_OUTPUT
           fi
 
       - uses: ministryofjustice/hmpps-github-actions/.github/actions/version_history@HEAT-422_commit_history
