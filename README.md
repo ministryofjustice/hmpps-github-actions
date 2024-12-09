@@ -46,6 +46,17 @@ Workflows and actions are referred to by the tags associated with the current re
 
 When a new release is issued, all of these referred workflows (as well as the calling ones within applications) will need to be updated as well.
 
+### Releasing
+
+To perform a release:
+
+* Update the WORKFLOW_VERSION across the project
+* Ensure the `CHANGELOG.md` has been updated
+* Create a pull request and get it merged
+* Create tags for `vx`, `vx.y` and `vx.y.z`, e.g: `git tag v2`, `v2.0` and `v2.0.1`
+* Force push all three tags to the repo
+* Create a github release from the `vx.y.z` tag
+
 ### TODO
 
 - Update the discovery tool to scan the version of Github Actions Workflows
