@@ -54,17 +54,7 @@ jobs:
             echo "slack_channel_id=${{ vars.NON_PROD_RELEASES_SLACK_CHANNEL }}" >> $GITHUB_OUTPUT
           fi
 
-      - uses: ministryofjustice/hmpps-github-actions/.github/actions/version_history@HEAT-422_commit_history
-        if: ${{ inputs.show_changelog }}
-        id: version_history
-        with:
-          app_version: ${{ inputs.app_version }}
-          environment: ${{ inputs.environment }}
-          namespace: ${{ secrets.KUBE_NAMESPACE }}
-          k8s_deployment_name: ${{ inputs.k8s_deployment_name }}
-          changelog_git_paths: ${{ inputs.changelog_git_paths }}
-
-      - uses: ministryofjustice/hmpps-github-actions/.github/actions/build-test-and-deploy/cloud-platform-deploy@v2 # WORKFLOW_VERSION
+      - uses: ministryofjustice/hmpps-github-actions/.github/actions/build-test-and-deploy/cloud-platform-deploy@HEAT-422_commit_history # WORKFLOW_VERSION
         id: deploy
         with:
           environment: ${{ inputs.environment }}
