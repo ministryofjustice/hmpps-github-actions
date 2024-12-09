@@ -29,7 +29,7 @@ jobs:
         id: install
         with:
           version: latest
-      - uses: ministryofjustice/hmpps-github-actions/.github/actions/build-test-and-deploy/cloud-platform-deploy@v1 # WORKFLOW_VERSION
+      - uses: ministryofjustice/hmpps-github-actions/.github/actions/build-test-and-deploy/cloud-platform-deploy@v2 # WORKFLOW_VERSION
         id: deploy
         with:
           environment: ${{ inputs.environment }}
@@ -44,7 +44,7 @@ jobs:
       # Notification bit - always send prod releases to dps-releases - CVA3MKDTR
       - if: ${{  inputs.environment == 'prod' || inputs.environment == 'production' }} 
         id: prod-dps-slack
-        uses: ministryofjustice/hmpps-github-actions/.github/actions/slack_release_results@v1 # WORKFLOW_VERSION
+        uses: ministryofjustice/hmpps-github-actions/.github/actions/slack_release_results@v2 # WORKFLOW_VERSION
         with:
           channel_id: 'CVA3MKDTR'
           environment: ${{ inputs.environment }}
@@ -56,7 +56,7 @@ jobs:
       # Optional prod releases slack channel (using PROD_RELEASES_SLACK_CHANNEL variable)
       - if: ${{ ( inputs.environment == 'prod' || inputs.environment == 'production' ) && vars.PROD_RELEASES_SLACK_CHANNEL != '' }}
         id: prod-slack
-        uses: ministryofjustice/hmpps-github-actions/.github/actions/slack_release_results@v1 # WORKFLOW_VERSION
+        uses: ministryofjustice/hmpps-github-actions/.github/actions/slack_release_results@v2 # WORKFLOW_VERSION
         with:
           channel_id: ${{ vars.PROD_RELEASES_SLACK_CHANNEL }}
           environment: ${{ inputs.environment }}
@@ -67,7 +67,7 @@ jobs:
       # Optional non-prod releases slack channel (using NONPROD_RELEASES_SLACK_CHANNEL variable)
       - if: ${{ (inputs.environment != 'prod' && inputs.environment != 'production') &&  vars.NONPROD_RELEASES_SLACK_CHANNEL != '' }}
         id: nonprod-slack
-        uses: ministryofjustice/hmpps-github-actions/.github/actions/slack_release_results@v1 # WORKFLOW_VERSION
+        uses: ministryofjustice/hmpps-github-actions/.github/actions/slack_release_results@v2 # WORKFLOW_VERSION
         with:
           channel_id: ${{ vars.NONPROD_RELEASES_SLACK_CHANNEL }}
           environment: ${{ inputs.environment }}
