@@ -1,0 +1,84 @@
+name: 'send a slack commit history message'
+description: 'Get the commits between the last deployment and the current one and send them to slack'
+inputs:
+  app_version:
+    description: "version of the app being deployed"
+    required: true
+  environment:
+    description: "deployment environment"
+    required: true
+  namespace:
+    description: "Kubernetes namespace"
+    required: true
+  k8s_deployment_name:
+    description: "Kubernetes deployment name"
+    default: 'PROJECT_NAME'
+    required: false
+  changelog_git_paths:
+    default: ""
+    description: When set it will limit the file changes shown in the changelog to the specified paths only. This is useful for multi-project builds where otherwise it will show all changes from all projects.
+    required: false
+  slack_channel_id:
+    description: "Slack channel to send to"
+    required: true
+  slack_bot_token:
+    description: "Slack bot token"
+    required: true 
+
+outputs:
+  deployment_changelog:
+    description: "The changelog for the deployment" 
+    value: ${{ steps.get-deployment-changelog.outputs.DEPLOYMENT_CHANGELOG }}
+
+runs:
+  using: "composite"
+  steps:
+  - name: find the latest deployment_name
+    id: get-deployment-changelog
+    shell: bash
+    run:
+      | 
+      echo "K8S_DEPLOYMENT_NAME=${{ inputs.k8s_deployment_name }}"
+      echo "Cluster: ${{ inputs.namespace }}"
+      echo "Slack channel: ${{ inputs.slack_channel_id }}"
+      echo "App version: ${{ inputs.app_version }}"
+      echo "Changelog git paths: ${{ inputs.changelog_git_paths }}"
+      echo "Show changelog: ${{ inputs.show_changelog }}"
+      echo "--------------------------------------------"
+      echo "Processing the commit history..."
+      if [[ "${{ inputs.k8s_deployment_name }}" == "PROJECT_NAME" ]]; then
+        K8S_DEPLOYMENT_NAME="${{ github.event.repository.name }}"
+      else
+        K8S_DEPLOYMENT_NAME="${{ inputs.k8s_deployment_name }}"
+      fi
+
+      # initialise the changelog
+      touch .deployment_changelog
+
+      CURRENT_COMMIT="$(echo "${{ inputs.app_version }} " | cut -d'.' -f3)"
+      K8S_PREVIOUS_APP_VERSION="$(kubectl get "deployment/${K8S_DEPLOYMENT_NAME}" --namespace="${{ inputs.namespace }}" -o=jsonpath='{.metadata.labels.app\.kubernetes\.io/version}' || true)"
+      
+      if [[ "$K8S_PREVIOUS_APP_VERSION" == "" ]]; then
+      # if no previous version was found, set to current commit minus 1
+        echo "Previous deployment not found, showing current commit only." >> .deployment_changelog
+        PREVIOUS_COMMIT="${CURRENT_COMMIT}^1"
+      else
+        PREVIOUS_COMMIT="$(echo "${K8S_PREVIOUS_APP_VERSION}" | cut -d'.' -f3)"
+      fi
+
+      # Some apps may not have set the correct k8s label with a valid app version containing a sha1
+      # Check $previous_commit sha1 is valid
+      if git rev-parse --quiet --verify "${previous_commit}" &>/dev/null; then
+        # shellcheck disable=SC2086
+        PAGER="cat" git log --oneline --no-decorate \
+          --pretty=format:'%h %s (%cr)' --committer='noreply@github.com' --grep='#' \
+          "${previous_commit}..${current_commit}" $CHANGELOG_GIT_PATHS \
+          | sed 's/Merge pull request /PR /g; s|from ministryofjustice/dependabot/|:dependabot:|g; s|from ministryofjustice/||g' \
+          | tr '"' "'" | tr "\`" "'" \
+          >> .deployment_changelog
+      else
+        echo "Changelog not available." > .deployment_changelog
+      fi
+
+      echo "DEPLOYMENT_CHANGELOG=\"$(cat .deployment_changelog)\"" >> $GITHUB_OUTPUT
+

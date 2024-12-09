@@ -13,9 +13,14 @@ inputs:
   deploy_outcome:
     description: "The outcome of the deployment"
     required: true
+  deployment_changelog:
+    description: "A log of previous deployments"
+    required: false
+    default: ""
   slack_bot_token:
     description: "Slack bot token"
     required: true
+    
 runs:
   using: "composite"
   steps:
@@ -48,6 +53,10 @@ runs:
                   {
                     "type": "mrkdwn",
                     "text": ":github-${{ inputs.deploy_outcome }}: *Deploy status:* ${{ inputs.deploy_outcome }} - ${{ github.ref_name }} (${{ github.event.head_commit.message }})"
+                  },
+                  {
+                    "type": "plain_text",
+                    "text": "\n${{ inputs.deployment_changelog }}"
                   }
                 ]
               }
