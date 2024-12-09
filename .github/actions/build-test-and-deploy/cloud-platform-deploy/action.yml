@@ -23,6 +23,19 @@ inputs:
   token:
     description: The KUBE_TOKEN
     required: true
+  k8s_deployment_name:
+    description: "Kubernetes deployment name"
+    default: 'PROJECT_NAME'
+    required: false
+  changelog_git_paths:
+    default: ""
+    description: When set it will limit the file changes shown in the changelog to the specified paths only. This is useful for multi-project builds where otherwise it will show all changes from all projects.
+    required: false
+
+outputs:
+  deployment_changelog:
+    description: "The changelog for the deployment" 
+    value: ${{ steps.get-deployment-changelog.outputs.DEPLOYMENT_CHANGELOG }}
 
 runs:
   using: composite
@@ -48,6 +61,17 @@ runs:
           *) environment=${{ inputs.environment }} ;;
         esac
         echo "environment=${environment}" | tee -a "$GITHUB_OUTPUT"
+
+    - name: get version history
+      uses: ministryofjustice/hmpps-github-actions/.github/actions/version_history@HEAT-422_commit_history
+      if: ${{ inputs.show_changelog }}
+      id: version_history
+      with:
+        app_version: ${{ inputs.version }}
+        environment: ${{ inputs.environment }}
+        namespace: ${{ inputs.namespace }}
+        k8s_deployment_name: ${{ inputs.k8s_deployment_name }}
+        changelog_git_paths: ${{ inputs.changelog_git_paths }}
 
     - name: Deploy
       shell: bash

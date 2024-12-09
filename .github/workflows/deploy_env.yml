@@ -63,8 +63,6 @@ jobs:
           namespace: ${{ secrets.KUBE_NAMESPACE }}
           k8s_deployment_name: ${{ inputs.k8s_deployment_name }}
           changelog_git_paths: ${{ inputs.changelog_git_paths }}
-          slack_bot_token: ${{ secrets.HMPPS_SRE_SLACK_BOT_TOKEN }}
-          slack_channel_id: ${{ steps.set-slack-channel-id.outputs.slack_channel_id || 'CVA3MKDTR '}} 
 
       - uses: ministryofjustice/hmpps-github-actions/.github/actions/build-test-and-deploy/cloud-platform-deploy@v2 # WORKFLOW_VERSION
         id: deploy
@@ -76,6 +74,8 @@ jobs:
           cluster: ${{ secrets.KUBE_CLUSTER }}
           namespace: ${{ secrets.KUBE_NAMESPACE }}
           token: ${{ secrets.KUBE_TOKEN }}
+          k8s_deployment_name: ${{ inputs.k8s_deployment_name }}
+          changelog_git_paths: ${{ inputs.changelog_git_paths }}
         continue-on-error: true
 
       # Notification bit - always send prod releases to dps-releases - CVA3MKDTR

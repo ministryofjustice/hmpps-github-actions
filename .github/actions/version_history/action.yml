@@ -1,4 +1,4 @@
-name: 'send a slack commit history message'
+name: 'get the commit history'
 description: 'Get the commits between the last deployment and the current one and send them to slack'
 inputs:
   app_version:
@@ -18,12 +18,6 @@ inputs:
     default: ""
     description: When set it will limit the file changes shown in the changelog to the specified paths only. This is useful for multi-project builds where otherwise it will show all changes from all projects.
     required: false
-  slack_channel_id:
-    description: "Slack channel to send to"
-    required: true
-  slack_bot_token:
-    description: "Slack bot token"
-    required: true 
 
 outputs:
   deployment_changelog:
