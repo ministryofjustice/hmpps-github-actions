@@ -77,7 +77,6 @@ migrate_node_security_jobs() {
   yq -i ".on.schedule[].cron=\"$RANDOM_MINUTE2 $RANDOM_HOUR * * 1\" | .on.schedule[].cron line_comment=\"Every Monday at $(printf "%02d:%02d" $RANDOM_HOUR $RANDOM_MINUTE2) UTC\"" .github/workflows/security_veracode_policy_scan.yml
 }
 
-# Check if being run from a Node project
 
 if [[ -f "package.json" ]]; then
   migrate_node_security_jobs
