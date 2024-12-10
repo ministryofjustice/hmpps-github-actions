@@ -17,28 +17,23 @@
 set -euo pipefail
 
 if ! command -v yq &> /dev/null; then
-  echo "Error: yq is not installed. Please install yq before running this script."
+  echo "Error: yq is not installed. Please install yq before running this script. This can be installed via brew: 'brew install yq'"
   exit 1
 fi
 
 if ! command -v gh &> /dev/null; then
-  echo "Error: gh is not installed. Please install gh before running this script."
+  echo "Error: gh is not installed. Please install gh before running this script. This can be installed via brew: 'brew install gh'"
   exit 1
 fi
 
-read -p "Please enter the slack channel name (without the '#' character): " CHANNEL_ID
-
-if [[ ${CHANNEL_ID:0:1} == "#" ]]; then
-  echo "Error: CHANNEL_ID is not set or starts with a hash character. Please set the CHANNEL_ID env variable before running this script."
-  exit 1
-fi
-
+CHANNEL_ID=$(yq  -r .parameters.alerts-slack-channel.default .circleci/config.yml)
 REPO_NAME="${PWD##*/}"
 
+echo "Using '$CHANNEL_ID' as the slack channel for security alerts"
 gh variable set SECURITY_ALERTS_SLACK_CHANNEL_ID --body "${CHANNEL_ID}" -R "ministryofjustice/${REPO_NAME}"
 
 migrate_kotlin_security_jobs() {
-  yq -i 'del(.workflows.security) | del(.workflows.security-weekly)' .circleci/config.yml
+  yq -i 'del(.workflows.security) | del(.workflows.security-weekly) | del(.parameters.alerts-slack-channel)' .circleci/config.yml
   mkdir -p .github/workflows
 
   gh api repos/ministryofjustice/hmpps-github-actions/contents/templates/workflows/security_owasp.yml -H "Accept: application/vnd.github.v3.raw" > .github/workflows/security_owasp.yml
@@ -58,7 +53,7 @@ migrate_kotlin_security_jobs() {
 }
 
 migrate_node_security_jobs() {
-  yq -i 'del(.workflows.security) | del(.workflows.security-weekly)' .circleci/config.yml
+  yq -i 'del(.workflows.security) | del(.workflows.security-weekly) | del(.parameters.alerts-slack-channel)' .circleci/config.yml
   mkdir -p .github/workflows
 
   gh api repos/ministryofjustice/hmpps-github-actions/contents/templates/workflows/security_npm_dependency.yml -H "Accept: application/vnd.github.v3.raw" > .github/workflows/security_npm_dependency.yml
