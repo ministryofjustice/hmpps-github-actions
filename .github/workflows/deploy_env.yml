@@ -44,7 +44,12 @@ jobs:
         id: install
         with:
           version: latest
-      
+
+      - name: Install Git
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y git
+     
       - name: Set Slack Channel ID
         id: set-slack-channel-id
         run: |
