@@ -62,6 +62,10 @@ runs:
       fi
       echo "PREVIOUS_COMMIT=${PREVIOUS_COMMIT}"
       # Some apps may not have set the correct k8s label with a valid app version containing a sha1
+
+      # Debug - run a basic git log to see if it works    
+      git log | head -n 10
+
       # Check $PREVIOUS_COMMIT sha1 is valid
       git rev-parse --quiet --verify "${PREVIOUS_COMMIT}"
       if git rev-parse --quiet --verify "${PREVIOUS_COMMIT}" &>/dev/null; then
