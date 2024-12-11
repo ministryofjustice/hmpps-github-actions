@@ -34,10 +34,8 @@ runs:
       | 
       echo "K8S_DEPLOYMENT_NAME=${{ inputs.k8s_deployment_name }}"
       echo "Cluster: ${{ inputs.namespace }}"
-      echo "Slack channel: ${{ inputs.slack_channel_id }}"
       echo "App version: ${{ inputs.app_version }}"
       echo "Changelog git paths: ${{ inputs.changelog_git_paths }}"
-      echo "Show changelog: ${{ inputs.show_changelog }}"
       echo "--------------------------------------------"
       echo "Processing the commit history..."
       if [[ "${{ inputs.k8s_deployment_name }}" == "PROJECT_NAME" ]]; then
@@ -62,6 +60,7 @@ runs:
 
       # Some apps may not have set the correct k8s label with a valid app version containing a sha1
       # Check $previous_commit sha1 is valid
+      git rev-parse --quiet --verify "${previous_commit}"
       if git rev-parse --quiet --verify "${previous_commit}" &>/dev/null; then
         # shellcheck disable=SC2086
         PAGER="cat" git log --oneline --no-decorate \
