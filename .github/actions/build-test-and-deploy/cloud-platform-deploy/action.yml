@@ -31,6 +31,10 @@ inputs:
     default: ""
     description: When set it will limit the file changes shown in the changelog to the specified paths only. This is useful for multi-project builds where otherwise it will show all changes from all projects.
     required: false
+  show_changelog:
+    description: Whether the changelog should be sent by slack
+    default: "true"
+    required: false
 
 outputs:
   deployment_changelog:
@@ -64,7 +68,7 @@ runs:
 
     - name: get version history
       uses: ministryofjustice/hmpps-github-actions/.github/actions/version_history@HEAT-422_commit_history
-      if: ${{ inputs.show_changelog }}
+      if: ${{ inputs.show_changelog == 'true' }}
       id: version_history
       with:
         app_version: ${{ inputs.version }}
