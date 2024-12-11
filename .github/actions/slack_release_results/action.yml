@@ -24,6 +24,9 @@ inputs:
 runs:
   using: "composite"
   steps:
+  - name: First line of slack commit only.
+    shell: bash
+    run: echo "commit_message_first_line=${{ github.event.head_commit.message }}" | head -n 1 >> $GITHUB_ENV
   - name: Slack - Send a message
     id: slack-release-message
     uses: slackapi/slack-github-action@37ebaef184d7626c5f204ab8d3baff4262dd30f0 # v1.27.0
@@ -52,7 +55,7 @@ runs:
                 "elements": [
                   {
                     "type": "mrkdwn",
-                    "text": ":github-${{ inputs.deploy_outcome }}: *Deploy status:* ${{ inputs.deploy_outcome }} - ${{ github.ref_name }} (${{ github.event.head_commit.message }})"
+                    "text": ":github-${{ inputs.deploy_outcome }}: *Deploy status:* ${{ inputs.deploy_outcome }} - ${{ github.ref_name }} (${{ env.commit_message_first_line }})"
                   },
                   {
                     "type": "plain_text",
