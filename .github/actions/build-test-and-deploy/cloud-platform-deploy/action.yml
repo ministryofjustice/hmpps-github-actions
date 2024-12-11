@@ -33,7 +33,6 @@ inputs:
     required: false
   show_changelog:
     description: Whether the changelog should be sent by slack
-    default: "true"
     required: false
 
 outputs:
@@ -68,7 +67,7 @@ runs:
 
     - name: get version history
       uses: ministryofjustice/hmpps-github-actions/.github/actions/version_history@HEAT-422_commit_history
-      if: ${{ inputs.show_changelog == 'true' }}
+      if: ${{ inputs.show_changelog }}
       id: version_history
       with:
         app_version: ${{ inputs.version }}
