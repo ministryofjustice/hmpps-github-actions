@@ -45,11 +45,14 @@ runs:
       fi
 
       # initialise the changelog
+      echo "Touching .deployment_changelog"
       touch .deployment_changelog
 
       CURRENT_COMMIT="$(echo "${{ inputs.app_version }} " | cut -d'.' -f3)"
       K8S_PREVIOUS_APP_VERSION="$(kubectl get "deployment/${K8S_DEPLOYMENT_NAME}" --namespace="${{ inputs.namespace }}" -o=jsonpath='{.metadata.labels.app\.kubernetes\.io/version}' || true)"
-      
+      echo "CURRENT_COMMIT=${CURRENT_COMMIT}"
+      echo "K8S_PREVIOUS_APP_VERSION=${K8S_PREVIOUS_APP_VERSION}"      
+
       if [[ "$K8S_PREVIOUS_APP_VERSION" == "" ]]; then
       # if no previous version was found, set to current commit minus 1
         echo "Previous deployment not found, showing current commit only." >> .deployment_changelog
@@ -57,15 +60,15 @@ runs:
       else
         PREVIOUS_COMMIT="$(echo "${K8S_PREVIOUS_APP_VERSION}" | cut -d'.' -f3)"
       fi
-
+      echo "PREVIOUS_COMMIT=${PREVIOUS_COMMIT}"
       # Some apps may not have set the correct k8s label with a valid app version containing a sha1
-      # Check $previous_commit sha1 is valid
-      git rev-parse --quiet --verify "${previous_commit}"
-      if git rev-parse --quiet --verify "${previous_commit}" &>/dev/null; then
+      # Check $PREVIOUS_COMMIT sha1 is valid
+      git rev-parse --quiet --verify "${PREVIOUS_COMMIT}"
+      if git rev-parse --quiet --verify "${PREVIOUS_COMMIT}" &>/dev/null; then
         # shellcheck disable=SC2086
         PAGER="cat" git log --oneline --no-decorate \
           --pretty=format:'%h %s (%cr)' --committer='noreply@github.com' --grep='#' \
-          "${previous_commit}..${current_commit}" $CHANGELOG_GIT_PATHS \
+          "$PREVIOUS_COMMIT}..${CURRENT_COMMIT}" $CHANGELOG_GIT_PATHS \
           | sed 's/Merge pull request /PR /g; s|from ministryofjustice/dependabot/|:dependabot:|g; s|from ministryofjustice/||g' \
           | tr '"' "'" | tr "\`" "'" \
           >> .deployment_changelog
