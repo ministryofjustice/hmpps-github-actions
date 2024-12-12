@@ -38,7 +38,7 @@ inputs:
 outputs:
   deployment_changelog:
     description: "The changelog for the deployment" 
-    value: ${{ steps.get-deployment-changelog.outputs.DEPLOYMENT_CHANGELOG }}
+    value: ${{ steps.version_history.outputs.deployment_changelog }}
 
 runs:
   using: composite

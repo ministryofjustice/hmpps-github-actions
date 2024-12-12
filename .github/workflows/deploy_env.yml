@@ -94,4 +94,4 @@ jobs:
           app_version: ${{ inputs.app_version }}
           deploy_outcome: ${{ steps.deploy.outcome }}
           slack_bot_token: ${{ secrets.HMPPS_SRE_SLACK_BOT_TOKEN }}
-          deployment_changelog: ${{ steps.version_history.outputs.deployment_changelog }}
+          deployment_changelog: ${{ steps.deploy.outputs.deployment_changelog }}
