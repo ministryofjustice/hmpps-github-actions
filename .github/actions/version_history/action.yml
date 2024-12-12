@@ -69,12 +69,12 @@ runs:
         PAGER="cat" git log --oneline --no-decorate \
           --pretty=format:'%h %s (%cr)' --committer='noreply@github.com' --grep='#' \
           "${PREVIOUS_COMMIT}..${CURRENT_COMMIT}" $CHANGELOG_GIT_PATHS \
-          | sed -e 's/Merge pull request /PR /g; s|from ministryofjustice/dependabot/|:dependabot:|g; s|from ministryofjustice/||g' -e ':a;N;$!ba;s/\n/\\n/g' \
+          | sed 's/Merge pull request /PR /g; s|from ministryofjustice/dependabot/|:dependabot:|g; s|from ministryofjustice/||g' \
           | tr '"' "'" | tr "\`" "'" \
           >> .deployment_changelog
       else
         echo "Changelog not available." > .deployment_changelog
       fi
 
-      echo "DEPLOYMENT_CHANGELOG=\"$(cat .deployment_changelog)\"" >> $GITHUB_OUTPUT
+      echo "DEPLOYMENT_CHANGELOG=\"$(cat .deployment_changelog)\" | -e ':a;N;$!ba;s/\n/\\n/g' " >> $GITHUB_OUTPUT
 
