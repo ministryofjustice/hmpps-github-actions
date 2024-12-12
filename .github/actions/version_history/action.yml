@@ -64,10 +64,6 @@ runs:
       # Some apps may not have set the correct k8s label with a valid app version containing a sha1
 
       # Check $PREVIOUS_COMMIT sha1 is valid
-      echo "Running git rev-parse --quiet --verify ${PREVIOUS_COMMIT}"
-      git rev-parse --quiet --verify "${PREVIOUS_COMMIT}"
-      echo "Just ran git rev-parse --quiet --verify ${PREVIOUS_COMMIT}"
-
       if git rev-parse --quiet --verify "${PREVIOUS_COMMIT}" &>/dev/null; then
         # shellcheck disable=SC2086
         PAGER="cat" git log --oneline --no-decorate \
