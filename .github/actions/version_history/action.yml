@@ -69,7 +69,7 @@ runs:
         PAGER="cat" git log --oneline --no-decorate \
           --pretty=format:'%h %s (%cr)' --committer='noreply@github.com' --grep='#' \
           "${PREVIOUS_COMMIT}..${CURRENT_COMMIT}" $CHANGELOG_GIT_PATHS \
-          | sed 's/Merge pull request /PR /g; s|from ministryofjustice/dependabot/|:dependabot:|g; s|from ministryofjustice/||g' \
+          | sed -e 's/Merge pull request /PR /g; s|from ministryofjustice/dependabot/|:dependabot:|g; s|from ministryofjustice/||g' -e ':a;N;$!ba;s/\n/\\n/g' \
           | tr '"' "'" | tr "\`" "'" \
           >> .deployment_changelog
       else
