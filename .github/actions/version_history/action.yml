@@ -76,5 +76,5 @@ runs:
         echo "Changelog not available." > .deployment_changelog
       fi
 
-      echo "DEPLOYMENT_CHANGELOG=\"$(cat .deployment_changelog)\" | -e ':a;N;$!ba;s/\n/\\n/g' " >> $GITHUB_OUTPUT
+      echo "DEPLOYMENT_CHANGELOG=\"$(cat .deployment_changelog\" | sed ':a;N;$!ba;s/\n/\\n/g')" >> $GITHUB_OUTPUT
 
