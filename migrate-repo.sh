@@ -29,8 +29,15 @@ fi
 CHANNEL_ID=$(yq  -r .parameters.alerts-slack-channel.default .circleci/config.yml)
 REPO_NAME="${PWD##*/}"
 
+if [[ $CHANNEL_ID != "null" ]]; then
+  echo "updating CHANNEL_ID to '$CHANNEL_ID'"  
+
+  gh variable set SECURITY_ALERTS_SLACK_CHANNEL_ID --body "${CHANNEL_ID}" -R "ministryofjustice/${REPO_NAME}"
+else
+  echo "CHANNEL_ID not available in circleci config. Check value at https://github.com/ministryofjustice/${REPO_NAME}/settings/variables/actions "
+fi
+
 echo "Using '$CHANNEL_ID' as the slack channel for security alerts"
-gh variable set SECURITY_ALERTS_SLACK_CHANNEL_ID --body "${CHANNEL_ID}" -R "ministryofjustice/${REPO_NAME}"
 
 migrate_kotlin_security_jobs() {
   yq -i 'del(.workflows.security) | del(.workflows.security-weekly) | del(.parameters.alerts-slack-channel)' .circleci/config.yml
