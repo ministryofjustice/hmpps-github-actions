@@ -26,31 +26,20 @@ jobs:
       shell: bash
       run: |
         sudo npm install -g npm@latest
-    - name: refresh cache
-      id: initial-cache
-      uses: actions/cache@v4
+    - name: restore cache
+      id: restore-cache
+      uses: actions/cache/restore@v4
       env: 
         cache-name: node-modules
       with:
-        path: | 
-          ~/.cache
+        path: |
           node_modules
         key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
     - name: install dependencies
-      if: steps.initial-cache.outputs.cache-hit != 'true'
+      if: steps.restore-cache.outputs.cache-hit != 'true'
       shell: bash
       run: |
         npm ci --no-audit
-    - name: refresh cache
-      id: refresh-cache
-      uses: actions/cache@v4
-      env: 
-        cache-name: node-modules
-      with:
-        path: | 
-          ~/.cache
-          node_modules
-        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
     - name: build npm
       shell: bash
       run: |
@@ -64,7 +53,13 @@ jobs:
       with: 
         name: npm_build_artifacts
         path: |
-          node_modules/
           build/
           dist/
           assets/stylesheets/
+    - name: save cache
+      id: save-cache
+      uses: actions/cache/save@v4
+      with:
+        path: |
+          node_modules
+        key: ${{ steps.restore-cache.outputs.cache-primary-key }}
