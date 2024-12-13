@@ -83,7 +83,7 @@ runs:
       echo
       echo "Here is the processed DEPLOYMENT_CHANGELOG - should not have double quotes or backticks"
       echo "------------------------------------------"
-      echo "DEPLOYMENT_CHANGELOG='$(cat .deployment_changelog | sed ':a;N;$!ba;s/\n/\\n/g')'"
+      echo "DEPLOYMENT_CHANGELOG=$(cat .deployment_changelog | sed ':a;N;$!ba;s/\n/\\n/g')"
       echo "------------------------------------------"
-      echo "DEPLOYMENT_CHANGELOG='$(cat .deployment_changelog | sed ':a;N;$!ba;s/\n/\\n/g')'" >> $GITHUB_OUTPUT
+      echo "DEPLOYMENT_CHANGELOG=$(cat .deployment_changelog | sed ':a;N;$!ba;s/\n/\\n/g')" >> $GITHUB_OUTPUT
 
