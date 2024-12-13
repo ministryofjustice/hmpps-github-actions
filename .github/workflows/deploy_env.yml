@@ -11,6 +11,21 @@ on:
         description: App version
         required: true 
         type: string
+      k8s_deployment_name:
+        description: Kubernetes deployment name
+        default: "PROJECT_NAME"
+        required: false
+        type: string
+      changelog_git_paths:
+        description: Changelog git paths
+        required: false
+        default: ""
+        type: string
+      show_changelog:
+        description: Show changelog
+        default: true
+        required: false
+        type: boolean
 
 permissions:
   contents: read
@@ -25,11 +40,23 @@ jobs:
     environment: ${{ inputs.environment }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: azure/setup-kubectl@v4
         id: install
         with:
           version: latest
-      - uses: ministryofjustice/hmpps-github-actions/.github/actions/build-test-and-deploy/cloud-platform-deploy@v2 # WORKFLOW_VERSION
+     
+      - name: Set Slack Channel ID
+        id: set-slack-channel-id
+        run: |
+          if [[ "${{ inputs.environment }}" == "prod" ]]; then
+            echo "slack_channel_id=${{ vars.PROD_RELEASES_SLACK_CHANNEL }}" | tee -a $GITHUB_OUTPUT
+          else
+            echo "slack_channel_id=${{ vars.NONPROD_RELEASES_SLACK_CHANNEL }}" | tee -a $GITHUB_OUTPUT
+          fi
+
+      - uses: ministryofjustice/hmpps-github-actions/.github/actions/build-test-and-deploy/cloud-platform-deploy@HEAT-422_commit_history # WORKFLOW_VERSION
         id: deploy
         with:
           environment: ${{ inputs.environment }}
@@ -39,38 +66,32 @@ jobs:
           cluster: ${{ secrets.KUBE_CLUSTER }}
           namespace: ${{ secrets.KUBE_NAMESPACE }}
           token: ${{ secrets.KUBE_TOKEN }}
+          k8s_deployment_name: ${{ inputs.k8s_deployment_name }}
+          changelog_git_paths: ${{ inputs.changelog_git_paths }}
+          show_changelog: ${{ inputs.show_changelog }}
         continue-on-error: true
 
       # Notification bit - always send prod releases to dps-releases - CVA3MKDTR
       - if: ${{  inputs.environment == 'prod' || inputs.environment == 'production' }} 
         id: prod-dps-slack
-        uses: ministryofjustice/hmpps-github-actions/.github/actions/slack_release_results@v2 # WORKFLOW_VERSION
+        uses: ministryofjustice/hmpps-github-actions/.github/actions/slack_release_results@HEAT-422_commit_history # WORKFLOW_VERSION
         with:
           channel_id: 'CVA3MKDTR'
           environment: ${{ inputs.environment }}
           app_version: ${{ inputs.app_version }}
           deploy_outcome: ${{ steps.deploy.outcome }}
           slack_bot_token: ${{ secrets.HMPPS_SRE_SLACK_BOT_TOKEN }}
+          deployment_changelog: ${{ steps.deploy.outputs.deployment_changelog }}
 
       
       # Optional prod releases slack channel (using PROD_RELEASES_SLACK_CHANNEL variable)
-      - if: ${{ ( inputs.environment == 'prod' || inputs.environment == 'production' ) && vars.PROD_RELEASES_SLACK_CHANNEL != '' }}
-        id: prod-slack
-        uses: ministryofjustice/hmpps-github-actions/.github/actions/slack_release_results@v2 # WORKFLOW_VERSION
+      - if: ${{ steps.set-slack-channel-id.outputs.slack_channel_id != '' }}
+        id: send-release-slack
+        uses: ministryofjustice/hmpps-github-actions/.github/actions/slack_release_results@HEAT-422_commit_history # WORKFLOW_VERSION
         with:
-          channel_id: ${{ vars.PROD_RELEASES_SLACK_CHANNEL }}
+          channel_id: ${{ steps.set-slack-channel-id.outputs.slack_channel_id }}
           environment: ${{ inputs.environment }}
           app_version: ${{ inputs.app_version }}
           deploy_outcome: ${{ steps.deploy.outcome }}
           slack_bot_token: ${{ secrets.HMPPS_SRE_SLACK_BOT_TOKEN }}
-
-      # Optional non-prod releases slack channel (using NONPROD_RELEASES_SLACK_CHANNEL variable)
-      - if: ${{ (inputs.environment != 'prod' && inputs.environment != 'production') &&  vars.NONPROD_RELEASES_SLACK_CHANNEL != '' }}
-        id: nonprod-slack
-        uses: ministryofjustice/hmpps-github-actions/.github/actions/slack_release_results@v2 # WORKFLOW_VERSION
-        with:
-          channel_id: ${{ vars.NONPROD_RELEASES_SLACK_CHANNEL }}
-          environment: ${{ inputs.environment }}
-          app_version: ${{ inputs.app_version }}
-          deploy_outcome: ${{ steps.deploy.outcome }}
-          slack_bot_token: ${{ secrets.HMPPS_SRE_SLACK_BOT_TOKEN }}
+          deployment_changelog: ${{ steps.deploy.outputs.deployment_changelog }}
