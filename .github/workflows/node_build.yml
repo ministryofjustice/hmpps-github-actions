@@ -34,6 +34,7 @@ jobs:
       with:
         path: |
           node_modules
+          .cache/Cypress
         key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
     - name: install dependencies
       if: steps.restore-cache.outputs.cache-hit != 'true'
@@ -62,4 +63,5 @@ jobs:
       with:
         path: |
           node_modules
+          .cache/Cypress
         key: ${{ steps.restore-cache.outputs.cache-primary-key }}
