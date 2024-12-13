@@ -66,7 +66,7 @@ runs:
         echo "environment=${environment}" | tee -a "$GITHUB_OUTPUT"
 
     - name: get version history
-      uses: ministryofjustice/hmpps-github-actions/.github/actions/version_history@HEAT-422_commit_history
+      uses: ministryofjustice/hmpps-github-actions/.github/actions/version_history@v2 # WORKFLOW VERSION
       if: ${{ inputs.show_changelog }}
       id: version_history
       with:
