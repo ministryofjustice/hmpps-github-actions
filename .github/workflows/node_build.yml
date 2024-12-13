@@ -14,6 +14,10 @@ permissions:
 
 jobs:
   node-build:
+    # cancel all other runs of this workflow if they are in progress
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}
+      cancel-in-progress: true
     name: Run the node build 
     runs-on: ubuntu-latest
     steps:

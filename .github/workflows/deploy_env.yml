@@ -31,8 +31,11 @@ permissions:
   contents: read
 
 jobs:
-
   deploy_env:
+    # cancel all other runs of this workflow if they are in progress
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}
+      cancel-in-progress: true
     name: Deploy to ${{ inputs.environment }}
     runs-on: ubuntu-latest
     strategy:
