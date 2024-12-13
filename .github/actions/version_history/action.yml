@@ -81,7 +81,7 @@ runs:
       echo "DEPLOYMENT_CHANGELOG='$(cat .deployment_changelog)'"     
       echo "------------------------------------------"
       echo
-      echo "Here is the processed DEPLOYMENT_CHANGELOG"
+      echo "Here is the processed DEPLOYMENT_CHANGELOG - should not have double quotes or backticks"
       echo "------------------------------------------"
       echo "DEPLOYMENT_CHANGELOG='$(cat .deployment_changelog | sed ':a;N;$!ba;s/\n/\\n/g')'"
       echo "------------------------------------------"
