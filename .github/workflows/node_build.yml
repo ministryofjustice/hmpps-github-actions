@@ -33,7 +33,7 @@ jobs:
         cache-name: node-modules
       with:
         path: |
-          node_modules
+          ./node_modules
           ~/.cache/Cypress
         key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
     - name: install dependencies
@@ -60,8 +60,10 @@ jobs:
     - name: save cache
       id: save-cache
       uses: actions/cache/save@v4
+      env: 
+        cache-name: node-modules
       with:
         path: |
-          node_modules
+          ./node_modules
           ~/.cache/Cypress
-        key: ${{ steps.restore-cache.outputs.cache-primary-key }}
+        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
