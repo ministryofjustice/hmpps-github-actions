@@ -5,7 +5,39 @@ inputs:
     description: 'Slack channel ID to send the results to'
     required: false
     default: 'NO_SLACK'
-
+  HMPPS_VERACODE_API_ID_0 :
+    description: 'Veracode app ID'
+    required: true  
+  HMPPS_VERACODE_API_ID_1 : 
+    description: 'Veracode app ID'
+    required: true
+  HMPPS_VERACODE_API_ID_2 :
+    description: 'Veracode app ID'
+    required: true
+  HMPPS_VERACODE_API_ID_3 :
+    description: 'Veracode app ID'
+    required: true
+  HMPPS_VERACODE_API_ID_4 :
+    description: 'Veracode app ID'
+    required: true  
+  HMPPS_VERACODE_API_KEY_0 :  
+    description: 'Veracode app secret'
+    required: true  
+  HMPPS_VERACODE_API_KEY_1 :
+    description: 'Veracode app secret'
+    required: true
+  HMPPS_VERACODE_API_KEY_2 :
+    description: 'Veracode app secret'
+    required: true  
+  HMPPS_VERACODE_API_KEY_3 :
+    description: 'Veracode app secret'
+    required: true  
+  HMPPS_VERACODE_API_KEY_4 :
+    description: 'Veracode app secret'
+    required: true
+  HMPPS_SRE_SLACK_BOT_TOKEN:
+    description: 'Slack bot token'
+    required: true
 runs:
   using: composite 
   steps:
@@ -43,16 +75,16 @@ runs:
         2>&1 | tee output.txt 
 #      continue-on-error: true
     env:
-      VERACODE_API_ID_0: ${{ secrets.HMPPS_VERACODE_API_ID_0 }}
-      VERACODE_API_ID_1: ${{ secrets.HMPPS_VERACODE_API_ID_1 }}
-      VERACODE_API_ID_2: ${{ secrets.HMPPS_VERACODE_API_ID_2 }}
-      VERACODE_API_ID_3: ${{ secrets.HMPPS_VERACODE_API_ID_3 }}
-      VERACODE_API_ID_4: ${{ secrets.HMPPS_VERACODE_API_ID_4 }}
-      VERACODE_API_KEY_0: ${{ secrets.HMPPS_VERACODE_API_KEY_0 }}
-      VERACODE_API_KEY_1: ${{ secrets.HMPPS_VERACODE_API_KEY_1 }}
-      VERACODE_API_KEY_2: ${{ secrets.HMPPS_VERACODE_API_KEY_2 }}
-      VERACODE_API_KEY_3: ${{ secrets.HMPPS_VERACODE_API_KEY_3 }}
-      VERACODE_API_KEY_4: ${{ secrets.HMPPS_VERACODE_API_KEY_4 }}
+      VERACODE_API_ID_0: ${{ inputs.HMPPS_VERACODE_API_ID_0 }}
+      VERACODE_API_ID_1: ${{ inputs.HMPPS_VERACODE_API_ID_1 }}
+      VERACODE_API_ID_2: ${{ inputs.HMPPS_VERACODE_API_ID_2 }}
+      VERACODE_API_ID_3: ${{ inputs.HMPPS_VERACODE_API_ID_3 }}
+      VERACODE_API_ID_4: ${{ inputs.HMPPS_VERACODE_API_ID_4 }}
+      VERACODE_API_KEY_0: ${{ inputs.HMPPS_VERACODE_API_KEY_0 }}
+      VERACODE_API_KEY_1: ${{ inputs.HMPPS_VERACODE_API_KEY_1 }}
+      VERACODE_API_KEY_2: ${{ inputs.HMPPS_VERACODE_API_KEY_2 }}
+      VERACODE_API_KEY_3: ${{ inputs.HMPPS_VERACODE_API_KEY_3 }}
+      VERACODE_API_KEY_4: ${{ inputs.HMPPS_VERACODE_API_KEY_4 }}
   - uses: actions/upload-artifact@v4
     if: success() 
     with:
@@ -62,7 +94,7 @@ runs:
     if: failure()  && inputs.channel_id != 'NO_SLACK'
     uses: ministryofjustice/hmpps-github-actions/.github/actions/slack_failure_results@v2 # WORKFLOW_VERSION
     with:
-      SLACK_BOT_TOKEN: ${{ secrets.HMPPS_SRE_SLACK_BOT_TOKEN }}
+      SLACK_BOT_TOKEN: ${{ inputs.HMPPS_SRE_SLACK_BOT_TOKEN }}
       channel_id: ${{ inputs.channel_id }}
       input_file: output.txt
 
