@@ -5,6 +5,10 @@ inputs:
     description: 'Slack channel ID to send the results to'
     required: false
     default: 'NO_SLACK'
+  teams:
+    required: false
+    default: "hmpps-tech"
+    description: "Comma-separated list of team names associated with the specified application.  Validates against the names of existing teams for this account."
   VERACODE_API_ID_0:
     description: 'Veracode app ID'
     required: true  
@@ -38,6 +42,7 @@ inputs:
   SLACK_BOT_TOKEN:
     description: 'Slack bot token'
     required: true
+  
 runs:
   using: composite 
   steps:
