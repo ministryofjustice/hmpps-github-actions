@@ -161,6 +161,7 @@ jobs:
       shell: python {0} npm-security-check-reports.json
     - uses: github/codeql-action/upload-sarif@v3
       id: npm-upload-sarif
+      if: ${{ github.repository_visibility != 'private' && github.repository_visibility != 'internal' }}
       with:
         sarif_file: 'npm-security-check-reports.sarif'
         category: npm-dependency-check
