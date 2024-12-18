@@ -42,14 +42,14 @@ runs:
     continue-on-error: true
   - name: Trivy upload sarif
     id: trivy-upload
+    if: github.repository_visibility != 'internal' && github.repository_visibility != 'private'
     uses: github/codeql-action/upload-sarif@v3
     with:
       sarif_file: 'trivy-results.sarif'
       category: trivy-dependency-check
-    continue-on-error: true   
   - name: Trivy slack notification
     uses: ministryofjustice/hmpps-github-actions/.github/actions/slack_codescan_notification@v2 # WORKFLOW_VERSION
-    if: ((failure() && github.repository_visibility != 'internal' && github.repository_visibility != 'private') || steps.trivy-analyse.outcome == 'failure' ) && inputs.channel_id != 'NO_SLACK' 
+    if: (failure() || steps.trivy-analyse.outcome == 'failure' ) && inputs.channel_id != 'NO_SLACK' 
     with:
       title: "Trivy"
       warningOnly: ${{ steps.trivy-upload.outcome == 'success' }}
