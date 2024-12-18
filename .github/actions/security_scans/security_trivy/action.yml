@@ -49,7 +49,7 @@ runs:
     continue-on-error: true   
   - name: Trivy slack notification
     uses: ministryofjustice/hmpps-github-actions/.github/actions/slack_codescan_notification@v2 # WORKFLOW_VERSION
-    if: (failure() || steps.trivy-analyse.outcome == 'failure') && inputs.channel_id != 'NO_SLACK'
+    if: (failure() || (steps.trivy-analyse.outcome == 'failure' && github.repository_visibility != 'internal' && github.repository_visibility != 'private')) && inputs.channel_id != 'NO_SLACK' 
     with:
       title: "Trivy"
       warningOnly: ${{ steps.trivy-upload.outcome == 'success' }}
