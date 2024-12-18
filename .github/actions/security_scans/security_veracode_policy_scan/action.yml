@@ -5,34 +5,34 @@ inputs:
     description: 'Slack channel ID to send the results to'
     required: false
     default: 'NO_SLACK'
-  HMPPS_VERACODE_API_ID_0 :
+  HMPPS_VERACODE_API_ID_0:
     description: 'Veracode app ID'
     required: true  
-  HMPPS_VERACODE_API_ID_1 : 
-    description: 'Veracode app ID'
-    required: true
-  HMPPS_VERACODE_API_ID_2 :
+  HMPPS_VERACODE_API_ID_1: 
     description: 'Veracode app ID'
     required: true
-  HMPPS_VERACODE_API_ID_3 :
+  HMPPS_VERACODE_API_ID_2:
     description: 'Veracode app ID'
     required: true
-  HMPPS_VERACODE_API_ID_4 :
+  HMPPS_VERACODE_API_ID_3:
+    description: 'Veracode app ID'
+    required: true
+  HMPPS_VERACODE_API_ID_4:
     description: 'Veracode app ID'
     required: true  
-  HMPPS_VERACODE_API_KEY_0 :  
+  HMPPS_VERACODE_API_KEY_0:  
     description: 'Veracode app secret'
     required: true  
-  HMPPS_VERACODE_API_KEY_1 :
+  HMPPS_VERACODE_API_KEY_1:
     description: 'Veracode app secret'
     required: true
-  HMPPS_VERACODE_API_KEY_2 :
+  HMPPS_VERACODE_API_KEY_2:
     description: 'Veracode app secret'
     required: true  
-  HMPPS_VERACODE_API_KEY_3 :
+  HMPPS_VERACODE_API_KEY_3:
     description: 'Veracode app secret'
     required: true  
-  HMPPS_VERACODE_API_KEY_4 :
+  HMPPS_VERACODE_API_KEY_4:
     description: 'Veracode app secret'
     required: true
   HMPPS_SRE_SLACK_BOT_TOKEN:
