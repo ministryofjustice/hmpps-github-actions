@@ -1,0 +1,58 @@
+name: Security trivy dependency check
+description: A GitHub Action that carries out a Trivy vulnerability check
+
+inputs:
+  channel_id:
+    description: 'The slack channel ID to send a message on failure. If this is not provided then no message is sent.'
+    required: false
+    default: 'NO_SLACK'
+  subproject:
+    description: 'For gradle multi module projects, leave blank for single module projects'
+    required: false
+    default: ''
+  SLACK_BOT_TOKEN:
+    description: 'Slack bot token'
+    required: false
+
+runs:
+  using: composite
+  steps:
+  - name: Check repository in helm_deploy/values.yaml
+    id: check-package-repo
+    shell: bash
+    run: |
+      echo 'checking package repository for ${{ inputs.subproject == '' && github.event.repository.name || inputs.subproject}}:'
+      grep -rh 'repository: ' --include="values.yaml" | grep ${{ inputs.subproject == '' && github.event.repository.name || inputs.subproject}} | head -n1 | awk -F'[:/ ]+' '{print "repo="$3"/"$4}' >> $GITHUB_ENV
+  - name: Trivy Image Vulnerability Scanner
+    id: trivy-analyse
+    uses: aquasecurity/trivy-action@915b19bbe73b92a6cf82a1bc12b087c9a19a5fe2 # v0.28.0
+    with:
+      image-ref: "${{ env.repo }}/${{ inputs.subproject == '' && github.event.repository.name || inputs.subproject}}:latest"
+      severity: 'HIGH,CRITICAL'
+      ignore-unfixed: true
+      skip-dirs: '/usr/local/lib/node_modules/npm'
+      skip-files: /app/agent.jar
+      format: 'sarif'
+      output: 'trivy-results.sarif'
+      exit-code: 1
+      limit-severities-for-sarif: true
+    env:
+      TRIVY_DB_REPOSITORY: public.ecr.aws/aquasecurity/trivy-db:2,ghcr.io/aquasecurity/trivy-db:2
+      TRIVY_JAVA_DB_REPOSITORY: public.ecr.aws/aquasecurity/trivy-java-db:1,ghcr.io/aquasecurity/trivy-java-db:1
+    continue-on-error: true
+  - name: Trivy upload sarif
+    id: trivy-upload
+    uses: github/codeql-action/upload-sarif@v3
+    with:
+      sarif_file: 'trivy-results.sarif'
+      category: trivy-dependency-check
+    continue-on-error: true   
+  - name: Trivy slack notification
+    uses: ministryofjustice/hmpps-github-actions/.github/actions/slack_codescan_notification@v2 # WORKFLOW_VERSION
+    if: (failure() || steps.trivy-analyse.outcome == 'failure') && inputs.channel_id != 'NO_SLACK'
+    with:
+      title: "Trivy"
+      warningOnly: ${{ steps.trivy-upload.outcome == 'success' }}
+      channel_id: ${{ inputs.channel_id}}
+      SLACK_BOT_TOKEN: ${{ inputs.SLACK_BOT_TOKEN }}
+      subproject: ${{ inputs.subproject }}

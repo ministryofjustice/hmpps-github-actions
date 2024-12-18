@@ -1,4 +1,5 @@
 name: Security veracode policy scan action
+description: This carried out a Veracode policy scan
 
 inputs:
   channel_id:
