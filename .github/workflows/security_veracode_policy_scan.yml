@@ -49,6 +49,7 @@ on:
 
 permissions:
   contents: read
+  security-events: write
 
 jobs:
   security-veracode-policy-scan:
@@ -56,6 +57,8 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       security-events: write
+      contents: read
+      actions: read
     env:
       docker_image_app_dir: "/app"
       additional_docker_build_args: ""
