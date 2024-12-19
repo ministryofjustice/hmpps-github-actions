@@ -3,16 +3,34 @@
 # To be run from the repo you wish to migrate:
 # /bin/bash -c "$(curl -fsSL https://github.com/ministryofjustice/hmpps-github-actions/raw/refs/heads/main/migrate-repo.sh)"
 #
-# Will delete all existing security workflows and replace with the standard owasp / trivy and veracode workflows for
+# This will prevent three options:
+# [1] Security workflows only - to delete all existing security workflows and replace with Github Actions OWASP / trivy and veracode workflows for
 # the given project type.
+# [2] Deployment only - to delete all existing deployment workflows and replace with the Github Actions deployment workflows for the given project type.
+# [3] Complete migration - to delete all existing workflows and replace with the GHA 
 #
-# Requires yq to be installed and gh to be installed  Also the hmpps-sre-app needs to be added and SECURITY_ALERTS_SLACK_CHANNEL_ID repository variable
-# defined - see docs/security-migration.md for more information.
 #
-# Can be run multiple times to generate different cron expressions / refresh from the template.
-#
+# CONSIDERATIONS
+ 
+# General
+# --------
+# Requires yq to be installed and gh to be installed (both can be done using brew install yq gh)
 # Note that yq will reformat your circleci yaml file so worth checking the results before raising
 # PRs especially if you've got multi-line commands in your file.
+
+# Security
+# --------
+# The hmpps-sre-app bot needs to be added to private repositories and SECURITY_ALERTS_SLACK_CHANNEL_ID repository variable
+# defined - see docs/security-migration.md for more information.
+#
+# Note: This script can be run multiple times to generate different cron expressions / refresh from the template.
+#
+
+# Deployments
+# -----------
+# The hmpps-sre-app bot needs to be added to private repositories and PROD_RELEASES_SLACK_CHANNEL (and optionally PREPROD_RELEASES_SLACK_CHANNEL) repository variable
+# defined - see docs/deployment-migration.md for more information.
+
 
 set -euo pipefail
 
