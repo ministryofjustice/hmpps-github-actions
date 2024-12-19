@@ -26,6 +26,7 @@ on:
 
 permissions:
   contents: read
+  security-events: write
 
 jobs:
   security-npm-check:
@@ -33,6 +34,8 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       security-events: write
+      contents: read
+      actions: read
     env:
       parent_directory: ${{ github.event.repository.name == '' && '.' || github.event.repository.name}}
     steps:
