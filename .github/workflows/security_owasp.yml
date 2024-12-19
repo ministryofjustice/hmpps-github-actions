@@ -43,7 +43,7 @@ jobs:
       continue-on-error: true
     - uses: github/codeql-action/upload-sarif@v3
       id: owasp-upload-sarif
-      if: ${{ github.repository_visibility != 'private' && github.repository_visibility != 'internal' }}
+      if: ${{ github.event.repository.visibility != 'private' && github.event.repository.visibility != 'internal' }}
       with:
         sarif_file: ${{ inputs.subproject == '' && '.' || inputs.subproject }}/build/reports/dependency-check-report.sarif
         category: gradle-owasp-dependency-check
