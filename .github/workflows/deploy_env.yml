@@ -69,10 +69,9 @@ jobs:
           k8s_deployment_name: ${{ inputs.k8s_deployment_name }}
           changelog_git_paths: ${{ inputs.changelog_git_paths }}
           show_changelog: ${{ inputs.show_changelog }}
-        continue-on-error: true
 
       # Notification bit - always send prod releases to dps-releases - CVA3MKDTR
-      - if: ${{  inputs.environment == 'prod' || inputs.environment == 'production' }} 
+      - if: ${{ always() && ( inputs.environment == 'prod' || inputs.environment == 'production' ) }}
         id: prod-dps-slack
         uses: ministryofjustice/hmpps-github-actions/.github/actions/slack_release_results@v2 # WORKFLOW_VERSION
         with:
@@ -85,7 +84,7 @@ jobs:
 
       
       # Optional prod releases slack channel (using PROD_RELEASES_SLACK_CHANNEL variable)
-      - if: ${{ steps.set-slack-channel-id.outputs.slack_channel_id != '' }}
+      - if: ${{ always() && ( steps.set-slack-channel-id.outputs.slack_channel_id != '' ) }}
         id: send-release-slack
         uses: ministryofjustice/hmpps-github-actions/.github/actions/slack_release_results@v2 # WORKFLOW_VERSION
         with:
