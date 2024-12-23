@@ -81,10 +81,10 @@ migrate_node_security_jobs() {
   yq -i 'del(.workflows.security) | del(.workflows.security-weekly) | del(.parameters.alerts-slack-channel)' .circleci/config.yml
   mkdir -p .github/workflows
 
-  gh api repos/ministryofjustice/hmpps-github-actions/contents/templates/workflows/security_npm_dependency.yml -H "Accept: application/vnd.github.v3.raw" > .github/workflows/security_npm_dependency.yml
-  gh api repos/ministryofjustice/hmpps-github-actions/contents/templates/workflows/security_trivy.yml -H "Accept: application/vnd.github.v3.raw" > .github/workflows/security_trivy.yml
-  gh api repos/ministryofjustice/hmpps-github-actions/contents/templates/workflows/security_veracode_pipeline_scan.yml -H "Accept: application/vnd.github.v3.raw" > .github/workflows/security_veracode_pipeline_scan.yml
-  gh api repos/ministryofjustice/hmpps-github-actions/contents/templates/workflows/security_veracode_policy_scan.yml -H "Accept: application/vnd.github.v3.raw" > .github/workflows/security_veracode_policy_scan.yml
+  gh api repos/ministryofjustice/hmpps-template-typescript/contents/templates/workflows/security_npm_dependency.yml -H "Accept: application/vnd.github.v3.raw" > .github/workflows/security_npm_dependency.yml
+  gh api repos/ministryofjustice/hmpps-template-typescript/contents/templates/workflows/security_trivy.yml -H "Accept: application/vnd.github.v3.raw" > .github/workflows/security_trivy.yml
+  gh api repos/ministryofjustice/hmpps-template-typescript/contents/templates/workflows/security_veracode_pipeline_scan.yml -H "Accept: application/vnd.github.v3.raw" > .github/workflows/security_veracode_pipeline_scan.yml
+  gh api repos/ministryofjustice/hmpps-template-typescript/contents/templates/workflows/security_veracode_policy_scan.yml -H "Accept: application/vnd.github.v3.raw" > .github/workflows/security_veracode_policy_scan.yml
 
   RANDOM_HOUR=$((RANDOM % (9 - 3 + 1) + 3))
   RANDOM_MINUTE=$((RANDOM%60))
@@ -97,15 +97,77 @@ migrate_node_security_jobs() {
   yq -i ".on.schedule[].cron=\"$RANDOM_MINUTE2 $RANDOM_HOUR * * 1\" | .on.schedule[].cron line_comment=\"Every Monday at $(printf "%02d:%02d" $RANDOM_HOUR $RANDOM_MINUTE2) UTC\"" .github/workflows/security_veracode_policy_scan.yml
 }
 
+migrate_kotlin_deployment_jobs() {
+  yq -i 'del(.workflows.build-test-and-deploy)' .circleci/config.yml
+  mkdir -p .github/workflows
+  gh api repos/ministryofjustice/hmpps-template-kotlin/contents/templates/workflows/pipeline.yml -H "Accept: application/vnd.github.v3.raw" > .github/workflows/deployments.yml
+}
+
+migrate_node_deployment_jobs() {
+  yq -i 'del(.workflows.build-test-and-deploy)' .circleci/config.yml
+  mkdir -p .github/workflows
+  gh api repos/ministryofjustice/hmpps-template-typescript/contents/templates/workflows/pipeline.yml -H "Accept: application/vnd.github.v3.raw" > .github/workflows/pipeline.yml
+}
+
+
+## main script starts here
+
+echo "Migration script for CircleCI -> Github Actions"
+echo "==============================================="
+echo
+echo "This script will migrate elements of CircleCI workflows to Github Actions."
+echo "Please pick one of the following options by typing the corresponding number and hitting Enter:"
+echo
+echo "1. Migrate security workflows only"
+echo "2. Migrate deployment workflows only"
+echo "3. Migrate security and deployment workflows"
+echo "Any other selection will exit"
+
+read -p "Enter your selection: " selection 
+if [[ $selection -eq 1 ]]; then
+  echo "Migrating security workflows only"
+elif [[ $selection -eq 2 ]]; then
+  echo "Migrating deployment workflows only"
+elif [[ $selection -eq 3 ]]; then
+  echo "Migrating security and deployment workflows"
+else
+  echo "Exiting"
+  exit 0
+fi
+
 
 if [[ -f "package.json" ]]; then
-  migrate_node_security_jobs
+  if [[ $selection && 1 ]]; then
+    echo "Migrating Node security jobs"
+    migrate_node_security_jobs
+  fi
 elif [[ -f "build.gradle.kts" ]]; then
-  migrate_kotlin_security_jobs
+  if [[ $selection && 1 ]]; then
+    echo "Migrating Kotlin security jobs"
+    migrate_kotlin_security_jobs
+  fi
 else
-  echo "Error: Unable to determine project type. Please make sure you are running this script from a Node or Kotlin project."
-  exit 1
+    echo "No package.json or build.gradle.kts found."
+    echo "No security jobs will be migrated"
 fi
+
+if [[ $selection && 2 ]] ; then
+  echo "Migrating deployment jobs"
+
+# check to see if we need to do anything particular with the deployment jobs depending on the project type
+  if [[ -f "package.json" ]]; then
+    migrate_node_deployment_jobs
+    
+  elif [[ -f "build.gradle.kts" ]]; then
+    migrate_kotlin_deployment_jobs
+    
+  else
+    echo "No package.json or build.gradle.kts found."
+    echo "No deployment jobs will be migrated"
+  fi
+
+fi
+
 
 echo "
   The 'HMPPS SRE App Slack bot' may need to be added to the '$CHANNEL_ID' slack channel:
