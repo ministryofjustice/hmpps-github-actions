@@ -115,54 +115,53 @@ migrate_kotlin_deployment_jobs() {
 for each_env in $deploy_envs; do
   echo "Migrating deployment job for $each_env"
   env_params=$(yq eval '.workflows.build-test-and-deploy | select(.jobs[]."hmpps/deploy_env") | .jobs[] | select(has("hmpps/deploy_env")) | select(."hmpps/deploy_env".env == "'$each_env'")' .circleci/config.yml) 
-
 # add the parameters one at a time
-  echo "deploy_${each_env}:" >> ${pipeline_file}
-  echo "  name: Deploy to the ${each_env} environment" >> ${pipeline_file}
+  echo "  deploy_${each_env}:" >> ${pipeline_file}
+  echo "    name: Deploy to the ${each_env} environment" >> ${pipeline_file}
 
 # branches filter
-  branch_filter=$(echo $env_params | yq .'hmpps/deploy_env.filters.branches.only[]')
+  branch_filter=$(echo "$env_params" | yq .'hmpps/deploy_env.filters.branches.only[]')
   if [ -n "${branch_filter}" ]; then
-    echo -n "  if: github.ref in [" >> ${pipeline_file}
+    echo -n "    if: " >> ${pipeline_file}
     nb=0
     for each_branch in $(echo $branch_filter); do
       if [ $nb -eq 0 ] ; then
-        then nb=1 
-        else echo -n ',' 
+        nb=1 
+        else echo -n ' || ' 
       fi
-      echo -n "'refs/heads/${each_branch}'"
+      echo -n "github.ref == 'refs/heads/${each_branch}'"
     done >> ${pipeline_file}
-    echo "]" >> ${pipeline_file}
+    echo >> ${pipeline_file}
   fi
 
-  echo "  needs:" >> ${pipeline_file}
-  echo "  - build" >> ${pipeline_file}
-  echo "  - helm_lint" >> ${pipeline_file}
+  echo "    needs:" >> ${pipeline_file}
+  echo "    - build" >> ${pipeline_file}
+  echo "    - helm_lint" >> ${pipeline_file}
 
   # create the needs for non-dev environments
   if [ {each_env} != "dev" ]; then
     needs=$(echo "${workflow_jobs}" | yq eval '.workflows.build-test-and-deploy.jobs.[]' .circleci/config.yml | yq ".request-${each_env}-approval.requires[] | select(test(\"^deploy_\"))") 
     if [ -n "${needs}" ]; then
-      echo "  - ${needs}" >> ${pipeline_file}
+      echo "    - ${needs}" >> ${pipeline_file}
     fi
   fi
-    echo "  uses: ministryofjustice/hmpps-github-actions/.github/workflows/deploy_env.yml@v2 # WORKFLOW_VERSION" >> ${pipeline_file}
-    echo "  secrets: inherit" >> ${pipeline_file}
+    echo "    uses: ministryofjustice/hmpps-github-actions/.github/workflows/deploy_env.yml@v2 # WORKFLOW_VERSION" >> ${pipeline_file}
+    echo "    secrets: inherit" >> ${pipeline_file}
 
-    echo "  with:" >> ${pipeline_file}
-    echo "    environment: '${each_env}'" >> ${pipeline_file}
-    echo "    app_version: '${{ needs.build.outputs.app_version }}'" >> ${pipeline_file}
+    echo "    with:" >> ${pipeline_file}
+    echo "      environment: '${each_env}'" >> ${pipeline_file}
+    echo "      app_version: '\${{ needs.build.outputs.app_version }}'" >> ${pipeline_file}
   # helm_timeout
-  if [ -n "$(echo "${env_params}" | yq eval '.helm_timeout')" ]; then
-    echo "  helm_timeout: $(echo "${env_params}" | yq eval '.helm_timeout')" >> ${pipeline_file}
+  if [ "$(echo "${env_params}" | yq eval '.hmpps/deploy_env.helm_timeout')" != 'null' ]; then
+    echo "      helm_timeout: '$(echo "${env_params}" | yq eval '.hmpps/deploy_env.helm_timeout')'" >> ${pipeline_file}
   fi
   # helm_dir
-  if [ -n "$(echo "${env_params}" | yq eval '.helm_dir')" ]; then
-    echo "  helm_dir: $(echo "${env_params}" | yq eval '.helm_dir')" >> ${pipeline_file}
+  if [ "$(echo "${env_params}" | yq eval '.hmpps/deploy_env.helm_dir')" != 'null' ]; then
+    echo "      helm_dir: '$(echo "${env_params}" | yq eval '.hmpps/deploy_env.helm_dir')'" >> ${pipeline_file}
   fi
   # helm_additional_args
-  if [ -n "$(echo "${env_params}" | yq eval '.helm_additional_args')" ]; then
-    echo "  helm_additional_args: $(echo "${env_params}" | yq eval '.helm_additional_args')" >> ${pipeline_file}
+  if [ "$(echo "${env_params}" | yq eval '.hmpps/deploy_env.helm_additional_args')" != 'null' ]; then
+    echo "      helm_additional_args: '$(echo "${env_params}" | yq eval '.hmpps/deploy_env.helm_additional_args')'" >> ${pipeline_file}
   fi
 
 done
@@ -210,12 +209,12 @@ fi
 cp .circleci/config.yml .circleci/config.yml.bak.$(date +%Y%m%d_%H%M%S)
 
 if [[ -f "package.json" ]]; then
-  if [[ $selection && 1 ]]; then
+  if [[ $((selection & 1)) -ne 0 ]]; then
     echo "Migrating Node security jobs"
     migrate_node_security_jobs
   fi
 elif [[ -f "build.gradle.kts" ]]; then
-  if [[ $selection && 1 ]]; then
+  if [[ $((selection & 1)) -ne 0 ]]; then
     echo "Migrating Kotlin security jobs"
     migrate_kotlin_security_jobs
   fi
@@ -224,7 +223,7 @@ else
     echo "No security jobs will be migrated"
 fi
 
-if [[ $selection && 2 ]] ; then
+if [[ $((selection & 2)) -ne 0 ]] ; then
   echo "Migrating deployment jobs"
 
 # check to see if we need to do anything particular with the deployment jobs depending on the project type
