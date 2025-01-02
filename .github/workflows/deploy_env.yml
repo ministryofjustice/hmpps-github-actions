@@ -26,6 +26,26 @@ on:
         default: true
         required: false
         type: boolean
+      slack_notification:
+        description: Slack notification
+        default: true
+        required: false
+        type: boolean
+      helm_additional_args:
+        description: Helm additional args
+        default: ""
+        required: false
+        type: string
+      helm_timeout:
+        description: Helm timeout
+        default: "10m"
+        required: false
+        type: string
+      helm_dir:
+        description: Helm dir
+        default: "helm_deploy"
+        required: false
+        type: string
 
 permissions:
   contents: read
@@ -69,6 +89,9 @@ jobs:
           k8s_deployment_name: ${{ inputs.k8s_deployment_name }}
           changelog_git_paths: ${{ inputs.changelog_git_paths }}
           show_changelog: ${{ inputs.show_changelog }}
+          helm_additional_args: ${{ inputs.helm_additional_args }}
+          helm_timeout: ${{ inputs.helm_timeout }}
+          helm_dir: ${{ inputs.helm_dir }}
         continue-on-error: true
 
       # Notification bit - always send prod releases to dps-releases - CVA3MKDTR
@@ -84,8 +107,8 @@ jobs:
           deployment_changelog: ${{ steps.deploy.outputs.deployment_changelog }}
 
       
-      # Optional prod releases slack channel (using PROD_RELEASES_SLACK_CHANNEL variable)
-      - if: ${{ steps.set-slack-channel-id.outputs.slack_channel_id != '' }}
+      # Optionalreleases slack channel (using [PRE]PROD_RELEASES_SLACK_CHANNEL variable)
+      - if: ${{ inputs.slack_notification && steps.set-slack-channel-id.outputs.slack_channel_id != '' }}
         id: send-release-slack
         uses: ministryofjustice/hmpps-github-actions/.github/actions/slack_release_results@v2 # WORKFLOW_VERSION
         with:

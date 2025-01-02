@@ -14,6 +14,9 @@ inputs:
   additional_docker_tag:
     description: Additional docker tag that can be used to specify stable tags
     required: false
+  additional_docker_build_args:
+    description: Additional docker build args
+    required: false
   push:
     description: Push docker image to registry flag
     required: true
@@ -73,7 +76,9 @@ runs:
           "BUILD_NUMBER=${{ inputs.app_version }}"
           "GIT_REF=${{ github.sha }}"
           "GIT_BRANCH=${{ github.ref_name }}"
+          "${{ inputs.additional_docker_build_args }}"
         tags: |
           ${{ inputs.docker_registry}}/${{ inputs.registry_org }}/${{ github.event.repository.name }}:latest
           ${{ inputs.docker_registry}}/${{ inputs.registry_org }}/${{ github.event.repository.name }}:${{ inputs.app_version }}
+
 

@@ -34,6 +34,18 @@ inputs:
   show_changelog:
     description: Whether the changelog should be sent by slack
     required: false
+  helm_additional_args: 
+    description: any additional helm arguments
+    required: false
+    default: ""
+  helm_timeout: 
+    description: helm timeout period
+    required: false
+    default: 5m
+  helm_dir: 
+    description: location of helm configuration
+    required: false
+    default: helm_deploy 
 
 outputs:
   deployment_changelog:
@@ -81,9 +93,9 @@ runs:
       run: |
         eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
         brew install helm
-        yq -i ".appVersion = \"${{ inputs.version }}\"" "helm_deploy/${{ github.event.repository.name }}/Chart.yaml"
-        helm dependency update "helm_deploy/${{ github.event.repository.name }}"
-        exec helm upgrade '${{ github.event.repository.name }}' 'helm_deploy/${{ github.event.repository.name }}' \
+        yq -i ".appVersion = \"${{ inputs.version }}\"" "${{ inputs.helm_dir }}/${{ github.event.repository.name }}/Chart.yaml"
+        helm dependency update "${{ inputs.helm_dir }}/${{ github.event.repository.name }}"
+        exec helm upgrade '${{ github.event.repository.name }}' '${{ inputs.helm_dir }}/${{ github.event.repository.name }}' \
           --atomic \
           --history-max 10 \
           --force \
@@ -91,6 +103,7 @@ runs:
           --reset-values \
           --set 'generic-service.image.tag=${{ inputs.version }}' \
           --set 'version=${{ inputs.version }}' \
-          --timeout 10m \
+          --timeout ${{ inputs.helm_timeout }} \
           --values 'helm_deploy/values-${{ steps.env.outputs.environment }}.yaml' \
+          ${{ inputs.helm_additional_args }} \
           --wait
