@@ -77,7 +77,7 @@ jobs:
           fi
 
       # - uses: ministryofjustice/hmpps-github-actions/.github/actions/build-test-and-deploy/cloud-platform-deploy@v2 # WORKFLOW_VERSION
-      - uses: ministryofjustice/hmpps-github-actions/.github/actions/build-test-and-deploy/cloud-platform-deploy@v2 # WORKFLOW_VERSION
+      - uses: ministryofjustice/hmpps-github-actions/.github/actions/build-test-and-deploy/cloud-platform-deploy@HEAT-462-deployment-parameters # WORKFLOW_VERSION
         id: deploy
         with:
           environment: ${{ inputs.environment }}
