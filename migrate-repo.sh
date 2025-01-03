@@ -112,6 +112,78 @@ migrate_kotlin_deployment_jobs() {
   workflow_jobs=$(yq eval '.workflows.build-test-and-deploy.jobs.[]' .circleci/config.yml)
   deploy_envs=$(yq eval '.workflows.build-test-and-deploy | select(.jobs[]."hmpps/deploy_env") | .jobs[] | select(has("hmpps/deploy_env")) | ."hmpps/deploy_env".env' .circleci/config.yml)
 
+  # BUILD modifications
+
+  #       - hmpps/build_multiplatform_docker:
+  # or 
+  #       - hmpps/build_docker:
+  # will decide whether to use multiplatform or not.
+  # just really the docker build options
+  # additional_docker_build_args: --progress=plain
+  
+  # And filters
+  # filters:
+  #   branches:
+  #     only:
+  #       - main
+  #       - /epic.*/
+  #       - /^release\/.*/
+
+  # check to see if it's multiplatform or not 
+  if [ $(yq eval '.workflows.build-test-and-deploy | select(.jobs[]."hmpps/build_multiplatform_docker") | .jobs[] | select(has("hmpps/build_multiplatform_docker")) | .hmpps/build_multiplatform_docker' .circleci/config.yml) ]; then
+    docker_build='build_multiplatform_docker'
+  else
+    docker_build='build_docker'
+  fi
+
+  # get the filters for branches
+  branch_filter=$(yq eval ".workflows.build-test-and-deploy | select(.jobs[].\"hmpps/${docker_build}\") | .jobs[] | select (has(\"hmpps/${docker_build}\")) | .hmpps/${docker_build}.filters.branches.only[] " .circleci/config.yml)
+  if [ -n "${branch_filter}" ]; then
+    branch_filter_string=""
+    nb=0
+    for each_branch in $(echo $branch_filter); do
+      if [ $nb -eq 0 ] ; then
+        nb=1 
+        else branch_filter_string="${branch_filter_string} || " 
+      fi
+      # check for regex in the branch filter
+      if [ $(echo $each_branch | grep -c '/') -eq 1 ]; then
+        if [ $(echo $each_branch | grep -c '^') -eq 1 ]; then
+          # starts with
+          branch_filter_string="${branch_filter_string}startsWith(github.ref, 'refs/heads/$(echo $each_branch | sed -e 's/^\///g' -e 's/\/$//g' -e 's/\\//g'  -e 's/\.\*//g' -e 's/\^//g')')"
+        else
+          # contains
+          branch_filter_string="${branch_filter_string}contains(github.ref,'$(echo $each_branch | sed -e 's/^\///g' -e 's/\/$//g' -e 's/\\//g' -e 's/\^//g')')"
+        fi
+      else
+        branch_filter_string="${branch_filter_string}github.ref == 'refs/heads/${each_branch}'"
+      fi
+    done
+    echo "Branch filter string is: $branch_filter_string"
+    yq eval "(.jobs.build.if) = \"${branch_filter_string}\"" -i .github/workflows/pipeline.yml
+  fi
+
+  # toggle multiplatform docker if required
+  if [ $docker_build == 'build_multiplatform_docker' ]; then
+    yq eval '.jobs.build.with.docker_multiplatform = true' -i .github/workflows/pipeline.yml
+  else
+    yq eval '.jobs.build.with.docker_multiplatform = false' -i .github/workflows/pipeline.yml
+  fi
+
+  # additional_docker_build_args
+  additional_docker_build_args="$(yq eval ".workflows.build-test-and-deploy | select(.jobs[].\"hmpps/${docker_build}\") | .jobs[] | select (has(\"hmpps/${docker_build}\")) | .hmpps/${docker_build}.additional_docker_build_args " .circleci/config.yml)" 
+  if [ "${additional_docker_build_args}" != 'null' ]; then
+    yq eval ".jobs.build.with.additional_docker_build_args = \"${additional_docker_build_args}\"" -i .github/workflows/pipeline.yml
+  fi
+
+  # additional_docker_tag
+  additional_docker_tag=$(yq eval ".workflows.build-test-and-deploy | select(.jobs[].\"hmpps/${docker_build}\") | .jobs[] | select (has(\"hmpps/${docker_build}\")) | .hmpps/${docker_build}.additional_docker_tag " .circleci/config.yml)  
+  if [ "${additional_docker_tag}" != 'null' ]; then
+    # little tweak to change from CIRCLE_SHA1 to github.sha
+    additional_docker_tag="$(echo $additional_docker_tag | sed -e 's/\$CIRCLE_SHA1/\${{ github.sha }}/g')"
+    yq eval ".jobs.build.with.additional_docker_tag = \"${additional_docker_tag}\"" -i .github/workflows/pipeline.yml
+  fi
+
 for each_env in $deploy_envs; do
   echo "Migrating deployment job for $each_env"
   env_params=$(yq eval '.workflows.build-test-and-deploy | select(.jobs[]."hmpps/deploy_env") | .jobs[] | select(has("hmpps/deploy_env")) | select(."hmpps/deploy_env".env == "'$each_env'")' .circleci/config.yml) 
@@ -122,44 +194,60 @@ for each_env in $deploy_envs; do
 # branches filter
   branch_filter=$(echo "$env_params" | yq .'hmpps/deploy_env.filters.branches.only[]')
   if [ -n "${branch_filter}" ]; then
-    echo -n "    if: " >> ${pipeline_file}
+    branch_filter_string="    if: "
     nb=0
     for each_branch in $(echo $branch_filter); do
       if [ $nb -eq 0 ] ; then
         nb=1 
-        else echo -n ' || ' 
+        else branch_filter_string="${branch_filter_string} || " 
       fi
-      echo -n "github.ref == 'refs/heads/${each_branch}'"
-    done >> ${pipeline_file}
-    echo >> ${pipeline_file}
+      # check for regex in the branch filter
+      if [ $(echo $each_branch | grep -c '/') -eq 1 ]; then
+        if [ $(echo $each_branch | grep -c '^') -eq 1 ]; then
+          # starts with
+          branch_filter_string="${branch_filter_string}startsWith(github.ref, 'refs/heads/$(echo $each_branch | sed -e 's/^\///g' -e 's/\/$//g' -e 's/\\//g'  -e 's/\.\*//g' -e 's/\^//g')')"
+        else
+          # contains
+          branch_filter_string="${branch_filter_string}contains(github.ref,'$(echo $each_branch | sed -e 's/^\///g' -e 's/\/$//g' -e 's/\\//g' -e 's/\^//g')')"
+        fi
+      else
+        branch_filter_string="${branch_filter_string}github.ref == 'refs/heads/${each_branch}'"
+      fi
+    done
+    echo "Branch filter string is: $branch_filter_string"
+    echo "${branch_filter_string}" >> ${pipeline_file}
   fi
 
+  # common needs
   echo "    needs:" >> ${pipeline_file}
   echo "    - build" >> ${pipeline_file}
   echo "    - helm_lint" >> ${pipeline_file}
 
-  # create the needs for non-dev environments
+  # additional needs for non-dev environments
   if [ {each_env} != "dev" ]; then
     needs=$(echo "${workflow_jobs}" | yq eval '.workflows.build-test-and-deploy.jobs.[]' .circleci/config.yml | yq ".request-${each_env}-approval.requires[] | select(test(\"^deploy_\"))") 
     if [ -n "${needs}" ]; then
       echo "    - ${needs}" >> ${pipeline_file}
     fi
   fi
-    echo "    uses: ministryofjustice/hmpps-github-actions/.github/workflows/deploy_env.yml@v2 # WORKFLOW_VERSION" >> ${pipeline_file}
-    echo "    secrets: inherit" >> ${pipeline_file}
 
-    echo "    with:" >> ${pipeline_file}
-    echo "      environment: '${each_env}'" >> ${pipeline_file}
-    echo "      app_version: '\${{ needs.build.outputs.app_version }}'" >> ${pipeline_file}
-  # helm_timeout
+  # rest of the workflow bits
+  echo "    uses: ministryofjustice/hmpps-github-actions/.github/workflows/deploy_env.yml@v2 # WORKFLOW_VERSION" >> ${pipeline_file}
+  echo "    secrets: inherit" >> ${pipeline_file}
+
+  echo "    with:" >> ${pipeline_file}
+  echo "      environment: '${each_env}'" >> ${pipeline_file}
+  echo "      app_version: '\${{ needs.build.outputs.app_version }}'" >> ${pipeline_file}
+  
+  # optional helm_timeout
   if [ "$(echo "${env_params}" | yq eval '.hmpps/deploy_env.helm_timeout')" != 'null' ]; then
     echo "      helm_timeout: '$(echo "${env_params}" | yq eval '.hmpps/deploy_env.helm_timeout')'" >> ${pipeline_file}
   fi
-  # helm_dir
+  # optional  helm_dir
   if [ "$(echo "${env_params}" | yq eval '.hmpps/deploy_env.helm_dir')" != 'null' ]; then
     echo "      helm_dir: '$(echo "${env_params}" | yq eval '.hmpps/deploy_env.helm_dir')'" >> ${pipeline_file}
   fi
-  # helm_additional_args
+  # optional  helm_additional_args
   if [ "$(echo "${env_params}" | yq eval '.hmpps/deploy_env.helm_additional_args')" != 'null' ]; then
     echo "      helm_additional_args: '$(echo "${env_params}" | yq eval '.hmpps/deploy_env.helm_additional_args')'" >> ${pipeline_file}
   fi
@@ -167,7 +255,10 @@ for each_env in $deploy_envs; do
 done
 
 # Delete the build-test-and-deploy workflow when it's all done
-#  yq -i 'del(.workflows.build-test-and-deploy)' .circleci/config.yml
+# yq -i 'del(.workflows.build-test-and-deploy)' .circleci/config.yml
+# workaround for annoying yq !!merge tags
+# sed -i.bak 's/!!merge //g' .circleci/config.yml && rm .circleci/config.yml.bak
+
 
 }
 
