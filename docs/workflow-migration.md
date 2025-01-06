@@ -8,7 +8,7 @@ Because CircleCI has been around for many years, and each project may well have 
 This is intended to be a 'get you started' process, although it may well be that other common components are added to the migration if there are common elements.
 
 ## Components
-The migration script solely to translate the key jobs under **workflows:** in `.circleci/config.yml`:
+The migration script solely to translate the **build-test-and-deploy** jobs under **workflows:** in `.circleci/config.yml`:
 ```
 workflows:
   build-test-and-deploy:
@@ -17,16 +17,44 @@ workflows:
     jobs:
 ```
 
-under the templated jobs within `.github/workflows/pipeline.yml`:
+to the templated jobs within `.github/workflows/pipeline.yml`:
 ```
 jobs:
 ```
 
+There will be sufficient parameters to carry out a simple deployment.
+
+
 ### Docker Build
-This will either call `build_multiplatform_docker` or `build_docker` with a number of parameters.
+This will either call `build_multiplatform_docker` or `build_docker` with custom parameters.
 
 #### Parameters
 
+- branch filters
+- additional_docker_build_args
+- docker_multiplatform
+
+Note: Github Actions doesn't suppport regex filtering of branch filters, so it uses either 'startsWith' or 'contains'
+
+
+### Deploy
+This will create a deployment activity for each corresponding environment within `config.yml`
+
+Approval gates are configured within the repository settings under **environments**, so aren't included within the deployment here,
+The *needs* configurations are based on any 'required' element associated with the request-${each_env}-approval.requires[] configuration
+
+#### Parameters
+
+- branch filters
+- needs (previous deployment)
+- helm_timeout
+- helm_dir
+- helm_additional_args
+
+### Removal
+Once the tasks have been migrated, the `build-test-and-deploy` workflow is removed from `.circleci/config.yml` to prevent concurrent deployment in CircleCI
+
+The previous configuration will be retained in a backup file (config.bak.yyyymmdd_HHMMSS)
 
 
 ## Automation
@@ -36,5 +64,5 @@ The `migrate-repo.sh` script can be run from a checked out repo:
 /bin/bash -c "$(curl -fsSL https://github.com/ministryofjustice/hmpps-github-actions/raw/refs/heads/main/migrate-repo.sh)
 ```
 
-
 ### TODO:
+Depending on feedback from developers, further parameters or build/test/deploy steps may be migrated

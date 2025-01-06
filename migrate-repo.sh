@@ -11,8 +11,8 @@ This script is to be run from the repo you wish to migrate:
 This will present three options:
 [1] Security workflows only - to delete all existing security workflows and replace with Github Actions OWASP / trivy and veracode workflows for
 the given project type.
-[2] Build/test/deployment only - to delete all existing deployment workflows and replace with the Github Actions deployment workflows for the given project type.
-[3] Complete migration - to delete existing build/test/deploy and security workflows and replace with the GHA equivalent
+[2] Build/test/deployment only - to add existing deployment workflows for the given project tiype to GHA and remove from CircleCI configuration.
+[3] Combined migration - to add existing build/test/deploy and security workflows to GHA and remove from CircleCI configuration.
 
 
 CONSIDERATIONS
@@ -294,7 +294,7 @@ elif [[ $selection -eq 2 ]]; then
 elif [[ $selection -eq 3 ]]; then
   echo "Migrating security and deployment workflows"
 elif [[ $selection -eq 4 ]]; then
-  echo "${migration_script_info}"
+  echo "${migration_script_info}" | less
 else
   echo "Exiting"
   exit 0
