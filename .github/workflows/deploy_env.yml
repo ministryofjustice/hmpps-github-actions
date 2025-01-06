@@ -38,7 +38,7 @@ on:
         type: string
       helm_timeout:
         description: Helm timeout
-        default: "10m"
+        default: "5m"
         required: false
         type: string
       helm_dir:
