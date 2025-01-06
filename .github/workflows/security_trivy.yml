@@ -54,8 +54,17 @@ jobs:
         TRIVY_DB_REPOSITORY: public.ecr.aws/aquasecurity/trivy-db:2,ghcr.io/aquasecurity/trivy-db:2
         TRIVY_JAVA_DB_REPOSITORY: public.ecr.aws/aquasecurity/trivy-java-db:1,ghcr.io/aquasecurity/trivy-java-db:1
       continue-on-error: true
+    # Upload the trivy results as an artifact in case the repo is private or internal
+    - name: upload trivy artifact
+      uses: actions/upload-artifact@v4
+      id: trivy-upload-artifact
+      with:
+        name: trivy-check-${{ inputs.subproject == '' && github.event.repository.name || inputs.subproject }}
+        path: trivy-results.sarif
+      continue-on-error: true
     - name: Trivy upload sarif
       id: trivy-upload
+      if: ${{ github.event.repository.visibility != 'private' && github.event.repository.visibility != 'internal' }}
       uses: github/codeql-action/upload-sarif@v3
       with:
         sarif_file: 'trivy-results.sarif'
