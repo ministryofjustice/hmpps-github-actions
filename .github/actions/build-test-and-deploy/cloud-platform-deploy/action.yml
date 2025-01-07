@@ -98,9 +98,6 @@ runs:
       shell: bash
       run: |
         eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
-        if -n "${{ inputs.helm_allowlist_groups }}"; then
-
-        fi
         brew install helm
         yq -i ".appVersion = \"${{ inputs.version }}\"" "${{ inputs.helm_dir }}/${{ github.event.repository.name }}/Chart.yaml"
         helm dependency update "${{ inputs.helm_dir }}/${{ github.event.repository.name }}"
@@ -115,6 +112,6 @@ runs:
           --timeout ${{ inputs.helm_timeout }} \
           --values 'helm_deploy/values-${{ steps.env.outputs.environment }}.yaml' \
           ${{ inputs.helm_additional_args }} \
-          ${{ inputs.helm_allowlist_groups}} \
+          ${{ inputs.helm_allowlist_groups }} \
           ${{ inputs.helm_allowlist_version }} \
           --wait
