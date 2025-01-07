@@ -79,22 +79,20 @@ jobs:
       - name: Check for IP_ALLOWLIST_GROUPS_YAML
         id: check-ip-allowlists
         run: |
-          if [[ -n "${{ vars.IP_ALLOWLIST_GROUPS_YAML }}" ]]; then
-            echo "TODO: add the allowlist to the helm variables"
-            echo "${IP_ALLOWLIST_GROUPS_YAML}" | base64 --decode > ip-allowlist-groups.yaml
-            HELM_ARGS+=("--values" "ip-allowlist-groups.yaml")
+          if [[ -n "${{ vars.HMPPS_IP_ALLOWLIST_GROUPS_YAML }}" ]]; then
+            echo "${{ vars.HMPPS_IP_ALLOWLIST_GROUPS_YAML }}" | base64 --decode > ip-allowlist-groups.yaml
+            echo "ALLOWLIST_GROUPS=--values ./ip-allowlist-groups.yaml") >> $GITHUB_OUTPUT
           fi
 
       - name: Check for IP_ALLOWLIST_GROUPS_VERSION
         id: check-ip-allowlists-version
         run: |
-          if [[ -n "${{ vars.IP_ALLOWLIST_GROUPS_VERSION }}" ]]; then
-            echo "TODO: add the allowlist version to the helm variables"
-            # HELM_ARGS+=("--set" "generic-service.allowlist_version=${IP_ALLOWLIST_GROUPS_VERSION}")
+          if [[ -n "${{ vars.HMPPS_IP_ALLOWLIST_GROUPS_VERSION }}" ]]; then
+            echo "ALLOWLIST_VERSION=--set generic-service.allowlist_version=${{ vars.HMPPS_IP_ALLOWLIST_GROUPS_VERSION }}" >> $GITHUB_OUTPUT
           fi
           
 
-      - uses: ministryofjustice/hmpps-github-actions/.github/actions/build-test-and-deploy/cloud-platform-deploy@v2 # WORKFLOW_VERSION
+      - uses: ministryofjustice/hmpps-github-actions/.github/actions/build-test-and-deploy/cloud-platform-deploy@HEAT-491-ip-allowlists # WORKFLOW_VERSION
         id: deploy
         with:
           environment: ${{ inputs.environment }}
@@ -110,6 +108,8 @@ jobs:
           helm_additional_args: ${{ inputs.helm_additional_args }}
           helm_timeout: ${{ inputs.helm_timeout }}
           helm_dir: ${{ inputs.helm_dir }}
+          helm_allowlist_groups: ${{ steps.check-ip-allowlists.outputs.ALLOWLIST_GROUPS }}
+          helm_allowlist_groups_version: ${{ steps.check-ip-allowlists-version.outputs.ALLOWLIST_VERSION }}
 
       # Notification bit - always send prod releases to dps-releases - CVA3MKDTR
       - if: ${{ always() && ( inputs.environment == 'prod' || inputs.environment == 'production' ) }}
