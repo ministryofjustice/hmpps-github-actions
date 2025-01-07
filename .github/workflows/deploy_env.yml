@@ -80,8 +80,8 @@ jobs:
         id: check-ip-allowlists
         run: |
           if [[ -n "${{ vars.HMPPS_IP_ALLOWLIST_GROUPS_YAML }}" ]]; then
-            echo "${{ vars.HMPPS_IP_ALLOWLIST_GROUPS_YAML }}" | base64 --decode > ./ip-allowlist-groups.yaml
-            echo "ALLOWLIST_GROUPS=--values ./ip-allowlist-groups.yaml" >> $GITHUB_OUTPUT
+            echo "${{ vars.HMPPS_IP_ALLOWLIST_GROUPS_YAML }}" | base64 --decode > ip-allowlist-groups.yaml
+            echo "ALLOWLIST_GROUPS=--values ip-allowlist-groups.yaml" >> $GITHUB_OUTPUT
           fi
 
       - name: Check for IP_ALLOWLIST_GROUPS_VERSION
