@@ -90,7 +90,6 @@ jobs:
           if [[ -n "${{ vars.HMPPS_IP_ALLOWLIST_GROUPS_VERSION }}" ]]; then
             echo "ALLOWLIST_VERSION=--set generic-service.allowlist_version=${{ vars.HMPPS_IP_ALLOWLIST_GROUPS_VERSION }}" >> $GITHUB_OUTPUT
           fi
-          
 
       - uses: ministryofjustice/hmpps-github-actions/.github/actions/build-test-and-deploy/cloud-platform-deploy@HEAT-491-ip-allowlists # WORKFLOW_VERSION
         id: deploy
@@ -109,7 +108,7 @@ jobs:
           helm_timeout: ${{ inputs.helm_timeout }}
           helm_dir: ${{ inputs.helm_dir }}
           helm_allowlist_groups: ${{ steps.check-ip-allowlists.outputs.ALLOWLIST_GROUPS }}
-          helm_allowlist_groups_version: ${{ steps.check-ip-allowlists-version.outputs.ALLOWLIST_VERSION }}
+          helm_allowlist_version: ${{ steps.check-ip-allowlists-version.outputs.ALLOWLIST_VERSION }}
 
       # Notification bit - always send prod releases to dps-releases - CVA3MKDTR
       - if: ${{ always() && ( inputs.environment == 'prod' || inputs.environment == 'production' ) }}
