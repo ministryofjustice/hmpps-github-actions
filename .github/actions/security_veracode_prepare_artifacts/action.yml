@@ -22,10 +22,7 @@ runs:
       echo "docker_image_app_dir is ${{ inputs.docker_image_app_dir }}"
       CONTAINER_ID=$(docker create --rm ${IMAGE_ID})
       echo "CONTAINER_ID is ${CONTAINER_ID}"
-      if ! docker start ${CONTAINER_ID} && docker exec ${CONTAINER_ID} [ -d "${{ inputs.docker_image_app_dir }}" ]; then
-        echo "Directory ${{ inputs.docker_image_app_dir }} does not exist. Setting to /opt/app"
-        docker_image_app_dir="/opt/app"
-      fi
+
       docker cp ${CONTAINER_ID}:${{ inputs.docker_image_app_dir }} ./temp_app
       cd temp_app   
       zip -r ../source.zip . -x "*node_modules*" -x "*agent.jar*" -x "*vendor/bundle*"
