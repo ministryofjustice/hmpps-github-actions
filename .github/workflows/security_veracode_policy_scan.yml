@@ -7,6 +7,10 @@ on:
         required: false
         default: 'NO_SLACK'
         type: string
+      docker_image_app_dir:
+        required: false
+        default: '/app'
+        type: string
       teams:
         required: false
         type: string
@@ -60,7 +64,6 @@ jobs:
       contents: read
       actions: read
     env:
-      docker_image_app_dir: "/app"
       additional_docker_build_args: ""
       jdk_tag: "17.0"
       java_options: "-Xmx1024m -XX:ParallelGCThreads=2 -XX:ConcGCThreads=2 -Djava.util.concurrent.ForkJoinPool.common.parallelism=2 -Dorg.gradle.daemon=false -Dkotlin.compiler.execution.strategy=in-process"
@@ -74,6 +77,8 @@ jobs:
         distribution: 'temurin'
     - name: prepare assets
       uses: ministryofjustice/hmpps-github-actions/.github/actions/security_veracode_prepare_artifacts@v2 # WORKFLOW_VERSION
+      with:
+        docker_image_app_dir: ${{ inputs.docker_image_app_dir }}
     - name: "Download/Extract veracode agent"
       run: wget https://repo1.maven.org/maven2/com/veracode/vosp/api/wrappers/vosp-api-wrappers-java/22.9.10.3/vosp-api-wrappers-java-22.9.10.3.jar -O VeracodeJavaAPI.jar
     - name: "Upload to Veracode"
