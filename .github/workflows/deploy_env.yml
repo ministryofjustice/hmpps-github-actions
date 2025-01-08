@@ -92,6 +92,8 @@ jobs:
           helm_additional_args: ${{ inputs.helm_additional_args }}
           helm_timeout: ${{ inputs.helm_timeout }}
           helm_dir: ${{ inputs.helm_dir }}
+          helm_allowlist_groups: ${{ vars.HMPPS_IP_ALLOWLIST_GROUPS_YAML }}
+          helm_allowlist_version: ${{ vars.HMPPS_IP_ALLOWLIST_GROUPS_VERSION }}
 
       # Notification bit - always send prod releases to dps-releases - CVA3MKDTR
       - if: ${{ always() && ( inputs.environment == 'prod' || inputs.environment == 'production' ) }}

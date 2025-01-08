@@ -45,7 +45,13 @@ inputs:
   helm_dir: 
     description: location of helm configuration
     required: false
-    default: helm_deploy 
+    default: helm_deploy
+  helm_allowlist_groups:
+    description: values for location of allowlist groups file
+    required: false
+  helm_allowlist_version:
+    description: setting for version of allowlist file
+    required: false
 
 outputs:
   deployment_changelog:
@@ -88,6 +94,23 @@ runs:
         k8s_deployment_name: ${{ inputs.k8s_deployment_name }}
         changelog_git_paths: ${{ inputs.changelog_git_paths }}
 
+    - name: Check for IP_ALLOWLIST_GROUPS_YAML
+      shell: bash
+      id: check-ip-allowlists
+      run: |
+        if [[ -n "${{ inputs.helm_allowlist_groups }}" ]]; then
+          echo "${{ inputs.helm_allowlist_groups }}" | base64 --decode > ./ip-allowlist-groups.yaml
+          echo "ALLOWLIST_GROUPS=--values ./ip-allowlist-groups.yaml" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Check for IP_ALLOWLIST_GROUPS_VERSION
+      shell: bash
+      id: check-ip-allowlists-version
+      run: |
+        if [[ -n "${{ inputs.helm_allowlist_version }}" ]]; then
+          echo "ALLOWLIST_VERSION=--set generic-service.allowlist_version=${{ inputs.helm_allowlist_version }}" >> $GITHUB_OUTPUT
+        fi
+
     - name: Deploy
       shell: bash
       run: |
@@ -106,4 +129,6 @@ runs:
           --timeout ${{ inputs.helm_timeout }} \
           --values 'helm_deploy/values-${{ steps.env.outputs.environment }}.yaml' \
           ${{ inputs.helm_additional_args }} \
+          ${{ steps.check-ip-allowlists.outputs.ALLOWLIST_GROUPS }} \
+          ${{ steps.check-ip-allowlists-version.outputs.ALLOWLIST_VERSION }} \
           --wait
