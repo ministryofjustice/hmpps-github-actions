@@ -72,6 +72,12 @@ jobs:
       with:
         java-version: '21'
         distribution: 'temurin'
+    - name: Check and set docker_image_app_dir
+      run: |
+        if [ "${{ env.docker_image_app_dir }}" != "/app" ]; then
+          echo "docker_image_app_dir is not set to /app. Setting it to /opt/app."
+          echo "docker_image_app_dir=/opt/app" >> $GITHUB_ENV
+        fi
     - name: prepare assets
       uses: ministryofjustice/hmpps-github-actions/.github/actions/security_veracode_prepare_artifacts@v2 # WORKFLOW_VERSION
     - name: "Download/Extract veracode agent"
