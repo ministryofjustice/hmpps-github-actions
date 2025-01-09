@@ -53,9 +53,14 @@ To perform a release:
 * Update the WORKFLOW_VERSION across the project
 * Ensure the `CHANGELOG.md` has been updated
 * Create a pull request and get it merged
-* Create tags for `vx`, `vx.y` and `vx.y.z`, e.g: `git tag v2`, `v2.0` and `v2.0.1`
-* Force push all three tags to the repo
-* Create a github release from the `vx.y.z` tag
+* Create a new release, and select create new tag, incrementing the version appropriately.
+* Update the short version of the tags for `vx`, `vx.y`.
+
+e.g: For a new version: `v2.1.5`
+```sh
+git tag -f v2 && git push -f origin v2
+git tag -f v2.1 && git push -f origin v2.1
+```
 
 ### TODO
 
