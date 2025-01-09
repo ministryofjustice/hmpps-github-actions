@@ -59,7 +59,6 @@ jobs:
       contents: read
       actions: read
     env:
-      docker_image_app_dir: "/app"
       additional_docker_build_args: ""
       jdk_tag: "17.0"
       java_options: "-Xmx1024m -XX:ParallelGCThreads=2 -XX:ConcGCThreads=2 -Djava.util.concurrent.ForkJoinPool.common.parallelism=2 -Dorg.gradle.daemon=false -Dkotlin.compiler.execution.strategy=in-process"
