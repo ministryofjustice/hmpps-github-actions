@@ -21,6 +21,8 @@ on:
 permissions:
   contents: read
   security-events: write
+  packages: read
+  actions: read
 
 jobs:
   security-trivy-check:
@@ -30,6 +32,7 @@ jobs:
       security-events: write
       contents: read
       actions: read
+      packages: read
     steps:
     - uses: actions/checkout@v4
     - name: Check repository in helm_deploy/values.yaml
