@@ -24,6 +24,14 @@ jobs:
 
 There will be sufficient parameters to carry out a simple deployment.
 
+### Executors
+
+There are a number of CircleCI projects that refer to executors to run more than one service (eg. Node + Redis, or Java + Postgres)
+Github Actions does not have an equivalent, so local workflows are required to carry out the function, which call on the additional
+services (eg. Redis / Postgres). The migration script will identify the most common executors and insert templates to use these services into a
+local workflow. The developer can then migrate the specifics of the tests (from the original config.yml) to this workflow and create a reference
+from the pipeline. This will be logged as part of the migration script.
+
 
 ### Docker Build
 This will either call `build_multiplatform_docker` or `build_docker` with custom parameters.
