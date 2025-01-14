@@ -144,7 +144,6 @@ migrate_deployment_jobs() {
         branch_filter_string="${branch_filter_string}github.ref == 'refs/heads/${each_branch}'"
       fi
     done
-    echo "Branch filter string is: $branch_filter_string"
     yq eval "(.jobs.build.if) = \"${branch_filter_string}\"" -i .github/workflows/pipeline.yml
   fi
 
@@ -210,7 +209,6 @@ migrate_deployment_jobs() {
           branch_filter_string="${branch_filter_string}github.ref == 'refs/heads/${each_branch}'"
         fi
       done
-      echo "Branch filter string is: $branch_filter_string"
       echo "${branch_filter_string}" >> ${pipeline_file}
     fi
 
@@ -267,7 +265,7 @@ migrate_deployment_jobs() {
 
   # check for node_redis first of all
   node_redis_executors=$(yq eval '.jobs | with_entries(select(.value.executor.name == "hmpps/node_redis")) | keys[]' .circleci/config.yml)
-  
+
   if [ -n "$node_redis_executors" ]
     then for each_executor in $node_redis_executors; do
       # integration_test - copy the workflow from github actions and and change the reference in the pipeline
@@ -288,16 +286,18 @@ migrate_deployment_jobs() {
         # copy the workflow down
         gh api repos/ministryofjustice/hmpps-github-actions/contents/.github/workflows/node_unit_tests.yml -H "Accept: application/vnd.github.v3.raw" > .github/workflows/node_unit_tests_redis.yml
         # modify the workflow to include the service
-        yq eval '.jobs.unit_test |= {"runs-on": .runs-on, "services": {"redis": {"image": "redis:7.0", "ports": ["6379:6379"], "options": "--health-cmd \"redis-cli ping\"\n--health-interval 10s\n--health-timeout 5s\n--health-retries 5"}}, "steps": .steps}' -i .github/workflows/node_integration_tests_redis.yml
+        yq eval '.jobs.unit_test |= {"runs-on": .runs-on, "services": {"redis": {"image": "redis:7.0", "ports": ["6379:6379"], "options": "--health-cmd \"redis-cli ping\"\n--health-interval 10s\n--health-timeout 5s\n--health-retries 5"}}, "steps": .steps}' -i .github/workflows/node_unit_tests_redis.yml
         echo "WARNING: .github/workflows/node_unit_tests_redis.yml created for node unit tests including redis."
-        echo "         This will require manual modification to match the unit test within .circleci/config.yml"
+        echo "-------  This will require manual modification to match the unit test within .circleci/config.yml"
+      
       else
         echo "WARNING: Found node_redis executor ${each_executor} but no matching workflow in hmpps-github-actions"
-        echo "         Creating a placeholder workflow for ${each_executor} in .github/workflows/${each_executor}_redis.yml"
+        echo "-------  Creating a placeholder workflow for ${each_executor} in .github/workflows/node_${each_executor}_redis.yml"
         echo "         This will require manual modification to match the executor within .circleci/config.yml"
         echo "         It will also need a reference to this workflow to be added in .github/workflows/pipeline.yml"
         # copy down node_unit_tests as a template since it's simplest
         gh api repos/ministryofjustice/hmpps-github-actions/contents/.github/workflows/node_unit_tests.yml -H "Accept: application/vnd.github.v3.raw" > .github/workflows/node_${each_executor}_redis.yml
+        yq eval '.jobs.node-unit-test |= {"runs-on": .runs-on, "services": {"redis": {"image": "redis:7.0", "ports": ["6379:6379"], "options": "--health-cmd \"redis-cli ping\"\n--health-interval 10s\n--health-timeout 5s\n--health-retries 5"}}, "steps": .steps}' -i .github/workflows/node_${each_executor}_redis.yml
         # do a bit of tidying up of the file
         yq eval 'del(.jobs[].steps[] | select(.name == "fail the action if the tests failed") | .style="fail the action if the tests failed")' -i .github/workflows/node_${each_executor}_redis.yml
         yq eval 'del(.jobs[].steps[] | select(.id == "unit-tests") | .style="unit-tests")' -i .github/workflows/node_${each_executor}_redis.yml
@@ -312,13 +312,17 @@ migrate_deployment_jobs() {
   # workaround for annoying yq !!merge tags
   sed -i.bak 's/!!merge //g' .circleci/config.yml && rm .circleci/config.yml.bak
 
+  echo
   echo "Summary of deployment migration:"
   echo "==============================="
   echo "  - A pipeline.yml file has been created in .github/workflows based on build-test-deploy in .circleci/config.yml"
   echo "  - Please refer to the backup file to identify the jobs that still require migration"
-  echo "    Backup file: ${backup_file}"
   echo "  - See above for warnings about executor jobs that will require configuration/manual migration"
   echo "  - Also see above for warnings about duplicate environments in the CircleCI config"
+  echo "  - Finally, please review the pipeline and modify as required to ensure that it will behave as expected"
+  echo
+  echo "Backup file: ${backup_file}"
+  echo
   echo "Please contact the SRE team (#ask-prisons-sre) for assistance with any tasks that need to be migrateed."
 
 }
