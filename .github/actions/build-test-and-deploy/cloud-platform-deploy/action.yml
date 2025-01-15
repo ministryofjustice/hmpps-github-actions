@@ -3,7 +3,7 @@ description: Deploy to Cloud Platform using Helm
 
 inputs:
   environment:
-    description: The environment to deploy to (dev/preprod/prod)
+    description: The environment to deploy to (dev/staging/preprod/prod)
     required: true
   version:
     description: The version of the service to deploy
@@ -79,6 +79,7 @@ runs:
           'development') environment='dev' ;;
           'preproduction') environment='preprod' ;;
           'production') environment='prod' ;;     
+          'staging') environment='staging' ;;  
           *) environment=${{ inputs.environment }} ;;
         esac
         echo "environment=${environment}" | tee -a "$GITHUB_OUTPUT"
