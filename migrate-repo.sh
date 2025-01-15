@@ -273,9 +273,9 @@ migrate_deployment_jobs() {
         # copy the workflow down
         gh api repos/ministryofjustice/hmpps-github-actions/contents/.github/workflows/node_integration_tests.yml -H "Accept: application/vnd.github.v3.raw" > .github/workflows/node_integration_tests_redis.yml
         # modify the workflow to include the service
-        yq eval '.jobs.integration_test |= {"runs-on": .runs-on, "services": {"redis": {"image": "redis:7.0", "ports": ["6379:6379"], "options": "--health-cmd \"redis-cli ping\"\n--health-interval 10s\n--health-timeout 5s\n--health-retries 5"}}, "steps": .steps}' -i .github/workflows/node_integration_tests_redis.yml
+        yq eval '.jobs.integration_test |= {"runs-on": .runs-on, "services": {"redis": {"image": "redis:7.0", "ports": ["6379:6379"], "options": "--health-cmd=\"redis-cli ping\" --health-interval=10s --health-timeout=5s --health-retries=5"}}, "steps": .steps}' -i .github/workflows/node_integration_tests_redis.yml
         # refer to the local workflow in the pipeline
-        yq eval '.jobs.node_integration_tests.uses = ".github/workflows/node_integration_tests_redis.yml"' -i .github/workflows/pipeline.yml
+        yq eval '.jobs.node_integration_tests.uses = "./.github/workflows/node_integration_tests_redis.yml"' -i .github/workflows/pipeline.yml
         echo
         echo "WARNING: template .github/workflows/node_integration_tests_redis.yml created for node/redis integration test"
         echo "-------  This will require manual modification to match the integration test within .circleci/config.yml"
@@ -286,7 +286,10 @@ migrate_deployment_jobs() {
         # copy the workflow down
         gh api repos/ministryofjustice/hmpps-github-actions/contents/.github/workflows/node_unit_tests.yml -H "Accept: application/vnd.github.v3.raw" > .github/workflows/node_unit_tests_redis.yml
         # modify the workflow to include the service
-        yq eval '.jobs.unit_test |= {"runs-on": .runs-on, "services": {"redis": {"image": "redis:7.0", "ports": ["6379:6379"], "options": "--health-cmd \"redis-cli ping\"\n--health-interval 10s\n--health-timeout 5s\n--health-retries 5"}}, "steps": .steps}' -i .github/workflows/node_unit_tests_redis.yml
+        yq eval '.jobs.node-unit-test |= {"runs-on": .runs-on, "services": {"redis": {"image": "redis:7.0", "ports": ["6379:6379"], "options": "--health-cmd=\"redis-cli ping\" --health-interval=10s --health-timeout=5s --health-retries=5"}}, "steps": .steps}' -i .github/workflows/node_unit_tests_redis.yml
+        # refer to the local workflow in the pipeline
+        yq eval '.jobs.node_unit_tests.uses = "./.github/workflows/node_unit_tests_redis.yml"' -i .github/workflows/pipeline.yml
+        # Remove the ''
         echo "WARNING: .github/workflows/node_unit_tests_redis.yml created for node unit tests including redis."
         echo "-------  This will require manual modification to match the unit test within .circleci/config.yml"
       
@@ -297,7 +300,7 @@ migrate_deployment_jobs() {
         echo "         It will also need a reference to this workflow to be added in .github/workflows/pipeline.yml"
         # copy down node_unit_tests as a template since it's simplest
         gh api repos/ministryofjustice/hmpps-github-actions/contents/.github/workflows/node_unit_tests.yml -H "Accept: application/vnd.github.v3.raw" > .github/workflows/node_${each_executor}_redis.yml
-        yq eval '.jobs.node-unit-test |= {"runs-on": .runs-on, "services": {"redis": {"image": "redis:7.0", "ports": ["6379:6379"], "options": "--health-cmd \"redis-cli ping\"\n--health-interval 10s\n--health-timeout 5s\n--health-retries 5"}}, "steps": .steps}' -i .github/workflows/node_${each_executor}_redis.yml
+        yq eval '.jobs.node-unit-test |= {"runs-on": .runs-on, "services": {"redis": {"image": "redis:7.0", "ports": ["6379:6379"], "options": "--health-cmd=\"redis-cli ping\" --health-interval=10s --health-timeout=5s --health-retries=5"}}, "steps": .steps}' -i .github/workflows/node_${each_executor}_redis.yml
         # do a bit of tidying up of the file
         yq eval 'del(.jobs[].steps[] | select(.name == "fail the action if the tests failed") | .style="fail the action if the tests failed")' -i .github/workflows/node_${each_executor}_redis.yml
         yq eval 'del(.jobs[].steps[] | select(.id == "unit-tests") | .style="unit-tests")' -i .github/workflows/node_${each_executor}_redis.yml
@@ -309,6 +312,9 @@ migrate_deployment_jobs() {
   
   # Delete the build-test-and-deploy workflow when it's all done
   yq -i 'del(.workflows.build-test-and-deploy)' .circleci/config.yml
+
+  # Replace 'WORKFLOW_VERSION' with 'LOCAL_VERSION' for local workflows
+  sed -i.bak 's|\(uses: ./.github/workflows.*\)# WORKFLOW_VERSION|\1# LOCAL_VERSION|' .github/workflows/pipeline.yml && rm .github/workflows/pipeline.yml.bak
   # workaround for annoying yq !!merge tags
   sed -i.bak 's/!!merge //g' .circleci/config.yml && rm .circleci/config.yml.bak
 
