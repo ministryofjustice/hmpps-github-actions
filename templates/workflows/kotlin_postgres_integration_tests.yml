@@ -1,4 +1,4 @@
-name: Build and test kotlin with postgres
+name: integration test template for kotlin
 
 on:
   workflow_call:
@@ -81,11 +81,7 @@ jobs:
         cache-dependency-path: | 
           *.gradle*
           **/gradle-wrapper.properties
-    - name: gradlew check
-      shell: bash
-      run: |
-        export JAVA_OPTS="${{ inputs.java_options }}"
-        ${{ inputs.gradle_command }}
+    ## INSERT INTEGRATION TESTS HERE
     - name: upload the artifacts
       if: always()
       uses: actions/upload-artifact@v4
