@@ -3,7 +3,7 @@ name: Build and test kotlin
 on:
   workflow_call:
     inputs:
-      java_version:
+      jdk_tag:
         type: string
         required: false
         default: '21'
@@ -70,7 +70,7 @@ jobs:
     - uses: actions/setup-java@v4
       with:
         distribution: 'temurin'
-        java-version: '${{ inputs.java_version }}'
+        java-version: '${{ inputs.jdk_tag }}'
         cache: 'gradle'
         cache-dependency-path: | 
           *.gradle*
