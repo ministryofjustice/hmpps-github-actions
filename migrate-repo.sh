@@ -307,51 +307,7 @@ migrate_deployment_jobs() {
       fi
     done
   fi
-  
-  # check for java_postgres 
-  java_postgres_executors=$(yq eval '.jobs | with_entries(select(.value.executor.name == "hmpps/java_postgres")) | keys[]' .circleci/config.yml)
-
-  if [ -n "$java_postgres_executors" ]; then
-    for each_executor in $java_postgres_executors; do
-      # validate - point the kotlin_validate job to the kotlin_postgres_validate.yml shared workflow and add configurations
-      if [ ${each_executor} = "validate" ] ; then
-        yq eval '.jobs.kotlin_validate.uses = "ministryofjustice/hmpps-github-actions/.github/workflows/kotlin_postgres_validate.yml@v2"' -i .github/workflows/pipeline.yml
-        # loop through for the 'with' parameters
-        # Define the keys to extract
-        keys=("jdk_tag" "postgres_tag" "postgres_db" "postgres_username" "postgres_password")
-
-        # Loop through the keys and extract values from config.yml
-        for key in "${keys[@]}"; do
-          value=$(yq eval ".jobs.validate.executor.$key" .circleci/config.yml)
-          
-          # Update the pipeline.yml with the extracted values
-          yq eval ".jobs.kotlin_validate.with.$key = \"$value\"" -i .github/workflows/pipeline.yml
-        done
-    
-      elif [ ${each_executor} = "integration_tests" ] ; then
-        # copy the template workflow down
-        gh api repos/ministryofjustice/hmpps-github-actions/contents/templates/workflows/kotlin_postgres_integration_tests.yml -F ref=HEAT-490-executor-replacement -H "Accept: application/vnd.github.v3.raw" > .github/workflows/kotlin_integration_tests_postgres.yml
-        keys=("jdk_tag" "postgres_tag" "postgres_db" "postgres_username" "postgres_password")
-        # update the pipeline.yml with the new workflow
-        yq eval '.jobs |= {"integration_tests": {"name": "Kotlin integration tests", "uses":"ministryofjustice/hmpps-github-actions/.github/workflows/kotlin_postgres_validate.yml@v2"} , "kotlin_validate": .jobs.kotlin_validate, "build": .jobs.build} | del(.jobs.kotlin_validate) | del(.jobs.build)' -i .github/workflows/pipeline.yml
-        # Loop through the keys and extract values from config.yml
-        for key in "${keys[@]}"; do
-          value=$(yq eval ".jobs.validate.executor.$key" .circleci/config.yml)
-          
-          # Update the pipeline.yml with the extracted values
-          yq eval ".jobs.integration_tests.with.$key = \"$value\"" -i .github/workflows/pipeline.yml
-        done
-
-        echo "WARNING: .github/workflows/kotlin_integration_tests_postgres.yml created for integration tests including postgres."
-        echo "-------  This will require manual modification to match the integration test within .circleci/config.yml"
-      else
-        echo "WARNING: Found java_postgres executor ${each_executor} but without a matching workflow in hmpps-github-actions."
-        echo "-------  This will require manual creation of a local workflow to match the executor within .circleci/config.yml"
-        echo "         It will also need a reference to this workflow to be added in .github/workflows/pipeline.yml"
-      fi
-    done
-  fi 
-
+ 
   
   # Delete the build-test-and-deploy workflow when it's all done
   yq -i 'del(.workflows.build-test-and-deploy)' .circleci/config.yml
