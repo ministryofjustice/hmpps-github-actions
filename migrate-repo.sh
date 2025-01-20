@@ -309,16 +309,44 @@ migrate_deployment_jobs() {
   fi
   
   # check for java_postgres 
-  java_localstack_postgres_executors=$(yq eval '.jobs | with_entries(select(.value.executor.name == "hmpps/java_localstack_postgres" or .value.executor.name == "hmpps/java_localstack_postgres"_with_db_name")) | keys[]' .circleci/config.yml)
+  java_localstack_postgres_executors=$(yq eval '.jobs | with_entries(select(.value.executor.name == "hmpps/java_localstack_postgres" or .value.executor.name == "hmpps/java_localstack_postgres_with_db_name")) | keys[]' .circleci/config.yml)
 
   if [ -n "$java_localstack_postgres_executors" ]; then
     for each_executor in $java_localstack_postgres_executors; do
       # copy the template workflow down
-      gh api repos/ministryofjustice/hmpps-github-actions/contents/templates/workflows/kotlin_localstack_postgres.yml -XGET -F ref=HEAT-490-executor-replacement -H "Accept: application/vnd.github.v3.raw" > .github/workflows/kotlin_localstack_postgres_${each_executor}.yml
-      echo "WARNING: A template file - .github/workflows/kotlin_localstack_postgres_${each_executor}.yml has been created for"
-      echo "-------  the ${each_executor} workflow using Postgres and localstack."
-      echo "         This will require manual modification to match the integration test within .circleci/config.yml"
-      echo "         It will also need a reference to this workflow to be added in .github/workflows/pipeline.yml"
+      gh api repos/ministryofjustice/hmpps-github-actions/contents/templates/workflows/kotlin_localstack_postgres.yml -XGET -F ref=HEAT-501-java-localstack-postgres-executor-migration -H "Accept: application/vnd.github.v3.raw" > .github/workflows/kotlin_localstack_postgres_${each_executor}.yml
+      # if it's validate we can replace kotlin_validate with this workflow
+      if [ ${each_executor} = "validate" ] ; then
+        yq eval '.jobs.kotlin_validate.uses = "./.github/workflows/kotlin_localstack_postgres_validate.yml"' -i .github/workflows/pipeline.yml
+        # import the parameters (if they exist)
+        # localstack_tag: "3"
+        # services: "sqs,sns"
+        # postgres_tag: "16"
+        # postgres_username: "book-a-video-link"
+        # postgres_password: "book-a-video-link"
+        # postgres_db: "book-a-video-link-test-db"
+        keys=("services" "localstack_tag" "postgres_tag" "postgres_db" "postgres_username" "postgres_password")
+
+        # Loop through the keys and extract values from config.yml
+        for key in "${keys[@]}"; do
+          value=$(yq eval ".jobs.validate.executor.$key" .circleci/config.yml)
+          
+          if [ "$value" != "null" ]; then
+          # Update the pipeline.yml with the extracted values
+            yq eval ".jobs.kotlin_validate.with.$key = \"$value\"" -i .github/workflows/pipeline.yml
+          fi
+        done
+
+        echo "WARNING: A workflow file - .github/workflows/kotlin_localstack_postgres_${each_executor}.yml has been created for"
+        echo "-------  the ${each_executor} workflow using Postgres and localstack."
+        echo "         This will require manual modification to match the validate within .circleci/config.yml"
+        echo "         A reference to this workflow has been made for the kotlin_validate job in .github/workflows/pipeline.yml"
+      else  
+        echo "WARNING: A template file - .github/workflows/kotlin_localstack_postgres_${each_executor}.yml has been created for"
+        echo "-------  the ${each_executor} workflow using Postgres and localstack."
+        echo "         This will require manual modification to match the ${executor} job within .circleci/config.yml"
+        echo "         It will also need a reference to this workflow to be added in .github/workflows/pipeline.yml"
+      fi
     done
   fi 
 
@@ -342,7 +370,7 @@ migrate_deployment_jobs() {
   echo
   echo "Backup file: ${backup_file}"
   echo
-  echo "Please contact the SRE team (#ask-prisons-sre) for assistance with any tasks that need to be migrateed."
+  echo "Please contact the SRE team (#ask-prisons-digital-sre) for assistance with any tasks that need to be migrateed."
 
 }
 
