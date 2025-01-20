@@ -235,6 +235,108 @@ migrate_deployment_jobs() {
     fi
 
   done
+  # Finish the line
+  echo; echo
+
+  # Warning summary for multiple deployments
+  if [ -n "${duplicate_envs}" ]; then
+    echo "WARNING: Duplicate environments found in the CircleCI config (likely due to separate"
+    echo "-------  deployments for feature/main branches)."
+    echo -e "${duplicate_envs} " | sort | uniq -d | awk '{print "         - " $1}'
+    echo 
+    echo "         This will need to be resolved manually by renaming the job IDs within pipeline.yml" 
+    echo "         to ensure they are unique, and applying the appropriate branch filters and 'needs' values to each job."
+    echo
+  fi
+
+ ## Custom executor modifications
+
+  # check for node_redis first of all
+  node_redis_executors=$(yq eval '.jobs | with_entries(select(.value.executor.name == "hmpps/node_redis")) | keys[]' .circleci/config.yml)
+
+  if [ -n "$node_redis_executors" ]
+    then for each_executor in $node_redis_executors; do
+      # integration_test - copy the workflow from github actions and and change the reference in the pipeline
+      if [ ${each_executor} = "integration_test" ] ; then
+        # copy the workflow down
+        gh api repos/ministryofjustice/hmpps-github-actions/contents/.github/workflows/node_integration_tests.yml -H "Accept: application/vnd.github.v3.raw" > .github/workflows/node_integration_tests_redis.yml
+        # modify the workflow to include the service
+        yq eval '.jobs.integration_test |= {"runs-on": .runs-on, "services": {"redis": {"image": "redis:7.0", "ports": ["6379:6379"], "options": "--health-cmd=\"redis-cli ping\" --health-interval=10s --health-timeout=5s --health-retries=5"}}, "steps": .steps}' -i .github/workflows/node_integration_tests_redis.yml
+        # refer to the local workflow in the pipeline
+        yq eval '.jobs.node_integration_tests.uses = "./.github/workflows/node_integration_tests_redis.yml"' -i .github/workflows/pipeline.yml
+        echo
+        echo "WARNING: template .github/workflows/node_integration_tests_redis.yml created for node/redis integration test"
+        echo "-------  This will require manual modification to match the integration test within .circleci/config.yml"
+        echo
+
+      # unit_test - copy the workflow from github actions and and change the reference in the pipeline
+      elif [ ${each_executor} = "unit_test" ] ; then
+        # copy the workflow down
+        gh api repos/ministryofjustice/hmpps-github-actions/contents/.github/workflows/node_unit_tests.yml -H "Accept: application/vnd.github.v3.raw" > .github/workflows/node_unit_tests_redis.yml
+        # modify the workflow to include the service
+        yq eval '.jobs.node-unit-test |= {"runs-on": .runs-on, "services": {"redis": {"image": "redis:7.0", "ports": ["6379:6379"], "options": "--health-cmd=\"redis-cli ping\" --health-interval=10s --health-timeout=5s --health-retries=5"}}, "steps": .steps}' -i .github/workflows/node_unit_tests_redis.yml
+        # refer to the local workflow in the pipeline
+        yq eval '.jobs.node_unit_tests.uses = "./.github/workflows/node_unit_tests_redis.yml"' -i .github/workflows/pipeline.yml
+        # Remove the ''
+        echo "WARNING: .github/workflows/node_unit_tests_redis.yml created for node unit tests including redis."
+        echo "-------  This will require manual modification to match the unit test within .circleci/config.yml"
+      
+      else
+        echo "WARNING: Found node_redis executor ${each_executor} but no matching workflow in hmpps-github-actions"
+        echo "-------  Creating a placeholder workflow for ${each_executor} in .github/workflows/node_${each_executor}_redis.yml"
+        echo "         This will require manual modification to match the executor within .circleci/config.yml"
+        echo "         It will also need a reference to this workflow to be added in .github/workflows/pipeline.yml"
+        # copy down node_unit_tests as a template since it's simplest
+        gh api repos/ministryofjustice/hmpps-github-actions/contents/.github/workflows/node_unit_tests.yml -H "Accept: application/vnd.github.v3.raw" > .github/workflows/node_${each_executor}_redis.yml
+        yq eval '.jobs.node-unit-test |= {"runs-on": .runs-on, "services": {"redis": {"image": "redis:7.0", "ports": ["6379:6379"], "options": "--health-cmd=\"redis-cli ping\" --health-interval=10s --health-timeout=5s --health-retries=5"}}, "steps": .steps}' -i .github/workflows/node_${each_executor}_redis.yml
+        # do a bit of tidying up of the file
+        yq eval 'del(.jobs[].steps[] | select(.name == "fail the action if the tests failed") | .style="fail the action if the tests failed")' -i .github/workflows/node_${each_executor}_redis.yml
+        yq eval 'del(.jobs[].steps[] | select(.id == "unit-tests") | .style="unit-tests")' -i .github/workflows/node_${each_executor}_redis.yml
+      fi
+    done
+  fi
+  
+  # check for localstack
+  localstack=$(yq eval '.jobs | with_entries(select(.value.executor.name == "hmpps/localstack")) | keys[]' .circleci/config.yml)
+
+  if [ -n "$localstack" ]; then
+    for each_executor in $localstack; do
+      # copy the template workflow down
+      gh api repos/ministryofjustice/hmpps-github-actions/contents/templates/workflows/kotlin_localstack.yml -XGET -F ref=HEAT-503-localstack-executor-migration -H "Accept: application/vnd.github.v3.raw" > .github/workflows/kotlin_localstack_${each_executor}.yml
+      # if it's validate we can replace kotlin_validate with this workflow
+      if [ ${each_executor} = "validate" ] ; then
+        yq eval '.jobs.kotlin_validate.uses = "./.github/workflows/kotlin_localstack_validate.yml"' -i .github/workflows/pipeline.yml
+        # import the parameters (if they exist)
+        # localstack_tag: "3"
+        # services: "sqs,sns"
+        # postgres_tag: "16"
+        # postgres_username: "book-a-video-link"
+        # postgres_password: "book-a-video-link"
+        # postgres_db: "book-a-video-link-test-db"
+        keys=("services" "localstack_tag")
+
+        # Loop through the keys and extract values from config.yml
+        for key in "${keys[@]}"; do
+          value=$(yq eval ".jobs.validate.executor.$key" .circleci/config.yml)
+          
+          if [ "$value" != "null" ]; then
+          # Update the pipeline.yml with the extracted values
+            yq eval ".jobs.kotlin_validate.with.$key = \"$value\"" -i .github/workflows/pipeline.yml
+          fi
+        done
+
+        echo "WARNING: A workflow file - .github/workflows/kotlin_localstack_${each_executor}.yml has been created for"
+        echo "-------  the ${each_executor} workflow using localstack."
+        echo "         This will require manual modification to match the validate within .circleci/config.yml"
+        echo "         A reference to this workflow has been made for the kotlin_validate job in .github/workflows/pipeline.yml"
+      else  
+        echo "WARNING: A template file - .github/workflows/kotlin_localstack_${each_executor}.yml has been created for"
+        echo "-------  the ${each_executor} workflow using localstack."
+        echo "         This will require manual modification to match the ${each_executor} job within .circleci/config.yml"
+        echo "         It will also need a reference to this workflow to be added in .github/workflows/pipeline.yml"
+      fi
+    done
+  fi 
 
   # Delete the build-test-and-deploy workflow when it's all done
   yq -i 'del(.workflows.build-test-and-deploy)' .circleci/config.yml
