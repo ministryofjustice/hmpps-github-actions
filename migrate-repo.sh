@@ -309,10 +309,6 @@ migrate_deployment_jobs() {
         # import the parameters (if they exist)
         # localstack_tag: "3"
         # services: "sqs,sns"
-        # postgres_tag: "16"
-        # postgres_username: "book-a-video-link"
-        # postgres_password: "book-a-video-link"
-        # postgres_db: "book-a-video-link-test-db"
         keys=("services" "localstack_tag")
 
         # Loop through the keys and extract values from config.yml
