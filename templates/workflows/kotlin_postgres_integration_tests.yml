@@ -7,7 +7,7 @@ on:
         type: string
         required: false
         default: '~/app'
-      java_version:
+      jdk_tag:
         type: string
         required: false
         default: '21'
