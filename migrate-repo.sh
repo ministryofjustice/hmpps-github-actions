@@ -135,7 +135,7 @@ migrate_deployment_jobs() {
   # Anything else will need to be done by the developer
 
   # check to see if it's multiplatform or not 
-  if [ $(yq eval '.workflows.build-test-and-deploy | select(.jobs[]."hmpps/build_multiplatform_docker") | .jobs[] | select(has("hmpps/build_multiplatform_docker")) | .hmpps/build_multiplatform_docker' .circleci/config.yml | uniq) ]; then
+  if [ $(yq eval '.workflows.build-test-and-deploy | select(.jobs[]."hmpps/build_multiplatform_docker") | .jobs[] | select(has("hmpps/build_multiplatform_docker")) | .hmpps/build_multiplatform_docker' .circleci/config.yml | grep -c 'build_multiplatform_docker') -gt 0 ]; then
     docker_build='build_multiplatform_docker'
   else
     docker_build='build_docker'
@@ -378,7 +378,7 @@ migrate_deployment_jobs() {
     
       elif [ ${each_executor} = "integration_tests" ] ; then
         # copy the template workflow down
-        gh api repos/ministryofjustice/hmpps-github-actions/contents/templates/workflows/kotlin_postgres_integration_tests.yml -F "ref=HEAT-490-executor-replacement" -H "Accept: application/vnd.github.v3.raw" > .github/workflows/kotlin_postgres_integration_tests.yml
+        gh api repos/ministryofjustice/hmpps-github-actions/contents/templates/workflows/kotlin_postgres_integration_tests.yml -XGET -F "ref=HEAT-490-executor-replacement" -H "Accept: application/vnd.github.v3.raw" > .github/workflows/kotlin_postgres_integration_tests.yml
         keys=("jdk_tag" "postgres_tag" "postgres_db" "postgres_username" "postgres_password")
         # update the pipeline.yml with the new workflow
         yq eval '.jobs |= {"integration_tests": {"name": "Kotlin integration tests", "uses":"./.github/workflows/kotlin_postgres_integration_tests.yml"} , "kotlin_validate": .jobs.kotlin_validate, "build": .jobs.build} | del(.jobs.kotlin_validate) | del(.jobs.build)' -i .github/workflows/pipeline.yml
@@ -394,7 +394,7 @@ migrate_deployment_jobs() {
         echo "-------  This will require manual modification to match the integration test within .circleci/config.yml"
       else
         # copy the template workflow down
-        gh api repos/ministryofjustice/hmpps-github-actions/contents/templates/workflows/kotlin_postgres.yml -F "ref=HEAT-490-executor-replacement"  -H "Accept: application/vnd.github.v3.raw" > .github/workflows/kotlin_postgres_${each_executor}.yml
+        gh api repos/ministryofjustice/hmpps-github-actions/contents/templates/workflows/kotlin_postgres.yml -XGET -F "ref=HEAT-490-executor-replacement"  -H "Accept: application/vnd.github.v3.raw" > .github/workflows/kotlin_postgres_${each_executor}.yml
         echo "WARNING: A template file - .github/workflows/kotlin_postgres_${each_executor}.yml has been created for"
         echo "-------  the ${each_executor} workflow using Postgres."
         echo "         This will require manual modification to match the ${executor} job within .circleci/config.yml"
