@@ -1,5 +1,4 @@
 name: validate template for kotlin with localstack and postgres
-
 on:
   workflow_call:
     inputs:
@@ -27,12 +26,10 @@ on:
         type: string
         default: 'latest'
         required: false
-
 permissions:
   contents: read
-
 jobs:
-  integration_tests:
+  template_job:
     runs-on: ubuntu-latest
     # Label used to access the service container
     services:
@@ -48,31 +45,32 @@ jobs:
           PERSISTENCE: 1
           SERVICES: "${{ inputs.services }}"
     steps:
-    - uses: actions/checkout@v4
-    - name: refresh cache
-      id: initial-cache
-      uses: actions/cache@v4
-      env: 
-        cache-name: kotlin-cache
-      with:
-        path: | 
+      - uses: actions/checkout@v4
+      - name: refresh cache
+        id: initial-cache
+        uses: actions/cache@v4
+        env:
+          cache-name: kotlin-cache
+        with:
+          path: |
             - gradle-{{ checksum "build.gradle.kts" }}
             - gradle-
-        key: ${{ runner.os }}-gradle-${{ env.cache-name }}-${{ hashFiles('build.gradle.kts') }}
-    - uses: actions/setup-java@v4
-      with:
-        distribution: 'temurin'
-        java-version: '${{ inputs.java_version }}'
-        cache: 'gradle'
-        cache-dependency-path: | 
-          *.gradle*
-          **/gradle-wrapper.properties
-    ## INSERT COMMANDS HERE
-    - name: upload the artifacts
-      if: always()
-      uses: actions/upload-artifact@v4
-      with: 
-        name: upload kotlin valdation results
-        path: |
-          build/test-results
-          build/reports/tests
+          key: ${{ runner.os }}-gradle-${{ env.cache-name }}-${{ hashFiles('build.gradle.kts') }}
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '${{ inputs.java_version }}'
+          cache: 'gradle'
+          cache-dependency-path: |
+            *.gradle*
+            **/gradle-wrapper.properties
+      ## INSERT COMMANDS HERE
+      - name: upload the artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: upload kotlin valdation results
+          path: |
+            build/test-results
+            build/reports/tests
+  YES: null

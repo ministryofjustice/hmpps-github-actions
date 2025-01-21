@@ -311,9 +311,9 @@ migrate_deployment_jobs() {
   node_redis_executors=$(yq eval '.jobs | with_entries(select(.value.executor.name == "hmpps/node_redis")) | keys[]' .circleci/config.yml)
 
   if [ -n "$node_redis_executors" ]
-    then for each_executor in $node_redis_executors; do
+    then for executor_job in $node_redis_executors; do
       # integration_test - copy the workflow from github actions and and change the reference in the pipeline
-      if [ ${each_executor} = "integration_test" ] ; then
+      if [ ${executor_job} = "integration_test" ] ; then
         # copy the workflow down
         gh api repos/ministryofjustice/hmpps-github-actions/contents/.github/workflows/node_integration_tests.yml -H "Accept: application/vnd.github.v3.raw" > .github/workflows/node_integration_tests_redis.yml
         # modify the workflow to include the service
@@ -321,12 +321,12 @@ migrate_deployment_jobs() {
         # refer to the local workflow in the pipeline
         yq eval '.jobs.node_integration_tests.uses = "./.github/workflows/node_integration_tests_redis.yml"' -i .github/workflows/pipeline.yml
         echo
-        echo "WARNING: template .github/workflows/node_integration_tests_redis.yml created for node/redis integration test"
-        echo "-------  This will require manual modification to match the integration test within .circleci/config.yml"
+        echo "INFO: template .github/workflows/node_integration_tests_redis.yml created for node/redis integration test"
+        echo "----  This will require manual modification to match the integration test within .circleci/config.yml"
         echo
 
       # unit_test - copy the workflow from github actions and and change the reference in the pipeline
-      elif [ ${each_executor} = "unit_test" ] ; then
+      elif [ ${executor_job} = "unit_test" ] ; then
         # copy the workflow down
         gh api repos/ministryofjustice/hmpps-github-actions/contents/.github/workflows/node_unit_tests.yml -H "Accept: application/vnd.github.v3.raw" > .github/workflows/node_unit_tests_redis.yml
         # modify the workflow to include the service
@@ -334,20 +334,22 @@ migrate_deployment_jobs() {
         # refer to the local workflow in the pipeline
         yq eval '.jobs.node_unit_tests.uses = "./.github/workflows/node_unit_tests_redis.yml"' -i .github/workflows/pipeline.yml
         # Remove the ''
-        echo "WARNING: .github/workflows/node_unit_tests_redis.yml created for node unit tests including redis."
-        echo "-------  This will require manual modification to match the unit test within .circleci/config.yml"
+        echo "INFO: .github/workflows/node_unit_tests_redis.yml created for node unit tests including redis."
+        echo "----  This will require manual modification to match the unit test within .circleci/config.yml"
       
       else
-        echo "WARNING: Found node_redis executor ${each_executor} but no matching workflow in hmpps-github-actions"
-        echo "-------  Creating a placeholder workflow for ${each_executor} in .github/workflows/node_${each_executor}_redis.yml"
+        # copy down node_unit_tests as a template since it's simplest
+        gh api repos/ministryofjustice/hmpps-github-actions/contents/.github/workflows/node_unit_tests.yml -H "Accept: application/vnd.github.v3.raw" > .github/workflows/node_${executor_job}_redis.yml
+        yq eval '.jobs.node-unit-test |= {"runs-on": .runs-on, "services": {"redis": {"image": "redis:7.0", "ports": ["6379:6379"], "options": "--health-cmd=\"redis-cli ping\" --health-interval=10s --health-timeout=5s --health-retries=5"}}, "steps": .steps}' -i .github/workflows/node_${executor_job}_redis.yml
+        # do a bit of tidying up of the file
+        yq eval 'del(.jobs[].steps[] | select(.name == "fail the action if the tests failed") | .style="fail the action if the tests failed")' -i .github/workflows/node_${executor_job}_redis.yml
+        yq eval 'del(.jobs[].steps[] | select(.id == "unit-tests") | .style="unit-tests")' -i .github/workflows/node_${executor_job}_redis.yml
+        # rename it to the new job
+        yq eval "with(.jobs; .[\"$executor_job\"] = .[\"node-unit-test\"] | del(.\"node-unit-test\"))" -i .github/workflows/node_${executor_job}_redis.yml
+        echo "INFO: Found node_redis executor job ${executor_job} but no matching workflow in hmpps-github-actions"
+        echo "----  Creating a placeholder workflow for ${executor_job} in .github/workflows/node_${executor_job}_redis.yml"
         echo "         This will require manual modification to match the executor within .circleci/config.yml"
         echo "         It will also need a reference to this workflow to be added in .github/workflows/pipeline.yml"
-        # copy down node_unit_tests as a template since it's simplest
-        gh api repos/ministryofjustice/hmpps-github-actions/contents/.github/workflows/node_unit_tests.yml -H "Accept: application/vnd.github.v3.raw" > .github/workflows/node_${each_executor}_redis.yml
-        yq eval '.jobs.node-unit-test |= {"runs-on": .runs-on, "services": {"redis": {"image": "redis:7.0", "ports": ["6379:6379"], "options": "--health-cmd=\"redis-cli ping\" --health-interval=10s --health-timeout=5s --health-retries=5"}}, "steps": .steps}' -i .github/workflows/node_${each_executor}_redis.yml
-        # do a bit of tidying up of the file
-        yq eval 'del(.jobs[].steps[] | select(.name == "fail the action if the tests failed") | .style="fail the action if the tests failed")' -i .github/workflows/node_${each_executor}_redis.yml
-        yq eval 'del(.jobs[].steps[] | select(.id == "unit-tests") | .style="unit-tests")' -i .github/workflows/node_${each_executor}_redis.yml
       fi
     done
   fi
@@ -359,9 +361,9 @@ migrate_deployment_jobs() {
   java_postgres_executors=$(yq eval '.jobs | with_entries(select(.value.executor.name == "hmpps/java_postgres")) | keys[]' .circleci/config.yml)
 
   if [ -n "$java_postgres_executors" ]; then
-    for each_executor in $java_postgres_executors; do
+    for executor_job in $java_postgres_executors; do
       # validate - point the kotlin_validate job to the kotlin_postgres_validate.yml shared workflow and add configurations
-      if [ ${each_executor} = "validate" ] ; then
+      if [ ${executor_job} = "validate" ] ; then
         gh api repos/ministryofjustice/hmpps-github-actions/contents/templates/workflows/kotlin_postgres_validate.yml -XGET -F "ref=HEAT-490-executor-replacement" -H "Accept: application/vnd.github.v3.raw" > .github/workflows/kotlin_postgres_validate.yml
         yq eval '.jobs.kotlin_validate.uses = "./.github/workflows/kotlin_postgres_validate.yml"' -i .github/workflows/pipeline.yml
         # loop through for the 'with' parameters
@@ -375,30 +377,16 @@ migrate_deployment_jobs() {
           # Update the pipeline.yml with the extracted values
           yq eval ".jobs.kotlin_validate.with.$key = \"$value\"" -i .github/workflows/pipeline.yml
         done
-    
-      elif [ ${each_executor} = "integration_tests" ] ; then
-        # copy the template workflow down
-        gh api repos/ministryofjustice/hmpps-github-actions/contents/templates/workflows/kotlin_postgres_integration_tests.yml -XGET -F "ref=HEAT-490-executor-replacement" -H "Accept: application/vnd.github.v3.raw" > .github/workflows/kotlin_postgres_integration_tests.yml
-        keys=("jdk_tag" "postgres_tag" "postgres_db" "postgres_username" "postgres_password")
-        # update the pipeline.yml with the new workflow
-        yq eval '.jobs |= {"integration_tests": {"name": "Kotlin integration tests", "uses":"./.github/workflows/kotlin_postgres_integration_tests.yml"} , "kotlin_validate": .jobs.kotlin_validate, "build": .jobs.build} | del(.jobs.kotlin_validate) | del(.jobs.build)' -i .github/workflows/pipeline.yml
-        # Loop through the keys and extract values from config.yml
-        for key in "${keys[@]}"; do
-          value=$(yq eval ".jobs.validate.executor.$key" .circleci/config.yml)
-          
-          # Update the pipeline.yml with the extracted values
-          yq eval ".jobs.integration_tests.with.$key = \"$value\"" -i .github/workflows/pipeline.yml
-        done
-
-        echo "WARNING: .github/workflows/kotlin_integration_tests_postgres.yml created for integration tests including postgres."
-        echo "-------  This will require manual modification to match the integration test within .circleci/config.yml"
       else
         # copy the template workflow down
-        gh api repos/ministryofjustice/hmpps-github-actions/contents/templates/workflows/kotlin_postgres.yml -XGET -F "ref=HEAT-490-executor-replacement"  -H "Accept: application/vnd.github.v3.raw" > .github/workflows/kotlin_postgres_${each_executor}.yml
-        echo "WARNING: A template file - .github/workflows/kotlin_postgres_${each_executor}.yml has been created for"
-        echo "-------  the ${each_executor} workflow using Postgres."
-        echo "         This will require manual modification to match the ${executor} job within .circleci/config.yml"
-        echo "         It will also need a reference to this workflow to be added in .github/workflows/pipeline.yml"
+        gh api repos/ministryofjustice/hmpps-github-actions/contents/templates/workflows/kotlin_postgres.yml -XGET -F "ref=HEAT-490-executor-replacement"  -H "Accept: application/vnd.github.v3.raw" > .github/workflows/kotlin_postgres_${executor_job}.yml
+        # rename it to the new job
+        yq eval "with(.jobs; .[\"$executor_job\"] = .[\"template_job\"] | del(.\"template_job\"))" -i .github/workflows/kotlin_postgres_${executor_job}.yml
+        # INFO message
+        echo "INFO: A template file - .github/workflows/kotlin_postgres_${executor_job}.yml has been created for"
+        echo "----  the ${executor_job} workflow using Postgres."
+        echo "      This will require manual modification to match the ${executor} job within .circleci/config.yml"
+        echo "      It will also need a reference to this workflow to be added in .github/workflows/pipeline.yml"
       fi
     done
   fi 
@@ -410,19 +398,13 @@ migrate_deployment_jobs() {
   java_localstack_postgres_executors=$(yq eval '.jobs | with_entries(select(.value.executor.name == "hmpps/java_localstack_postgres" or .value.executor.name == "hmpps/java_localstack_postgres_with_db_name")) | keys[]' .circleci/config.yml)
 
   if [ -n "$java_localstack_postgres_executors" ]; then
-    for each_executor in $java_localstack_postgres_executors; do
+    for executor_job in $java_localstack_postgres_executors; do
       # copy the template workflow down
-      gh api repos/ministryofjustice/hmpps-github-actions/contents/templates/workflows/kotlin_localstack_postgres.yml -XGET -F "ref=HEAT-490-executor-replacement" -H "Accept: application/vnd.github.v3.raw" > .github/workflows/kotlin_localstack_postgres_${each_executor}.yml
+      gh api repos/ministryofjustice/hmpps-github-actions/contents/templates/workflows/kotlin_localstack_postgres.yml -XGET -F "ref=HEAT-490-executor-replacement" -H "Accept: application/vnd.github.v3.raw" > .github/workflows/kotlin_localstack_postgres_${executor_job}.yml
       # if it's validate we can replace kotlin_validate with this workflow
-      if [ ${each_executor} = "validate" ] ; then
+      if [ ${executor_job} = "validate" ] ; then
         yq eval '.jobs.kotlin_validate.uses = "./.github/workflows/kotlin_localstack_postgres_validate.yml"' -i .github/workflows/pipeline.yml
         # import the parameters (if they exist)
-        # localstack_tag: "3"
-        # services: "sqs,sns"
-        # postgres_tag: "16"
-        # postgres_username: "book-a-video-link"
-        # postgres_password: "book-a-video-link"
-        # postgres_db: "book-a-video-link-test-db"
         keys=("services" "localstack_tag" "postgres_tag" "postgres_db" "postgres_username" "postgres_password")
 
         # Loop through the keys and extract values from config.yml
@@ -434,16 +416,19 @@ migrate_deployment_jobs() {
             yq eval ".jobs.kotlin_validate.with.$key = \"$value\"" -i .github/workflows/pipeline.yml
           fi
         done
-
-        echo "WARNING: A workflow file - .github/workflows/kotlin_localstack_postgres_${each_executor}.yml has been created for"
-        echo "-------  the ${each_executor} workflow using Postgres and localstack."
-        echo "         This will require manual modification to match the validate within .circleci/config.yml"
-        echo "         A reference to this workflow has been made for the kotlin_validate job in .github/workflows/pipeline.yml"
+        # INFO message
+        echo "INFO: A workflow file - .github/workflows/kotlin_localstack_postgres_${executor_job}.yml has been created for"
+        echo "----  the ${executor_job} workflow using Postgres and localstack."
+        echo "      This will require manual modification to match the validate within .circleci/config.yml"
+        echo "      A reference to this workflow has been made for the kotlin_validate job in .github/workflows/pipeline.yml"
       else  
-        echo "WARNING: A template file - .github/workflows/kotlin_localstack_postgres_${each_executor}.yml has been created for"
-        echo "-------  the ${each_executor} workflow using Postgres and localstack."
-        echo "         This will require manual modification to match the ${executor} job within .circleci/config.yml"
-        echo "         It will also need a reference to this workflow to be added in .github/workflows/pipeline.yml"
+        # rename it to the new job
+        yq eval "with(.jobs; .[\"$executor_job\"] = .[\"template_job\"] | del(.\"template_job\"))" -i .github/workflows/kotlin_localstack_postgres_${executor_job}.yml
+        # INFO message
+        echo "INFO: A template file - .github/workflows/kotlin_localstack_postgres_${executor_job}.yml has been created for"
+        echo "----  the ${executor_job} workflow using Postgres and localstack."
+        echo "      This will require manual modification to match the ${executor} job within .circleci/config.yml"
+        echo "      It will also need a reference to this workflow to be added in .github/workflows/pipeline.yml"
       fi
     done
   fi 
@@ -455,11 +440,11 @@ migrate_deployment_jobs() {
   localstack=$(yq eval '.jobs | with_entries(select(.value.executor.name == "hmpps/localstack")) | keys[]' .circleci/config.yml)
 
   if [ -n "$localstack" ]; then
-    for each_executor in $localstack; do
+    for executor_job in $localstack; do
       # copy the template workflow down
-      gh api repos/ministryofjustice/hmpps-github-actions/contents/templates/workflows/kotlin_localstack.yml -XGET -F "ref=HEAT-490-executor-replacement" -H "Accept: application/vnd.github.v3.raw" > .github/workflows/kotlin_localstack_${each_executor}.yml
+      gh api repos/ministryofjustice/hmpps-github-actions/contents/templates/workflows/kotlin_localstack.yml -XGET -F "ref=HEAT-490-executor-replacement" -H "Accept: application/vnd.github.v3.raw" > .github/workflows/kotlin_localstack_${executor_job}.yml
       # if it's validate we can replace kotlin_validate with this workflow
-      if [ ${each_executor} = "validate" ] ; then
+      if [ ${executor_job} = "validate" ] ; then
         yq eval '.jobs.kotlin_validate.uses = "./.github/workflows/kotlin_localstack_validate.yml"' -i .github/workflows/pipeline.yml
         # import the parameters (if they exist)
         # localstack_tag: "3"
@@ -475,16 +460,19 @@ migrate_deployment_jobs() {
             yq eval ".jobs.kotlin_validate.with.$key = \"$value\"" -i .github/workflows/pipeline.yml
           fi
         done
-
-        echo "WARNING: A workflow file - .github/workflows/kotlin_localstack_${each_executor}.yml has been created for"
-        echo "-------  the ${each_executor} workflow using localstack."
-        echo "         This will require manual modification to match the validate within .circleci/config.yml"
-        echo "         A reference to this workflow has been made for the kotlin_validate job in .github/workflows/pipeline.yml"
+        # INFO message
+        echo "INFO: A workflow file - .github/workflows/kotlin_localstack_${executor_job}.yml has been created for"
+        echo "----  the ${executor_job} workflow using localstack."
+        echo "      This will require manual modification to match the validate within .circleci/config.yml"
+        echo "      A reference to this workflow has been made for the kotlin_validate job in .github/workflows/pipeline.yml"
       else  
-        echo "WARNING: A template file - .github/workflows/kotlin_localstack_${each_executor}.yml has been created for"
-        echo "-------  the ${each_executor} workflow using localstack."
-        echo "         This will require manual modification to match the ${each_executor} job within .circleci/config.yml"
-        echo "         It will also need a reference to this workflow to be added in .github/workflows/pipeline.yml"
+        # rename it to the new job
+        yq eval "with(.jobs; .[\"$executor_job\"] = .[\"template_job\"] | del(.\"template_job\"))" -i .github/workflows/kotlin_localstack_${executor_job}.yml
+        # INFO message
+        echo "INFO: A template file - .github/workflows/kotlin_localstack_${executor_job}.yml has been created for"
+        echo "----  the ${executor_job} workflow using localstack."
+        echo "      This will require manual modification to match the ${executor_job} job within .circleci/config.yml"
+        echo "      It will also need a reference to this workflow to be added in .github/workflows/pipeline.yml"
       fi
     done
   fi 

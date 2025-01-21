@@ -43,7 +43,7 @@ permissions:
   contents: read
 
 jobs:
-  integration_tests:
+  template_job:
     runs-on: ubuntu-latest
     # Label used to access the service container
     services:
