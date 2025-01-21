@@ -51,6 +51,11 @@ Any custom or extra components will need to be migrated separately - please revi
 '
 
 # Functions
+
+#############################
+# MIGRATION - SECURITY JOBS #
+#############################
+
 migrate_kotlin_security_jobs() {
   yq -i 'del(.workflows.security) | del(.workflows.security-weekly) | del(.parameters.alerts-slack-channel)' .circleci/config.yml
   mkdir -p .github/workflows
@@ -91,8 +96,15 @@ migrate_node_security_jobs() {
   yq -i ".on.schedule[].cron=\"$RANDOM_MINUTE2 $RANDOM_HOUR * * 1\" | .on.schedule[].cron line_comment=\"Every Monday at $(printf "%02d:%02d" $RANDOM_HOUR $RANDOM_MINUTE2) UTC\"" .github/workflows/security_veracode_policy_scan.yml
 }
 
-# this applies to both templates (project type is $1) but has custom elements depending on the project type
+###############################
+# MIGRATION - DEPLOYMENT JOBS #
+###############################
+
+# This applies to both templates (project type is $1) but has custom elements depending on the project type
 migrate_deployment_jobs() {
+
+  # Setup
+  # -----
 
   mkdir -p .github/workflows
   pipeline_file=".github/workflows/pipeline.yml"
@@ -113,6 +125,14 @@ migrate_deployment_jobs() {
   deploy_envs=$(yq eval '.workflows.build-test-and-deploy | select(.jobs[]."hmpps/deploy_env") | .jobs[] | select(has("hmpps/deploy_env")) | ."hmpps/deploy_env".env' .circleci/config.yml)
   
   # BUILD modifications
+  # -------------------
+
+  # This simply looks for a job within build-test-and-deploy containing 'build_docker' or 'build_multiplatform_docker' and:
+  # - migrates basic branch filters ('only' only)
+  # - sets the docker_multiplatform flag
+  # - adds additional_docker_build_args and additional_docker_tag if present
+  #
+  # Anything else will need to be done by the developer
 
   # check to see if it's multiplatform or not 
   if [ $(yq eval '.workflows.build-test-and-deploy | select(.jobs[]."hmpps/build_multiplatform_docker") | .jobs[] | select(has("hmpps/build_multiplatform_docker")) | .hmpps/build_multiplatform_docker' .circleci/config.yml | uniq) ]; then
@@ -169,6 +189,16 @@ migrate_deployment_jobs() {
   fi
 
   # DEPLOY modifications
+  # --------------------
+
+  # This uses the deploy_env list generated during the setup and, for each environment:
+  # - migrates basic branch filters ('only' only)
+  # - computes the 'needs' based on the request-${each_env}-approval.requires list
+  # - adds the standard deploy parameters
+  # - also adds a set of custom helm parameters if they're present
+  # - warns if there's duplicate deploy_env entries (due to more complex branch filtering - the developer will need to resolve this)
+
+  # Anything else will need to be done by the developer
 
   # loop through each of the environments
   duplicate_envs=""
@@ -261,9 +291,23 @@ migrate_deployment_jobs() {
     echo
   fi
 
-  ## Custom executor modifications
+  # Custom executor modifications
+  # -----------------------------
 
-  # check for node_redis first of all
+  # This checks for a number of custom executors that are used in CircleCI and, depending on the complexity of the job,
+  # either changes the pipeline to point at an existing shared workflow, or downloads a template workflow to be used by
+  # the pipeline. The following executors are checked for:
+  #
+  # node_redis
+  # java_postgres
+  # localstack
+  # java_localstack_postgres (and db_name)
+  
+  # Each of these will print a warning for the developer to carry out whatever manual steps are required to complete the migration
+
+  # node_redis
+  # ==========
+
   node_redis_executors=$(yq eval '.jobs | with_entries(select(.value.executor.name == "hmpps/node_redis")) | keys[]' .circleci/config.yml)
 
   if [ -n "$node_redis_executors" ]
@@ -308,7 +352,10 @@ migrate_deployment_jobs() {
     done
   fi
   
-  # check for java_postgres 
+  # ============== end of node_redis ==============
+
+  # java_postgres
+  # =============
   java_postgres_executors=$(yq eval '.jobs | with_entries(select(.value.executor.name == "hmpps/java_postgres")) | keys[]' .circleci/config.yml)
 
   if [ -n "$java_postgres_executors" ]; then
@@ -330,7 +377,7 @@ migrate_deployment_jobs() {
     
       elif [ ${each_executor} = "integration_tests" ] ; then
         # copy the template workflow down
-        gh api repos/ministryofjustice/hmpps-github-actions/contents/templates/workflows/kotlin_postgres_integration_tests.yml -F ref=HEAT-490-executor-replacement -H "Accept: application/vnd.github.v3.raw" > .github/workflows/kotlin_integration_tests_postgres.yml
+        gh api repos/ministryofjustice/hmpps-github-actions/contents/templates/workflows/kotlin_postgres_integration_tests.yml -H "Accept: application/vnd.github.v3.raw" > .github/workflows/kotlin_integration_tests_postgres.yml
         keys=("jdk_tag" "postgres_tag" "postgres_db" "postgres_username" "postgres_password")
         # update the pipeline.yml with the new workflow
         yq eval '.jobs |= {"integration_tests": {"name": "Kotlin integration tests", "uses":"ministryofjustice/hmpps-github-actions/.github/workflows/kotlin_postgres_validate.yml@v2"} , "kotlin_validate": .jobs.kotlin_validate, "build": .jobs.build} | del(.jobs.kotlin_validate) | del(.jobs.build)' -i .github/workflows/pipeline.yml
@@ -352,7 +399,98 @@ migrate_deployment_jobs() {
     done
   fi 
 
-  
+  # ============== end of java_postgres ==============
+
+  # java_localstack_postgres
+  # ========================
+  java_localstack_postgres_executors=$(yq eval '.jobs | with_entries(select(.value.executor.name == "hmpps/java_localstack_postgres" or .value.executor.name == "hmpps/java_localstack_postgres_with_db_name")) | keys[]' .circleci/config.yml)
+
+  if [ -n "$java_localstack_postgres_executors" ]; then
+    for each_executor in $java_localstack_postgres_executors; do
+      # copy the template workflow down
+      gh api repos/ministryofjustice/hmpps-github-actions/contents/templates/workflows/kotlin_localstack_postgres.yml -XGET -H "Accept: application/vnd.github.v3.raw" > .github/workflows/kotlin_localstack_postgres_${each_executor}.yml
+      # if it's validate we can replace kotlin_validate with this workflow
+      if [ ${each_executor} = "validate" ] ; then
+        yq eval '.jobs.kotlin_validate.uses = "./.github/workflows/kotlin_localstack_postgres_validate.yml"' -i .github/workflows/pipeline.yml
+        # import the parameters (if they exist)
+        # localstack_tag: "3"
+        # services: "sqs,sns"
+        # postgres_tag: "16"
+        # postgres_username: "book-a-video-link"
+        # postgres_password: "book-a-video-link"
+        # postgres_db: "book-a-video-link-test-db"
+        keys=("services" "localstack_tag" "postgres_tag" "postgres_db" "postgres_username" "postgres_password")
+
+        # Loop through the keys and extract values from config.yml
+        for key in "${keys[@]}"; do
+          value=$(yq eval ".jobs.validate.executor.$key" .circleci/config.yml)
+          
+          if [ "$value" != "null" ]; then
+          # Update the pipeline.yml with the extracted values
+            yq eval ".jobs.kotlin_validate.with.$key = \"$value\"" -i .github/workflows/pipeline.yml
+          fi
+        done
+
+        echo "WARNING: A workflow file - .github/workflows/kotlin_localstack_postgres_${each_executor}.yml has been created for"
+        echo "-------  the ${each_executor} workflow using Postgres and localstack."
+        echo "         This will require manual modification to match the validate within .circleci/config.yml"
+        echo "         A reference to this workflow has been made for the kotlin_validate job in .github/workflows/pipeline.yml"
+      else  
+        echo "WARNING: A template file - .github/workflows/kotlin_localstack_postgres_${each_executor}.yml has been created for"
+        echo "-------  the ${each_executor} workflow using Postgres and localstack."
+        echo "         This will require manual modification to match the ${executor} job within .circleci/config.yml"
+        echo "         It will also need a reference to this workflow to be added in .github/workflows/pipeline.yml"
+      fi
+    done
+  fi 
+
+  # ============== end of java_localstack_postgres ==============
+
+  # localstack
+  # ==========
+  localstack=$(yq eval '.jobs | with_entries(select(.value.executor.name == "hmpps/localstack")) | keys[]' .circleci/config.yml)
+
+  if [ -n "$localstack" ]; then
+    for each_executor in $localstack; do
+      # copy the template workflow down
+      gh api repos/ministryofjustice/hmpps-github-actions/contents/templates/workflows/kotlin_localstack.yml -XGET -H "Accept: application/vnd.github.v3.raw" > .github/workflows/kotlin_localstack_${each_executor}.yml
+      # if it's validate we can replace kotlin_validate with this workflow
+      if [ ${each_executor} = "validate" ] ; then
+        yq eval '.jobs.kotlin_validate.uses = "./.github/workflows/kotlin_localstack_validate.yml"' -i .github/workflows/pipeline.yml
+        # import the parameters (if they exist)
+        # localstack_tag: "3"
+        # services: "sqs,sns"
+        keys=("services" "localstack_tag")
+
+        # Loop through the keys and extract values from config.yml
+        for key in "${keys[@]}"; do
+          value=$(yq eval ".jobs.validate.executor.$key" .circleci/config.yml)
+          
+          if [ "$value" != "null" ]; then
+          # Update the pipeline.yml with the extracted values
+            yq eval ".jobs.kotlin_validate.with.$key = \"$value\"" -i .github/workflows/pipeline.yml
+          fi
+        done
+
+        echo "WARNING: A workflow file - .github/workflows/kotlin_localstack_${each_executor}.yml has been created for"
+        echo "-------  the ${each_executor} workflow using localstack."
+        echo "         This will require manual modification to match the validate within .circleci/config.yml"
+        echo "         A reference to this workflow has been made for the kotlin_validate job in .github/workflows/pipeline.yml"
+      else  
+        echo "WARNING: A template file - .github/workflows/kotlin_localstack_${each_executor}.yml has been created for"
+        echo "-------  the ${each_executor} workflow using localstack."
+        echo "         This will require manual modification to match the ${each_executor} job within .circleci/config.yml"
+        echo "         It will also need a reference to this workflow to be added in .github/workflows/pipeline.yml"
+      fi
+    done
+  fi 
+
+  # ============== end of localstack ==============
+
+
+  # Tidy up at the end
+  # ------------------
+
   # Delete the build-test-and-deploy workflow when it's all done
   yq -i 'del(.workflows.build-test-and-deploy)' .circleci/config.yml
 
@@ -376,7 +514,10 @@ migrate_deployment_jobs() {
 
 }
 
-## main script starts here
+###########################
+# MAIN SCRIPT STARTS HERE #
+###########################
+
 
 # Initialisation
 set -euo pipefail

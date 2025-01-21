@@ -24,15 +24,6 @@ jobs:
 
 There will be sufficient parameters to carry out a simple deployment.
 
-### Executors
-
-There are a number of CircleCI projects that refer to executors to run more than one service (eg. Node + Redis, or Java + Postgres)
-Github Actions does not have an equivalent, so local workflows are required to carry out the function, which call on the additional
-services (eg. Redis / Postgres). The migration script will identify the most common executors and insert templates to use these services into a
-local workflow. The developer can then migrate the specifics of the tests (from the original config.yml) to this workflow and create a reference
-from the pipeline. This will be logged as part of the migration script.
-
-
 ### Docker Build
 This will either call `build_multiplatform_docker` or `build_docker` with custom parameters.
 
@@ -58,6 +49,22 @@ The *needs* configurations are based on any 'required' element associated with t
 - helm_timeout
 - helm_dir
 - helm_additional_args
+
+### Executors
+
+There are a number of CircleCI projects that refer to executors to run more than one service (eg. Node + Redis, or Java + Postgres)
+Github Actions does not have an equivalent, so separate workflows are required to carry out the job, which load the additional
+services (eg. Redis / Postgres). The migration script will identify the most common executors and insert templates to use these services into a
+local workflow. The developer can then migrate the specifics of the tests (from the original config.yml) to this workflow and create a reference
+from the pipeline. This will be logged as part of the migration script and the developer will be notified as to which jobs will need to be checked.
+
+The migration script contains checks for these CircleCI executors, the behaviours of which are commented within the script:
+
+- node_redis
+- java_postgres
+- java_localstack_postgres (including db_name)
+- localstack
+
 
 ### Removal
 Once the tasks have been migrated, the `build-test-and-deploy` workflow is removed from `.circleci/config.yml` to prevent concurrent deployment in CircleCI
