@@ -361,7 +361,6 @@ migrate_deployment_jobs() {
   java_postgres_executors=$(yq eval '.jobs | with_entries(select(.value.executor.name == "hmpps/java_postgres")) | keys[]' .circleci/config.yml)
 
   if [ -n "$java_postgres_executors" ]; then
-    echo "Found java postgres executors"
     for executor_job in $java_postgres_executors; do
       # validate - point the kotlin_validate job to the kotlin_postgres_validate.yml shared workflow and add configurations
       if [ ${executor_job} = "validate" ] ; then
@@ -380,7 +379,7 @@ migrate_deployment_jobs() {
         # INFO message
         echo "INFO: A template file - .github/workflows/kotlin_postgres_${executor_job}.yml has been created for"
         echo "----  the ${executor_job} workflow using Postgres."
-        echo "      This will require manual modification to match the ${executor} job within .circleci/config.yml"
+        echo "      This will require manual modification to match the ${executor_job} job within .circleci/config.yml"
         echo "      A reference to this workflow has been made for the kotlin_validate job in .github/workflows/pipeline.yml"
         done
       else
@@ -391,7 +390,7 @@ migrate_deployment_jobs() {
         # INFO message
         echo "INFO: A template file - .github/workflows/kotlin_postgres_${executor_job}.yml has been created for"
         echo "----  the ${executor_job} workflow using Postgres."
-        echo "      This will require manual modification to match the ${executor} job within .circleci/config.yml"
+        echo "      This will require manual modification to match the ${executor_job} job within .circleci/config.yml"
         echo "      It will also need a reference to this workflow to be added in .github/workflows/pipeline.yml"
       fi
     done
@@ -433,7 +432,7 @@ migrate_deployment_jobs() {
         # INFO message
         echo "INFO: A template file - .github/workflows/kotlin_localstack_postgres_${executor_job}.yml has been created for"
         echo "----  the ${executor_job} workflow using Postgres and localstack."
-        echo "      This will require manual modification to match the ${executor} job within .circleci/config.yml"
+        echo "      This will require manual modification to match the ${executor_job} job within .circleci/config.yml"
         echo "      It will also need a reference to this workflow to be added in .github/workflows/pipeline.yml"
       fi
     done
