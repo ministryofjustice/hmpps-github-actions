@@ -373,9 +373,15 @@ migrate_deployment_jobs() {
         # Loop through the keys and extract values from config.yml
         for key in "${keys[@]}"; do
           value=$(yq eval ".jobs.validate.executor.$key" .circleci/config.yml)
-          
+          # pick up the default from the pipeline parameters if necessary
+          if echo "${value}" | grep -q 'pipeline.parameters'; then
+            default_value="$(echo ${value} | awk {'print $2'}).default"
+            value=yq eval ".$default_value" .circleci/config.yml
+          fi
           # Update the pipeline.yml with the extracted values
-          yq eval ".jobs.kotlin_validate.with.$key = \"$value\"" -i .github/workflows/pipeline.yml
+          if [ "$value" != "null" ]; then
+            yq eval ".jobs.kotlin_validate.with.$key = \"$value\"" -i .github/workflows/pipeline.yml
+          fi
         done
         # INFO message
         echo "INFO: A template file - .github/workflows/kotlin_postgres_${executor_job}.yml has been created for"
@@ -415,7 +421,11 @@ migrate_deployment_jobs() {
         # Loop through the keys and extract values from config.yml
         for key in "${keys[@]}"; do
           value=$(yq eval ".jobs.validate.executor.$key" .circleci/config.yml)
-          
+          # pick up the default from the pipeline parameters if necessary
+          if echo "${value}" | grep -q 'pipeline.parameters'; then
+            default_value="$(echo ${value} | awk {'print $2'}).default"
+            value=yq eval ".$default_value" .circleci/config.yml
+          fi          
           if [ "$value" != "null" ]; then
           # Update the pipeline.yml with the extracted values
             yq eval ".jobs.kotlin_validate.with.$key = \"$value\"" -i .github/workflows/pipeline.yml
@@ -459,7 +469,11 @@ migrate_deployment_jobs() {
         # Loop through the keys and extract values from config.yml
         for key in "${keys[@]}"; do
           value=$(yq eval ".jobs.validate.executor.$key" .circleci/config.yml)
-          
+          # pick up the default from the pipeline parameters if necessary
+          if echo "${value}" | grep -q 'pipeline.parameters'; then
+            default_value="$(echo ${value} | awk {'print $2'}).default"
+            value=yq eval ".$default_value" .circleci/config.yml
+          fi
           if [ "$value" != "null" ]; then
           # Update the pipeline.yml with the extracted values
             yq eval ".jobs.kotlin_validate.with.$key = \"$value\"" -i .github/workflows/pipeline.yml
