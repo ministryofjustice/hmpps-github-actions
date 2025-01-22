@@ -73,4 +73,3 @@ jobs:
           path: |
             build/test-results
             build/reports/tests
-  YES: null
