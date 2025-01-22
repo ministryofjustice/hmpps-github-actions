@@ -383,6 +383,8 @@ migrate_deployment_jobs() {
             yq eval ".jobs.kotlin_validate.with.$key = \"$value\"" -i .github/workflows/pipeline.yml
           fi
         done
+        # rename it to the new job
+        yq eval "with(.jobs; .[\"$executor_job\"] = .[\"template_job\"] | del(.\"template_job\"))" -i .github/workflows/kotlin_postgres_${executor_job}.yml
         # INFO message
         echo "INFO: A template file - .github/workflows/kotlin_postgres_${executor_job}.yml has been created for"
         echo "----  the ${executor_job} workflow using Postgres."
@@ -431,6 +433,8 @@ migrate_deployment_jobs() {
             yq eval ".jobs.kotlin_validate.with.$key = \"$value\"" -i .github/workflows/pipeline.yml
           fi
         done
+        # rename it to the new job
+        yq eval "with(.jobs; .[\"$executor_job\"] = .[\"template_job\"] | del(.\"template_job\"))" -i .github/workflows/kotlin_localstack_postgres_${executor_job}.yml
         # INFO message
         echo "INFO: A workflow file - .github/workflows/kotlin_localstack_postgres_${executor_job}.yml has been created for"
         echo "----  the ${executor_job} workflow using Postgres and localstack."
