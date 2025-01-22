@@ -376,12 +376,12 @@ migrate_deployment_jobs() {
           
           # Update the pipeline.yml with the extracted values
           yq eval ".jobs.kotlin_validate.with.$key = \"$value\"" -i .github/workflows/pipeline.yml
+        done
         # INFO message
         echo "INFO: A template file - .github/workflows/kotlin_postgres_${executor_job}.yml has been created for"
         echo "----  the ${executor_job} workflow using Postgres."
         echo "      This will require manual modification to match the ${executor_job} job within .circleci/config.yml"
         echo "      A reference to this workflow has been made for the kotlin_validate job in .github/workflows/pipeline.yml"
-        done
       else
         # copy the template workflow down
         gh api repos/ministryofjustice/hmpps-github-actions/contents/templates/workflows/kotlin_postgres.yml -XGET -F "ref=HEAT-490-executor-replacement"  -H "Accept: application/vnd.github.v3.raw" > .github/workflows/kotlin_postgres_${executor_job}.yml
