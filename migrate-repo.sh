@@ -376,7 +376,7 @@ migrate_deployment_jobs() {
           # pick up the default from the pipeline parameters if necessary
           if echo "${value}" | grep -q 'pipeline.parameters'; then
             default_value="$(echo ${value} | awk {'gsub ("pipeline.","");print $2'}).default"
-            value=yq eval ".$default_value" .circleci/config.yml
+            value=$(yq eval ".$default_value" .circleci/config.yml)
           fi
           # Update the pipeline.yml with the extracted values
           if [ "$value" != "null" ]; then
@@ -424,7 +424,7 @@ migrate_deployment_jobs() {
           # pick up the default from the pipeline parameters if necessary
           if echo "${value}" | grep -q 'pipeline.parameters'; then
             default_value="$(echo ${value} | awk {'gsub ("pipeline.","");print $2'}).default"
-            value=yq eval ".$default_value" .circleci/config.yml
+            value=$(yq eval ".$default_value" .circleci/config.yml)
           fi          
           if [ "$value" != "null" ]; then
           # Update the pipeline.yml with the extracted values
@@ -472,7 +472,7 @@ migrate_deployment_jobs() {
           # pick up the default from the pipeline parameters if necessary
           if echo "${value}" | grep -q 'pipeline.parameters'; then
             default_value="$(echo ${value} | awk {'gsub ("pipeline.","");print $2'}).default"
-            value=yq eval ".$default_value" .circleci/config.yml
+            value=$(yq eval ".$default_value" .circleci/config.yml)
           fi
           if [ "$value" != "null" ]; then
           # Update the pipeline.yml with the extracted values
