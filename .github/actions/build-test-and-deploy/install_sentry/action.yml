@@ -20,6 +20,7 @@ inputs:
     required: true
     description: "The version of the app being deployed"
 
+
 runs:
   using: "composite"
   steps:
@@ -29,6 +30,7 @@ runs:
     - name: Sentry - Setup environment
       shell: bash
       run: |
+        export SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }}
         export SENTRY_ORG=${{ inputs.sentry_org }}
         export SENTRY_PROJECT=${{ inputs.sentry_project }}
         echo "export SENTRY_ORG=$SENTRY_ORG" >> $BASH_ENV
