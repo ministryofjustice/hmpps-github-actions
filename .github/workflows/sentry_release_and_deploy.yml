@@ -30,8 +30,6 @@ on:
 permissions:
   contents: read
 
-
-
 jobs:
   sentry-install:
     name: Sentry install
