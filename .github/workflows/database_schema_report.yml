@@ -1,0 +1,100 @@
+name: Build report on database schema
+
+on:
+  workflow_call:
+    inputs:
+      jdk_tag:
+        type: string
+        default: "21.0"
+      localstack_tag:
+        type: string
+        default: "3.0"
+      postgres_tag:
+        type: string
+        default: "16.1"
+      initialise_database:
+        type: string
+        default: "./gradlew check"
+        description: A command which will initialise the database schema
+      database_name:
+        type: string
+        default: "postgres"
+        description: Name of the database
+      host:
+        type: string
+        default: "localhost"
+        description: Host name of the database
+      port:
+        type: number
+        default: 5432
+        description: Port number of the database
+      schema:
+        type: string
+        default: "public"
+        description: Schema name
+      user:
+        type: string
+        default: "root"
+        description: Database user name
+      password:
+        type: string
+        default: "dev"
+        description: Database password
+      schemaspy_version:
+        type: string
+        default: "6.2.4"
+        description: Schemaspy version
+      postgres_driver_version:
+        type: string
+        default: "42.7.3"
+        description: Postgres driver version
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    name: test
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ inputs.jdk_tag }}
+          distribution: 'temurin'
+
+      - name: Install schemaspy
+        run: curl -L https://github.com/schemaspy/schemaspy/releases/download/v${{ inputs.schemaspy_version }}/schemaspy-${{ inputs.schemaspy_version }}.jar --output /tmp/schemaspy.jar
+
+      - name: Install postgres jdbc driver
+        run: curl -L https://jdbc.postgresql.org/download/postgresql-${{ inputs.postgres_driver_version }}.jar --output /tmp/postgres-driver.jar
+
+      - name: Execute a command to initialise the database schema
+        run: ${{ inputs.initialise_database }}
+
+      - name: Generate database schema report
+        run: |
+          java -jar /tmp/schemaspy.jar \
+            -t pgsql \
+            -dp /tmp/postgres-driver.jar \
+            -db  ${{ inputs.database_name }} \
+            -host ${{ inputs.host }} \
+            -port ${{ inputs.port }} \
+            -s ${{ inputs.schema }} \
+            -vizjs \
+            -u ${{ inputs.user }} \
+            -p ${{ inputs.pasword }} \
+            -o /tmp/schemaspy
+
+      - name: generate index file
+        run: |
+          echo '<html><head><meta http-equiv="refresh" content="0; url=report/index.html" /></head><body><a href="report/index.html">Open Schema Report</a></body></html>' > /tmp/index.html
+            
+      - name: Upload schema report
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-test-results
+          path: test_results/pytest-unit-test-report.xml
