@@ -44,8 +44,8 @@ jobs:
           export SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }}
           export SENTRY_ORG=${{ inputs.sentry_org }}
           export SENTRY_PROJECT=${{ inputs.sentry_project }}
-          echo "export SENTRY_ORG=$SENTRY_ORG" >> $BASH_ENV
-          echo "export SENTRY_PROJECT=$SENTRY_PROJECT" >> $BASH_ENV
+          echo "SENTRY_ORG=$SENTRY_ORG" >> $GITHUB_ENV
+          echo "SENTRY_PROJECT=$SENTRY_PROJECT" >> $GITHUB_ENV
           curl -sL https://sentry.io/get-cli/ | bash
       - name: Create release
         if: ${{ inputs.sentry_create_release == 'true' }}
