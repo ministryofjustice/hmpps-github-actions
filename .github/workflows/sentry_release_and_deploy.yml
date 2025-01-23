@@ -51,10 +51,12 @@ jobs:
         if: ${{ inputs.sentry_create_release == 'true' }}
         shell: bash
         run: |
+          export SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }}
           sentry-cli releases new ${{ inputs.app_version }} --project ${{ inputs.sentry_project}}
           sentry-cli releases set-commits ${{ inputs.app_version }} --auto
           sentry-cli releases finalize ${{ inputs.app_version }}
       - name: Sentry - Record deployment
         shell: bash
         run: |
+          export SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }}
           sentry-cli releases deploys ${{ inputs.app_version }} new -e ${{ inputs.sentry_environment }}}
