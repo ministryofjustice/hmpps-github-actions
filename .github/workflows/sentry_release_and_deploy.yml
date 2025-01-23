@@ -22,10 +22,6 @@ on:
         type: boolean
         required: false
         description: "Tell sentry-cli to work out the commits on this release - this should only be done ONCE, ideally when you push to DEV."
-      sentry_auth_token:
-        type: string      
-        required: true
-        description: "Auth token for sentry"
       app_version:
         type: string
         required: true
@@ -47,7 +43,7 @@ jobs:
       - name: Sentry - Setup environment
         shell: bash
         run: |
-          export SENTRY_AUTH_TOKEN=${{ inputs.SENTRY_AUTH_TOKEN }}
+          export SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }}
           export SENTRY_ORG=${{ inputs.sentry_org }}
           export SENTRY_PROJECT=${{ inputs.sentry_project }}
           echo "export SENTRY_ORG=$SENTRY_ORG" >> $BASH_ENV
