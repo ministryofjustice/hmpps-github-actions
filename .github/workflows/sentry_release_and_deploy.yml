@@ -1,0 +1,66 @@
+name: Sentry release and deploy
+
+on:
+  workflow_call:
+
+    inputs:
+      sentry_org:
+        default: ministryofjustice
+        required: false
+        type: string
+        description: "The organisation into which Sentry is being installed"
+      sentry_project:
+        required: true
+        type: string
+        description: "The project into which Sentry is being installed"
+      sentry_environment:
+        required: true
+        type: string
+        description: "The environment into which Sentry is being installed"
+      sentry_create_release:
+        default: false
+        type: boolean
+        required: false
+        description: "Tell sentry-cli to work out the commits on this release - this should only be done ONCE, ideally when you push to DEV."
+      sentry_auth_token:
+        type: string      
+        required: true
+        description: "Auth token for sentry"
+      app_version:
+        type: string
+        required: true
+        description: "The version of the app being deployed"
+
+permissions:
+  contents: read
+
+
+
+jobs:
+  sentry-install:
+    name: Sentry install
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Sentry - Setup environment
+        shell: bash
+        run: |
+          export SENTRY_AUTH_TOKEN=${{ inputs.SENTRY_AUTH_TOKEN }}
+          export SENTRY_ORG=${{ inputs.sentry_org }}
+          export SENTRY_PROJECT=${{ inputs.sentry_project }}
+          echo "export SENTRY_ORG=$SENTRY_ORG" >> $BASH_ENV
+          echo "export SENTRY_PROJECT=$SENTRY_PROJECT" >> $BASH_ENV
+          curl -sL https://sentry.io/get-cli/ | bash
+      - name: Create release
+        if: ${{ inputs.sentry_create_release == 'true' }}
+        shell: bash
+        run: |
+          sentry-cli releases new ${{ inputs.app_version }} --project ${{ inputs.sentry_project}}
+          sentry-cli releases set-commits ${{ inputs.app_version }} --auto
+          sentry-cli releases finalize ${{ inputs.app_version }}
+      - name: Sentry - Record deployment
+        shell: bash
+        run: |
+          sentry-cli releases deploys ${{ inputs.app_version }} new -e ${{ inputs.sentry_environment }}}
