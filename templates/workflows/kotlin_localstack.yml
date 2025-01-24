@@ -1,0 +1,75 @@
+name: validate template for kotlin with localstack and postgres
+on:
+  workflow_call:
+    inputs:
+      working_directory:
+        type: string
+        required: false
+        default: '~/app'
+      java_version:
+        type: string
+        required: false
+        default: '21'
+      java_options:
+        type: string
+        default: 'default: -Xmx512m -XX:ParallelGCThreads=2 -XX:ConcGCThreads=2 -Djava.util.concurrent.ForkJoinPool.common.parallelism=2 -Dorg.gradle.daemon=false -Dkotlin.compiler.execution.strategy=in-process -Dorg.gradle.workers.max=1'
+        required: false
+      gradle_command:
+        type: string
+        default: './gradlew check'
+        required: false
+      services:
+        type: string
+        default: 's3,sqs,sns,es,ec2,lambda'
+        required: false
+      localstack_tag:
+        type: string
+        default: 'latest'
+        required: false
+permissions:
+  contents: read
+jobs:
+  template_job:
+    runs-on: ubuntu-latest
+    # Label used to access the service container
+    services:
+      localstack:
+        image: localstack/localstack:${{ inputs.localstack_tag }}
+        ports:
+          - 4566:4566
+          - 4571:4571
+        env:
+          ES_PORT_EXTERNAL: 4571
+          DOCKER_HOST: 'unix:///var/run/docker.sock'
+          AWS_EXECUTION_ENV: True
+          PERSISTENCE: 1
+          SERVICES: "${{ inputs.services }}"
+    steps:
+      - uses: actions/checkout@v4
+      - name: refresh cache
+        id: initial-cache
+        uses: actions/cache@v4
+        env:
+          cache-name: kotlin-cache
+        with:
+          path: |
+            - gradle-{{ checksum "build.gradle.kts" }}
+            - gradle-
+          key: ${{ runner.os }}-gradle-${{ env.cache-name }}-${{ hashFiles('build.gradle.kts') }}
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '${{ inputs.java_version }}'
+          cache: 'gradle'
+          cache-dependency-path: |
+            *.gradle*
+            **/gradle-wrapper.properties
+      ## INSERT COMMANDS HERE
+      - name: upload the artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: upload kotlin valdation results
+          path: |
+            build/test-results
+            build/reports/tests
