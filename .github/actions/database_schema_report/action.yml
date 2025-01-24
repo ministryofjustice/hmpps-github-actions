@@ -53,13 +53,13 @@ runs:
         java -jar /tmp/schemaspy.jar \
           -t pgsql \
           -dp /tmp/postgres-driver.jar \
-          -db  ${{ inputs.database_name }} \
+          -db ${{ inputs.database_name }} \
           -host ${{ inputs.host }} \
           -port ${{ inputs.port }} \
           -s ${{ inputs.schema }} \
           -vizjs \
           -u ${{ inputs.user }} \
-          -p ${{ inputs.pasword }} \
+          -p ${{ inputs.password }} \
           -o /tmp/schemaspy
     
     - name: Upload schema report
