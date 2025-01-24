@@ -1,0 +1,69 @@
+name: Generate postgres database schema report
+description: 'action to generate postgres database schema report, requires postgres database running with pipeline'
+
+inputs:
+  jdk_tag:
+    description: Java version
+    default: "21.0"
+  database_name:
+    default: "postgres"
+    description: Name of the database
+  host:
+    default: "localhost"
+    description: Host name of the database
+  port:
+    default: "5432"
+    description: Port number of the database
+  schema:
+    default: "public"
+    description: Schema name
+  user:
+    default: "root"
+    description: Database user name
+  password:
+    default: "dev"
+    description: Database password
+  schemaspy_version:
+    default: "6.2.4"
+    description: Schemaspy version
+  postgres_driver_version:
+    default: "42.7.3"
+    description: Postgres driver version
+
+runs:
+  using: "composite"
+  steps:
+    - name: Set up JDK 21
+      uses: actions/setup-java@v4
+      with:
+        java-version: ${{ inputs.jdk_tag }}
+        distribution: 'temurin'
+
+    - name: Install schemaspy
+      shell: bash
+      run: curl -L https://github.com/schemaspy/schemaspy/releases/download/v${{ inputs.schemaspy_version }}/schemaspy-${{ inputs.schemaspy_version }}.jar --output /tmp/schemaspy.jar
+
+    - name: Install postgres jdbc driver
+      shell: bash
+      run: curl -L https://jdbc.postgresql.org/download/postgresql-${{ inputs.postgres_driver_version }}.jar --output /tmp/postgres-driver.jar
+
+    - name: Generate database schema report
+      shell: bash
+      run: |
+        java -jar /tmp/schemaspy.jar \
+          -t pgsql \
+          -dp /tmp/postgres-driver.jar \
+          -db  ${{ inputs.database_name }} \
+          -host ${{ inputs.host }} \
+          -port ${{ inputs.port }} \
+          -s ${{ inputs.schema }} \
+          -vizjs \
+          -u ${{ inputs.user }} \
+          -p ${{ inputs.pasword }} \
+          -o /tmp/schemaspy
+    
+    - name: Upload schema report
+      uses: actions/upload-artifact@v4
+      with:
+        name: Database Schema Report
+        path: /tmp/schemaspy
