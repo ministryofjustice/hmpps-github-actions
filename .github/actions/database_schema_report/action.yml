@@ -48,7 +48,7 @@ runs:
       run: curl -L https://jdbc.postgresql.org/download/postgresql-${{ inputs.postgres_driver_version }}.jar --output /tmp/postgres-driver.jar
 
     - name: Generate database schema report
-      shell: bash
+      shell: sh
       run: |
         java -jar /tmp/schemaspy.jar \
           -t pgsql \
