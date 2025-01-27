@@ -364,7 +364,7 @@ migrate_deployment_jobs() {
     for executor_job in $java_postgres_executors; do
       # validate - point the kotlin_validate job to the kotlin_postgres_validate.yml shared workflow and add configurations
       if [ ${executor_job} = "validate" ] ; then
-        gh api repos/ministryofjustice/hmpps-github-actions/contents/templates/workflows/kotlin_postgres_validate.yml -XGET -F "ref=HEAT-490-executor-replacement" -H "Accept: application/vnd.github.v3.raw" > .github/workflows/kotlin_postgres_validate.yml
+        gh api repos/ministryofjustice/hmpps-github-actions/contents/templates/workflows/kotlin_postgres_validate.yml -XGET -H "Accept: application/vnd.github.v3.raw" > .github/workflows/kotlin_postgres_validate.yml
         yq eval '.jobs.kotlin_validate.uses = "./.github/workflows/kotlin_postgres_validate.yml"' -i .github/workflows/pipeline.yml
         # loop through for the 'with' parameters
         # Define the keys to extract
@@ -392,7 +392,7 @@ migrate_deployment_jobs() {
         echo "      A reference to this workflow has been made for the kotlin_validate job in .github/workflows/pipeline.yml"
       else
         # copy the template workflow down
-        gh api repos/ministryofjustice/hmpps-github-actions/contents/templates/workflows/kotlin_postgres.yml -XGET -F "ref=HEAT-490-executor-replacement"  -H "Accept: application/vnd.github.v3.raw" > .github/workflows/kotlin_postgres_${executor_job}.yml
+        gh api repos/ministryofjustice/hmpps-github-actions/contents/templates/workflows/kotlin_postgres.yml -XGET -H "Accept: application/vnd.github.v3.raw" > .github/workflows/kotlin_postgres_${executor_job}.yml
         # rename it to the new job
         yq eval "with(.jobs; .[\"$executor_job\"] = .[\"template_job\"] | del(.\"template_job\"))" -i .github/workflows/kotlin_postgres_${executor_job}.yml
         # INFO message
@@ -413,7 +413,7 @@ migrate_deployment_jobs() {
   if [ -n "$java_localstack_postgres_executors" ]; then
     for executor_job in $java_localstack_postgres_executors; do
       # copy the template workflow down
-      gh api repos/ministryofjustice/hmpps-github-actions/contents/templates/workflows/kotlin_localstack_postgres.yml -XGET -F "ref=HEAT-490-executor-replacement" -H "Accept: application/vnd.github.v3.raw" > .github/workflows/kotlin_localstack_postgres_${executor_job}.yml
+      gh api repos/ministryofjustice/hmpps-github-actions/contents/templates/workflows/kotlin_localstack_postgres.yml -XGET -H "Accept: application/vnd.github.v3.raw" > .github/workflows/kotlin_localstack_postgres_${executor_job}.yml
       # if it's validate we can replace kotlin_validate with this workflow
       if [ ${executor_job} = "validate" ] ; then
         yq eval '.jobs.kotlin_validate.uses = "./.github/workflows/kotlin_localstack_postgres_validate.yml"' -i .github/workflows/pipeline.yml
@@ -461,7 +461,7 @@ migrate_deployment_jobs() {
   if [ -n "$localstack" ]; then
     for executor_job in $localstack; do
       # copy the template workflow down
-      gh api repos/ministryofjustice/hmpps-github-actions/contents/templates/workflows/kotlin_localstack.yml -XGET -F "ref=HEAT-490-executor-replacement" -H "Accept: application/vnd.github.v3.raw" > .github/workflows/kotlin_localstack_${executor_job}.yml
+      gh api repos/ministryofjustice/hmpps-github-actions/contents/templates/workflows/kotlin_localstack.yml -XGET -H "Accept: application/vnd.github.v3.raw" > .github/workflows/kotlin_localstack_${executor_job}.yml
       # if it's validate we can replace kotlin_validate with this workflow
       if [ ${executor_job} = "validate" ] ; then
         yq eval '.jobs.kotlin_validate.uses = "./.github/workflows/kotlin_localstack_validate.yml"' -i .github/workflows/pipeline.yml
