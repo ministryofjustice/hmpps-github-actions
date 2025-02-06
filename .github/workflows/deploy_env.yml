@@ -28,7 +28,7 @@ on:
         type: boolean
       slack_notification:
         description: Slack notification
-        default: true
+        default: false
         required: false
         type: boolean
       helm_additional_args:
