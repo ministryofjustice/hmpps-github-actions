@@ -15,6 +15,11 @@ on:
         description: Additional docker tag that can be used to specify stable tags
         required: false
         type: string
+      tag_latest:
+        description: Tag docker image as 'latest'
+        required: false
+        type: boolean
+        default: true
       additional_docker_build_args:
           description: Additional docker build arguments
           required: false
@@ -61,6 +66,7 @@ jobs:
           docker_registry: ${{ inputs.docker_registry }}
           registry_org: ${{ inputs.registry_org }}
           additional_docker_tag: ${{ inputs.additional_docker_tag }}
+          tag_latest: ${{ inputs.tag_latest }}
           push: ${{ inputs.push }}
           app_version: ${{ steps.app_version.outputs.version }}
           additional_docker_build_args: ${{ inputs.additional_docker_build_args }}
@@ -72,6 +78,7 @@ jobs:
           docker_registry: ${{ inputs.docker_registry }}
           registry_org: ${{ inputs.registry_org }}
           additional_docker_tag: ${{ inputs.additional_docker_tag }}
+          tag_latest: ${{ inputs.tag_latest }}
           push: ${{ inputs.push }}
           app_version: ${{ steps.app_version.outputs.version }}
           HMPPS_QUAYIO_USER: ${{ secrets.HMPPS_QUAYIO_USER }}
@@ -87,6 +94,7 @@ jobs:
           docker_registry: ${{ inputs.docker_registry }}
           registry_org: ${{ inputs.registry_org }}
           additional_docker_tag: ${{ inputs.additional_docker_tag }}
+          tag_latest: ${{ inputs.tag_latest }}
           push: ${{ inputs.push }}
           app_version: ${{ steps.app_version.outputs.version }}
           additional_docker_build_args: ${{ inputs.additional_docker_build_args }}
@@ -98,6 +106,7 @@ jobs:
           docker_registry: ${{ inputs.docker_registry }}
           registry_org: ${{ inputs.registry_org }}
           additional_docker_tag: ${{ inputs.additional_docker_tag }}
+          tag_latest: ${{ inputs.tag_latest }}
           push: ${{ inputs.push }}
           app_version: ${{ steps.app_version.outputs.version }}
           additional_docker_build_args: ${{ inputs.additional_docker_build_args }}
