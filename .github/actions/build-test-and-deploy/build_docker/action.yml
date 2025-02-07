@@ -68,7 +68,17 @@ runs:
       #   if: ${{ inputs.docker_registry  == 'ecr' }}
       #   uses: aws-actions/amazon-ecr-login@v1
 
-    - name: Build Docker images 
+    - name: Set Docker Tags
+      id: set_tags
+      shell: bash
+      run: |
+        TAGS="${{ inputs.docker_registry }}/${{ inputs.registry_org }}/${{ github.event.repository.name }}:${{ inputs.app_version }}"
+        if [[ "${{ inputs.tag_latest }}" == "true" ]]; then
+          TAGS="${TAGS},${{ inputs.docker_registry }}/${{ inputs.registry_org }}/${{ github.event.repository.name }}:latest"
+        fi
+        echo "tags=$TAGS" >> "$GITHUB_OUTPUT"
+
+    - name: Build Docker Image
       uses: docker/build-push-action@v6
       with:
         cache-from: type=gha
@@ -81,7 +91,4 @@ runs:
           "GIT_REF=${{ github.sha }}"
           "GIT_BRANCH=${{ github.ref_name }}"
           "${{ inputs.additional_docker_build_args }}"
-        tags: |
-          ${{ if inputs.tag_latest == 'true' }}${{ inputs.docker_registry}}/${{ inputs.registry_org }}/${{ github.event.repository.name }}:latest
-          ${{ inputs.docker_registry}}/${{ inputs.registry_org }}/${{ github.event.repository.name }}:${{ inputs.app_version }}
-
+        tags: ${{ steps.set_tags.outputs.tags }}
