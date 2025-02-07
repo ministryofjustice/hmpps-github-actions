@@ -23,10 +23,6 @@ inputs:
   app_version: 
     description: App version
     required: true
-  tag_latest:
-    description: Tag image as 'latest'
-    required: false
-    default: true
   HMPPS_QUAYIO_USER:
     description: Docker registry username 
     required: false
@@ -82,6 +78,7 @@ runs:
           "GIT_BRANCH=${{ github.ref_name }}"
           "${{ inputs.additional_docker_build_args }}"
         tags: |
-          ${{ if inputs.tag_latest == 'true' }}${{ inputs.docker_registry}}/${{ inputs.registry_org }}/${{ github.event.repository.name }}:latest
+          ${{ inputs.docker_registry}}/${{ inputs.registry_org }}/${{ github.event.repository.name }}:latest
           ${{ inputs.docker_registry}}/${{ inputs.registry_org }}/${{ github.event.repository.name }}:${{ inputs.app_version }}
+
 
