@@ -74,9 +74,15 @@ runs:
       shell: bash
       run: |
         TAGS="${{ inputs.docker_registry }}/${{ inputs.registry_org }}/${{ github.event.repository.name }}:${{ inputs.app_version }}"
+        
         if [[ "${{ inputs.tag_latest }}" == "true" ]]; then
           TAGS="${TAGS},${{ inputs.docker_registry }}/${{ inputs.registry_org }}/${{ github.event.repository.name }}:latest"
         fi
+        
+        if [[ -n "${{ inputs.additional_docker_tag }}" ]]; then
+          TAGS="${TAGS},${{ inputs.docker_registry }}/${{ inputs.registry_org }}/${{ github.event.repository.name }}:${{ inputs.additional_docker_tag }}"
+        fi
+        
         echo "tags=$TAGS" >> "$GITHUB_OUTPUT"
 
     - name: Build Docker images 
