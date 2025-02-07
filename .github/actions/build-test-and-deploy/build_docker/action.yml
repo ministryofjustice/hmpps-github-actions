@@ -92,3 +92,4 @@ runs:
           "GIT_BRANCH=${{ github.ref_name }}"
           "${{ inputs.additional_docker_build_args }}"
         tags: ${{ steps.set_tags.outputs.tags }}
+
