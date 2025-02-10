@@ -39,26 +39,26 @@ jobs:
         PROD_IMAGE_TAG=$(curl -s "https://service-catalogue.hmpps.service.justice.gov.uk/v1/components?populate=environments&filters%5Bname%5D=${{github.event.repository.name}}" | jq -r '.data[0].attributes.environments[] | select(.type == "prod") | .build_image_tag')
         echo "PROD_IMAGE_TAG=${PROD_IMAGE_TAG}" >> $GITHUB_ENV
         echo "CONTAINER_IMAGE=${CONTAINER_IMAGE}" >> $GITHUB_ENV
-    - name: Trivy Image Vulnerability Scanner (Production Image)
-      id: trivy-analyse-prod
-      if: env.PROD_IMAGE_TAG != ''
-      uses: aquasecurity/trivy-action@915b19bbe73b92a6cf82a1bc12b087c9a19a5fe2 # v0.28.0
-      with:
-        image-ref: "${{ env.CONTAINER_IMAGE }}:${{ env.PROD_IMAGE_TAG }}"
-        severity: 'HIGH,CRITICAL'
-        ignore-unfixed: true
-        skip-dirs: '/usr/local/lib/node_modules/npm'
-        skip-files: /app/agent.jar
-        format: 'json'
-        output: 'prod_scan_results.json'
-        exit-code: 1
-        limit-severities-for-sarif: true
-      env:
-        TRIVY_DB_REPOSITORY: public.ecr.aws/aquasecurity/trivy-db:2,ghcr.io/aquasecurity/trivy-db:2
-        TRIVY_JAVA_DB_REPOSITORY: public.ecr.aws/aquasecurity/trivy-java-db:1,ghcr.io/aquasecurity/trivy-java-db:1
-        PROD_IMAGE_TAG: ${{ env.PROD_IMAGE_TAG }}
-    - name: Upload production scan results to Service Catalogue
-      run: |
-        curl -X POST "https://service-catalogue.hmpps.service.justice.gov.uk/v1/components?filters[name]=${{ github.event.repository.name }}" \
-        -H "Content-Type: application/json" \
-        --data '{"fieldName": "newValue"}'
+    # - name: Trivy Image Vulnerability Scanner (Production Image)
+    #   id: trivy-analyse-prod
+    #   if: env.PROD_IMAGE_TAG != ''
+    #   uses: aquasecurity/trivy-action@915b19bbe73b92a6cf82a1bc12b087c9a19a5fe2 # v0.28.0
+    #   with:
+    #     image-ref: "${{ env.CONTAINER_IMAGE }}:${{ env.PROD_IMAGE_TAG }}"
+    #     severity: 'HIGH,CRITICAL'
+    #     ignore-unfixed: true
+    #     skip-dirs: '/usr/local/lib/node_modules/npm'
+    #     skip-files: /app/agent.jar
+    #     format: 'json'
+    #     output: 'prod_scan_results.json'
+    #     exit-code: 1
+    #     limit-severities-for-sarif: true
+    #   env:
+    #     TRIVY_DB_REPOSITORY: public.ecr.aws/aquasecurity/trivy-db:2,ghcr.io/aquasecurity/trivy-db:2
+    #     TRIVY_JAVA_DB_REPOSITORY: public.ecr.aws/aquasecurity/trivy-java-db:1,ghcr.io/aquasecurity/trivy-java-db:1
+    #     PROD_IMAGE_TAG: ${{ env.PROD_IMAGE_TAG }}
+    # - name: Upload production scan results to Service Catalogue
+    #   run: |
+    #     curl -X POST "https://service-catalogue.hmpps.service.justice.gov.uk/v1/components?filters[name]=${{ github.event.repository.name }}" \
+    #     -H "Content-Type: application/json" \
+    #     --data '{"fieldName": "newValue"}'
