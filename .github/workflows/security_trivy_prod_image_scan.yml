@@ -35,7 +35,8 @@ jobs:
     - name: Fetch production image tag from Service Catalogue
       id: fetch-prod-tag
       run: |
-        CONTAINER_IMAGE=$(curl -s "https://service-catalogue.hmpps.service.justice.gov.uk/v1/components?populate=environments&filters%5Bname%5D=${{github.event.repository.name}}" | wc -l)
+        CONTAINER_IMAGE=$(curl -s "https://service-catalogue.hmpps.service.justice.gov.uk/v1/components?populate=environments&filters%5Bname%5D=${{github.event.repository.name}}")
+        echo $CONTAINER_IMAGE
         PROD_IMAGE_TAG=$(curl -s "https://service-catalogue.hmpps.service.justice.gov.uk/v1/components?populate=environments&filters%5Bname%5D=${{github.event.repository.name}}" | jq -r '.data[0].attributes.environments[] | select(.type == "prod") | .build_image_tag')
         echo "PROD_IMAGE_TAG=${PROD_IMAGE_TAG}" >> $GITHUB_ENV
         echo "CONTAINER_IMAGE=${CONTAINER_IMAGE}" >> $GITHUB_ENV
