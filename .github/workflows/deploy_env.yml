@@ -28,9 +28,9 @@ on:
         type: boolean
       slack_notification:
         description: Slack notification
-        default: true
+        default: "false"
         required: false
-        type: boolean
+        type: string
       helm_additional_args:
         description: Helm additional args
         default: ""
@@ -109,7 +109,7 @@ jobs:
 
 
       # Optional prod releases slack channel (using PROD_RELEASES_SLACK_CHANNEL variable)
-      - if: ${{ always() && ( inputs.slack_notification && steps.set-slack-channel-id.outputs.slack_channel_id != '' ) }}
+      - if: ${{ always() && ( inputs.slack_notification == 'true' && steps.set-slack-channel-id.outputs.slack_channel_id != '' ) }}
         id: send-release-slack
         uses: ministryofjustice/hmpps-github-actions/.github/actions/slack_release_results@v2 # WORKFLOW_VERSION
         with:
