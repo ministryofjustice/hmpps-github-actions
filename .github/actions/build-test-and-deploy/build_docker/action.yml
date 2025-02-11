@@ -27,6 +27,10 @@ inputs:
     description: Tag image as 'latest'
     required: false
     default: true
+  upload_image_artifact:
+    description: Upload image to artifacts in GitHub Actions
+    required: false
+    default: false
   HMPPS_QUAYIO_USER:
     description: Docker registry username 
     required: false
@@ -99,3 +103,16 @@ runs:
           "${{ inputs.additional_docker_build_args }}"
         tags: ${{ steps.set_tags.outputs.tags }}
 
+    - name: Export image
+      if: ${{ inputs.upload_image_artifact ==  'true' }}
+      id: export_image
+      shell: bash
+      run: docker save ${{ inputs.docker_registry }}/${{ inputs.registry_org }}/${{ github.event.repository.name }}:${{ inputs.app_version }} -o ${{ runner.temp }}/build_image.tar
+
+    - name: Upload image to artifacts
+      if: ${{ inputs.upload_image_artifact ==  'true' }}
+      id: upload_image_artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: build_image
+        path: ${{ runner.temp }}/build_image.tar
