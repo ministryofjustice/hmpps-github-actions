@@ -31,6 +31,9 @@ inputs:
     description: Upload image to artifacts in GitHub Actions
     required: false
     default: false
+  image_artifact_retention_days:
+    description: Number of days to keep the image in artifacts
+    required: false
   HMPPS_QUAYIO_USER:
     description: Docker registry username 
     required: false
@@ -116,3 +119,4 @@ runs:
       with:
         name: build_image
         path: ${{ runner.temp }}/build_image.tar
+        retention-days: ${{ inputs.image_artifact_retention_days }}
