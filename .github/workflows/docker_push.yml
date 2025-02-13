@@ -17,9 +17,8 @@ on:
         type: string
       tag_latest:
         description: Tag docker image as 'latest'
-        required: false
+        required: true
         type: boolean
-        default: true
 
     secrets:
       HMPPS_QUAYIO_USER:
