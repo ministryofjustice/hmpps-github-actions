@@ -37,7 +37,6 @@ inputs:
   helm_release_name:
     description: "Release name for helm deployment"
     required: false
-    default: 'PROJECT_NAME'
   helm_additional_args:
     description: any additional helm arguments
     required: false
@@ -133,7 +132,6 @@ runs:
         brew install helm
         yq -i ".appVersion = \"${{ inputs.version }}\"" "${{ inputs.helm_dir }}/${{ github.event.repository.name }}/Chart.yaml"
         helm dependency update "${{ inputs.helm_dir }}/${{ github.event.repository.name }}"
-        echo "Using helm release name: $helm_release_name"
 
         exec helm upgrade \
           "${{ steps.set-helm-release-name.outputs.helm_release_name }}" \

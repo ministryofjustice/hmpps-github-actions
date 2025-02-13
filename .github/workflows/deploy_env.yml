@@ -33,7 +33,6 @@ on:
         type: string
       helm_release_name:
         description: Release name for helm deployment
-        default: "PROJECT_NAME"
         required: false
         type: string
       helm_additional_args:
