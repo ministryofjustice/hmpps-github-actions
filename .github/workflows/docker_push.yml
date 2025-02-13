@@ -35,6 +35,8 @@ jobs:
   docker_push:
     name: Push docker image
     runs-on: ubuntu-latest
+    env:
+      IMAGE_NAME: ${{ inputs.docker_registry }}/${{ inputs.registry_org }}/${{ github.event.repository.name }}
     steps:
       - name: Download docker image
         uses: actions/download-artifact@v4
@@ -61,10 +63,6 @@ jobs:
           registry: ${{ inputs.docker_registry }}
           username: ${{ github.actor }}
           password: ${{ github.token }}
-
-      - name: Set image name
-        shell: bash
-        run: export IMAGE_NAME=${{ inputs.docker_registry }}/${{ inputs.registry_org }}/${{ github.event.repository.name }}
 
       - name: Push image
         shell: bash
