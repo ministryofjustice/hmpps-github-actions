@@ -20,6 +20,10 @@ inputs:
   push:
     description: Push docker image to registry flag
     required: true
+  load:
+    description: Load docker image into local docker
+    required: false
+    default: false
   app_version: 
     description: App version
     required: true
@@ -27,6 +31,13 @@ inputs:
     description: Tag image as 'latest'
     required: false
     default: true
+  upload_image_artifact:
+    description: Upload image to artifacts in GitHub Actions
+    required: false
+    default: false
+  image_artifact_retention_days:
+    description: Number of days to keep the image in artifacts
+    required: false
   HMPPS_QUAYIO_USER:
     description: Docker registry username 
     required: false
@@ -91,6 +102,7 @@ runs:
         cache-to: type=gha,mode=max
         context: .
         push: ${{ inputs.push }}
+        load: ${{ inputs.load }}
         provenance: false
         build-args: |
           "BUILD_NUMBER=${{ inputs.app_version }}"
@@ -99,3 +111,17 @@ runs:
           "${{ inputs.additional_docker_build_args }}"
         tags: ${{ steps.set_tags.outputs.tags }}
 
+    - name: Export image
+      if: ${{ inputs.upload_image_artifact ==  'true' }}
+      id: export_image
+      shell: bash
+      run: docker save ${{ inputs.docker_registry }}/${{ inputs.registry_org }}/${{ github.event.repository.name }}:${{ inputs.app_version }} -o ${{ runner.temp }}/build_image.tar
+
+    - name: Upload image to artifacts
+      if: ${{ inputs.upload_image_artifact ==  'true' }}
+      id: upload_image_artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: build_image
+        path: ${{ runner.temp }}/build_image.tar
+        retention-days: ${{ inputs.image_artifact_retention_days }}
