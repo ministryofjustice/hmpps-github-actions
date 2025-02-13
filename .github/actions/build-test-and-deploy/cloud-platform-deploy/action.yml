@@ -121,11 +121,10 @@ runs:
       shell: bash
       run: |
         if [[ -z "${{ inputs.helm_release_name }}" ]]; then
-          helm_release_name="${{ github.event.repository.name }}"
+          echo "helm_release_name=${{ github.event.repository.name }}" >> "$GITHUB_OUTPUT"
         else
-          helm_release_name="${{ inputs.helm_release_name }}"
+          echo "helm_release_name=${{ inputs.helm_release_name }}" >> "$GITHUB_OUTPUT"
         fi
-        echo "helm_release_name=$helm_release_name" >> "$GITHUB_OUTPUT"
 
     - name: Deploy
       shell: bash

@@ -94,6 +94,7 @@ jobs:
           k8s_deployment_name: ${{ inputs.k8s_deployment_name }}
           changelog_git_paths: ${{ inputs.changelog_git_paths }}
           show_changelog: ${{ inputs.show_changelog }}
+          helm_release_name: ${{ inputs.helm_release_name }}
           helm_additional_args: ${{ inputs.helm_additional_args }}
           helm_timeout: ${{ inputs.helm_timeout }}
           helm_dir: ${{ inputs.helm_dir }}
