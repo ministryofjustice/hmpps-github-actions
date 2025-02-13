@@ -69,7 +69,7 @@ jobs:
         run: docker push "${IMAGE_NAME}:${{ inputs.app_version }}"
 
       - name: Push latest tag
-        if: ${{ inputs.tag_latest ==  'true' }}
+        if: ${{ inputs.tag_latest }}
         shell: bash
         run: |
           docker tag "${IMAGE_NAME}:${{ inputs.app_version }}" "${IMAGE_NAME}:latest"
