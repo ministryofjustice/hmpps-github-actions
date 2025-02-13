@@ -120,11 +120,12 @@ runs:
       id: set-helm-release-name
       shell: bash
       run: |
-        if [[ -z "${{ inputs.helm_release_name }}" || "${{ inputs.helm_release_name }}" == "PROJECT_NAME" ]]; then
-          echo "helm_release_name=${{ github.event.repository.name }}" >> $GITHUB_OUTPUT
+        if [[ -z "${{ inputs.helm_release_name }}" ]]; then
+          helm_release_name="${{ github.event.repository.name }}"
         else
-          echo "helm_release_name=${{ inputs.helm_release_name }}" >> $GITHUB_OUTPUT
+          helm_release_name="${{ inputs.helm_release_name }}"
         fi
+        echo "helm_release_name=$helm_release_name" >> "$GITHUB_OUTPUT"
 
     - name: Deploy
       shell: bash
@@ -133,6 +134,7 @@ runs:
         brew install helm
         yq -i ".appVersion = \"${{ inputs.version }}\"" "${{ inputs.helm_dir }}/${{ github.event.repository.name }}/Chart.yaml"
         helm dependency update "${{ inputs.helm_dir }}/${{ github.event.repository.name }}"
+        echo "Using helm release name: $helm_release_name"
 
         exec helm upgrade \
           "${{ steps.set-helm-release-name.outputs.helm_release_name }}" \
