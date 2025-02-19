@@ -74,7 +74,7 @@ jobs:
       - id: app_version
         name: Application version creators
         uses: ministryofjustice/hmpps-github-actions/.github/actions/build-test-and-deploy/create_app_version@v2 # WORKFLOW_VERSION
-      - uses: ministryofjustice/hmpps-github-actions/.github/actions/build-test-and-deploy/build_docker@v2 # WORKFLOW_VERSION
+      - uses: ministryofjustice/hmpps-github-actions/.github/actions/build-test-and-deploy/build_docker@upload-image-to-artifacts-demo # WORKFLOW_VERSION
         if: ${{ ( inputs.docker_registry  == 'ghcr.io' ) && ( ! inputs.docker_multiplatform )}}
         with:
           repository_name: ${{ github.event.repository.name }}
