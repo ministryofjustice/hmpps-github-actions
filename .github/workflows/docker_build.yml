@@ -20,6 +20,16 @@ on:
         required: false
         type: boolean
         default: true
+      upload_image_artifact:
+        description: Upload image to artifacts in GitHub Actions
+        required: false
+        type: boolean
+        default: false
+      image_artifact_retention_days:
+        description: Number of days to keep the image in artifacts
+        required: false
+        type: number
+        default: 7
       additional_docker_build_args:
           description: Additional docker build arguments
           required: false
@@ -28,6 +38,11 @@ on:
         description: Push docker image to registry flag
         required: true
         type: boolean
+      load:
+        description: Load docker image into local docker
+        required: false
+        type: boolean
+        default: false
       docker_multiplatform:
         description: Docker image build multiplatform or not
         required: true
@@ -67,7 +82,10 @@ jobs:
           registry_org: ${{ inputs.registry_org }}
           additional_docker_tag: ${{ inputs.additional_docker_tag }}
           tag_latest: ${{ inputs.tag_latest }}
+          upload_image_artifact: ${{ inputs.upload_image_artifact }}
+          image_artifact_retention_days: ${{ inputs.image_artifact_retention_days }}
           push: ${{ inputs.push }}
+          load: ${{ inputs.load }}
           app_version: ${{ steps.app_version.outputs.version }}
           additional_docker_build_args: ${{ inputs.additional_docker_build_args }}
 
@@ -79,7 +97,10 @@ jobs:
           registry_org: ${{ inputs.registry_org }}
           additional_docker_tag: ${{ inputs.additional_docker_tag }}
           tag_latest: ${{ inputs.tag_latest }}
+          upload_image_artifact: ${{ inputs.upload_image_artifact }}
+          image_artifact_retention_days: ${{ inputs.image_artifact_retention_days }}
           push: ${{ inputs.push }}
+          load: ${{ inputs.load }}
           app_version: ${{ steps.app_version.outputs.version }}
           HMPPS_QUAYIO_USER: ${{ secrets.HMPPS_QUAYIO_USER }}
           HMPPS_QUAYIO_TOKEN: ${{ secrets.HMPPS_QUAYIO_TOKEN}}
@@ -96,6 +117,7 @@ jobs:
           additional_docker_tag: ${{ inputs.additional_docker_tag }}
           tag_latest: ${{ inputs.tag_latest }}
           push: ${{ inputs.push }}
+          load: ${{ inputs.load }}
           app_version: ${{ steps.app_version.outputs.version }}
           additional_docker_build_args: ${{ inputs.additional_docker_build_args }}
 
@@ -108,10 +130,8 @@ jobs:
           additional_docker_tag: ${{ inputs.additional_docker_tag }}
           tag_latest: ${{ inputs.tag_latest }}
           push: ${{ inputs.push }}
+          load: ${{ inputs.load }}
           app_version: ${{ steps.app_version.outputs.version }}
           additional_docker_build_args: ${{ inputs.additional_docker_build_args }}
           HMPPS_QUAYIO_USER: ${{ secrets.HMPPS_QUAYIO_USER }}
           HMPPS_QUAYIO_TOKEN: ${{ secrets.HMPPS_QUAYIO_TOKEN}}
-
-
-
