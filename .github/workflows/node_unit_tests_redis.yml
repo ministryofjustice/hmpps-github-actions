@@ -1,0 +1,63 @@
+name: Build and test node
+on:
+  workflow_call:
+    inputs:
+      node_version_file:
+        description: "Passed to setup-node action to specify where to source the version of node from"
+        required: false
+        type: string
+        default: ".nvmrc"
+permissions:
+  contents: read
+jobs:
+  node-unit-test:
+    runs-on: ubuntu-latest
+    services:
+      redis:
+        image: redis:7.0
+        ports:
+          - 6379:6379
+        options: --health-cmd="redis-cli ping" --health-interval=10s --health-timeout=5s --health-retries=5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js ${{ inputs.node_version_file }}
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ${{ inputs.node_version_file }}
+      - name: restore cache
+        id: restore-cache
+        uses: actions/cache/restore@v4
+        env:
+          cache-name: node-modules
+        with:
+          path: |
+            ./node_modules
+            ~/.cache/Cypress
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
+      - name: download the artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: npm_build_artifacts
+          path: |
+            build/
+            dist/
+            assets/stylesheets/
+      - name: unit tests
+        id: unit-tests
+        shell: bash
+        run: |
+          sudo npm run test:ci
+        # continue-on-error: true
+        # Replacing the above with if: always()
+      - name: upload the artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: npm_unit_test_artifacts
+          path: test_results/
+      - name: fail the action if the tests failed
+        if: ${{ steps.unit-tests.outcome == 'failure' }}
+        uses: actions/github-script@v7
+        with:
+          script: |
+            core.setFailed('Unit tests failed')
