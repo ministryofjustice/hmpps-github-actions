@@ -71,19 +71,6 @@ runs:
         namespace: ${{ inputs.namespace }}
         token: ${{ inputs.token }}
 
-    - name: Get environment details 
-      shell: bash
-      id: env
-      run: |
-        case ${{ inputs.environment }} in
-          'development') environment='dev' ;;
-          'preproduction') environment='preprod' ;;
-          'production') environment='prod' ;;     
-          'staging') environment='staging' ;;  
-          *) environment=${{ inputs.environment }} ;;
-        esac
-        echo "environment=${environment}" | tee -a "$GITHUB_OUTPUT"
-
     - name: get version history
       uses: ministryofjustice/hmpps-github-actions/.github/actions/version_history@v2 # WORKFLOW VERSION
       if: ${{ inputs.show_changelog }}
@@ -127,8 +114,10 @@ runs:
           --reset-values \
           --set 'generic-service.image.tag=${{ inputs.version }}' \
           --set 'version=${{ inputs.version }}' \
+          --set 'global.environment=${{ inputs.environment }}' \
+          --set 'global.productId=${{ vars.HMPPS_PRODUCT_ID || "null" }}' \
           --timeout ${{ inputs.helm_timeout }} \
-          --values 'helm_deploy/values-${{ steps.env.outputs.environment }}.yaml' \
+          --values 'helm_deploy/values-${{ inputs.environment }}.yaml' \
           ${{ inputs.helm_additional_args }} \
           ${{ steps.check-ip-allowlists.outputs.ALLOWLIST_GROUPS }} \
           ${{ steps.check-ip-allowlists-version.outputs.ALLOWLIST_VERSION }} \
