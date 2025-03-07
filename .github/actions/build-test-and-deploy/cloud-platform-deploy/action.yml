@@ -115,7 +115,6 @@ runs:
           --set 'generic-service.image.tag=${{ inputs.version }}' \
           --set 'version=${{ inputs.version }}' \
           --set 'global.environment=${{ inputs.environment }}' \
-          --set 'global.productId=${{ vars.HMPPS_PRODUCT_ID || "null" }}' \
           --timeout ${{ inputs.helm_timeout }} \
           --values 'helm_deploy/values-${{ inputs.environment }}.yaml' \
           ${{ inputs.helm_additional_args }} \
