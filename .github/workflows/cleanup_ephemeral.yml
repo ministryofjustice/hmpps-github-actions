@@ -1,0 +1,20 @@
+name: Cleanup ephemeral deployment
+
+on:
+  workflow_call:
+
+jobs:
+  cleanup_ephemeral:
+    name: Uninstall ephemeral deployment
+    runs-on: ubuntu-latest
+    environment: 'dev'
+    steps:
+      - uses: ministryofjustice/hmpps-github-actions/.github/actions/build-test-and-deploy/cloud-platform-cleanup@ephemeral-deployment # WORKFLOW_VERSION
+        id: cleanup
+        with:
+          api: https://${{ secrets.KUBE_CLUSTER }}
+          cert: ${{ secrets.KUBE_CERT }}
+          cluster: ${{ secrets.KUBE_CLUSTER }}
+          namespace: ${{ secrets.KUBE_NAMESPACE }}
+          token: ${{ secrets.KUBE_TOKEN }}
+          release_name: '${{ github.event.repository.name }}-pr-${{ github.event.pull_request.number }}'

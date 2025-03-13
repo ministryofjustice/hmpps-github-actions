@@ -7,6 +7,11 @@ on:
         description: Environment
         required: true 
         type: string
+      environment_url:
+        description: URL for deployment/environment
+        required: false
+        default: ""
+        type: string
       app_version:
         description: App version
         required: true 
@@ -29,6 +34,10 @@ on:
       slack_notification:
         description: Slack notification
         default: "false"
+        required: false
+        type: string
+      helm_release_name:
+        description: Release name for helm deployment
         required: false
         type: string
       helm_additional_args:
@@ -57,7 +66,9 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
-    environment: ${{ inputs.environment }}
+    environment:
+      name: ${{ inputs.environment }}
+      url: ${{ inputs.environment_url }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -76,7 +87,7 @@ jobs:
             echo "slack_channel_id=${{ vars.NONPROD_RELEASES_SLACK_CHANNEL }}" | tee -a $GITHUB_OUTPUT
           fi
 
-      - uses: ministryofjustice/hmpps-github-actions/.github/actions/build-test-and-deploy/cloud-platform-deploy@v2 # WORKFLOW_VERSION
+      - uses: ministryofjustice/hmpps-github-actions/.github/actions/build-test-and-deploy/cloud-platform-deploy@ephemeral-deployment # WORKFLOW_VERSION
         id: deploy
         with:
           environment: ${{ inputs.environment }}
@@ -89,6 +100,7 @@ jobs:
           k8s_deployment_name: ${{ inputs.k8s_deployment_name }}
           changelog_git_paths: ${{ inputs.changelog_git_paths }}
           show_changelog: ${{ inputs.show_changelog }}
+          helm_release_name: ${{ inputs.helm_release_name }}
           helm_additional_args: ${{ inputs.helm_additional_args }}
           helm_timeout: ${{ inputs.helm_timeout }}
           helm_dir: ${{ inputs.helm_dir }}

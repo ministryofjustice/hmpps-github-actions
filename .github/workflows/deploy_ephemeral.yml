@@ -1,0 +1,75 @@
+name: Create ephemeral deployment (reusable)
+
+on:
+  workflow_call:
+    inputs:
+      helm_substitutions:
+        description: "Multi-line key-value pairs"
+        required: false
+        type: string
+
+jobs:
+  prepare_deployment_context:
+    name: Prepare deployment context/variables
+    runs-on: ubuntu-latest
+    env:
+      PR_NUMBER: ${{ github.event.pull_request.number }}
+      RELEASE_NAME: ${{ github.event.repository.name }}-pr-${{ github.event.pull_request.number }}
+    outputs:
+      release_name: ${{ steps.set-outputs.outputs.release_name }}
+      ingress_host: ${{ steps.set-outputs.outputs.ingress_host }}
+      processed_yaml: ${{ steps.set-outputs.outputs.processed_yaml }}
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Install envsubst (gettext)
+        run: sudo apt-get update && sudo apt-get install -y gettext
+
+      - name: Parse Helm Substitutions
+        run: |
+          echo "${{ inputs.helm_substitutions }}" | while IFS='=' read -r key value; do
+            if [ -n "$key" ]; then
+              echo "$key=$value" >> $GITHUB_ENV
+            fi
+          done
+
+      - name: Process values-pr.yaml with envsubst
+        id: process-yaml
+        run: |
+          envsubst < helm_deploy/values-pr.yaml > helm_deploy/values-pr-processed.yaml
+
+      - name: Set Outputs
+        id: set-outputs
+        run: |
+          echo "ingress_host=$(yq '.generic-service.ingress.host' helm_deploy/values-pr-processed.yaml)" >> $GITHUB_OUTPUT
+          echo "release_name=$RELEASE_NAME" >> $GITHUB_OUTPUT
+          echo "processed_yaml<<EOF" >> "$GITHUB_OUTPUT"
+          cat helm_deploy/values-pr-processed.yaml >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
+
+  build_docker:
+    name: Build docker image
+    needs:
+      - prepare_deployment_context
+    uses: ministryofjustice/hmpps-github-actions/.github/workflows/docker_build.yml@v2
+    with:
+      docker_registry: 'ghcr.io'
+      registry_org: 'ministryofjustice'
+      tag_latest: false
+      push: true
+      docker_multiplatform: false
+
+  deploy_ephemeral:
+    name: Create ephemeral deployment
+    needs:
+      - build_docker
+      - prepare_deployment_context
+    uses: ministryofjustice/hmpps-github-actions/.github/workflows/deploy_env.yml@ephemeral-deployment
+    secrets: inherit
+    with:
+      environment: 'dev'
+      environment_url: 'https://${{ needs.prepare_deployment_context.outputs.ingress_host }}'
+      app_version: '${{ needs.build_docker.outputs.app_version }}'
+      helm_release_name: ${{ needs.prepare_deployment_context.outputs.release_name }}
+      helm_additional_args: -f <(printf '%s' "${{ needs.prepare_deployment_context.outputs.processed_yaml }}")

@@ -34,7 +34,10 @@ inputs:
   show_changelog:
     description: Whether the changelog should be sent by slack
     required: false
-  helm_additional_args: 
+  helm_release_name:
+    description: "Release name for helm deployment"
+    required: false
+  helm_additional_args:
     description: any additional helm arguments
     required: false
     default: ""
@@ -96,7 +99,17 @@ runs:
       id: check-ip-allowlists-version
       run: |
         if [[ -n "${{ inputs.helm_allowlist_version }}" ]]; then
-          echo "ALLOWLIST_VERSION=--set generic-service.allowlist_version=${{ inputs.helm_allowlist_version }}" >> $GITHUB_OUTPUT
+          echo "ALLOWLIST_VERSION=--set generic-service.allowlist_version=${{ inputs.helm_allowlist_version }}" >> "$GITHUB_OUTPUT"
+        fi
+
+    - name: Set Helm release name
+      id: set-helm-release-name
+      shell: bash
+      run: |
+        if [[ -z "${{ inputs.helm_release_name }}" ]]; then
+          echo "helm_release_name=${{ github.event.repository.name }}" >> "$GITHUB_OUTPUT"
+        else
+          echo "helm_release_name=${{ inputs.helm_release_name }}" >> "$GITHUB_OUTPUT"
         fi
 
     - name: Deploy
@@ -106,7 +119,10 @@ runs:
         brew install helm
         yq -i ".appVersion = \"${{ inputs.version }}\"" "${{ inputs.helm_dir }}/${{ github.event.repository.name }}/Chart.yaml"
         helm dependency update "${{ inputs.helm_dir }}/${{ github.event.repository.name }}"
-        exec helm upgrade '${{ github.event.repository.name }}' '${{ inputs.helm_dir }}/${{ github.event.repository.name }}' \
+
+        exec helm upgrade \
+          "${{ steps.set-helm-release-name.outputs.helm_release_name }}" \
+          "${{ inputs.helm_dir }}/${{ github.event.repository.name }}" \
           --atomic \
           --history-max 10 \
           --force \

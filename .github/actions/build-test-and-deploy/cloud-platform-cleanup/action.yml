@@ -1,0 +1,50 @@
+name: Cloud Platform Cleanup
+description: Uninstall from Cloud Platform using Helm
+
+inputs:
+  api:
+    description: The KUBE_ENV_API
+    required: true
+  cert:
+    description: The KUBE_CERT
+    required: true
+  cluster:
+    description: The KUBE_CLUSTER
+    required: true
+  namespace:
+    description: The KUBE_NAMESPACE
+    required: true
+  token:
+    description: The KUBE_TOKEN
+    required: true
+  helm_timeout:
+    description: helm timeout period
+    required: false
+    default: 5m
+  release_name:
+    description: The name used for the Helm release
+    required: false
+    default: 'PROJECT_NAME'
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/checkout@v4
+
+    - name: Authenticate
+      uses: ministryofjustice/hmpps-github-actions/.github/actions/build-test-and-deploy/cloud-platform-auth@v2 # WORKFLOW_VERSION
+      with:
+        api: ${{ inputs.api }}
+        cert: ${{ inputs.cert }}
+        cluster: ${{ inputs.cluster }}
+        namespace: ${{ inputs.namespace }}
+        token: ${{ inputs.token }}
+
+    - name: Uninstall
+      shell: bash
+      run: |
+        eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+        brew install helm
+        exec helm uninstall ${{ inputs.release_name }} \
+          --timeout ${{ inputs.helm_timeout }}
+        || echo "Helm release not found"
