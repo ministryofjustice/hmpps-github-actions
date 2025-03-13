@@ -23,20 +23,14 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v4
 
-      - name: Install envsubst (gettext)
-        run: sudo apt-get update && sudo apt-get install -y gettext
-
       - name: Parse Helm Substitutions
         run: |
+          sudo apt-get update && sudo apt-get install -y gettext
           echo "${{ inputs.helm_substitutions }}" | while IFS='=' read -r key value; do
             if [ -n "$key" ]; then
               echo "$key=$value" >> $GITHUB_ENV
             fi
           done
-
-      - name: Process values-pr.yaml with envsubst
-        id: process-yaml
-        run: |
           envsubst < helm_deploy/values-pr.yaml > helm_deploy/values-pr-processed.yaml
 
       - name: Set Outputs
