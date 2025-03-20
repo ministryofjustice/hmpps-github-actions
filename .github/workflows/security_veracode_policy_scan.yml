@@ -11,10 +11,6 @@ on:
         required: false
         default: '/app'
         type: string
-      ignore_docker_dirs:
-        required: false
-        default: ""
-        type: string
       teams:
         required: false
         type: string
@@ -83,7 +79,6 @@ jobs:
       uses: ministryofjustice/hmpps-github-actions/.github/actions/security_veracode_prepare_artifacts@v2 # WORKFLOW_VERSION
       with:
         docker_image_app_dir: ${{ inputs.docker_image_app_dir }}
-        ignore_docker_dirs: ${{ inputs.ignore_docker_dirs }}
     - name: "Download/Extract veracode agent"
       run: wget https://repo1.maven.org/maven2/com/veracode/vosp/api/wrappers/vosp-api-wrappers-java/22.9.10.3/vosp-api-wrappers-java-22.9.10.3.jar -O VeracodeJavaAPI.jar
     - name: "Upload to Veracode"

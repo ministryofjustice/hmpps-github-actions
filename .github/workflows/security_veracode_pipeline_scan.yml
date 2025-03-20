@@ -11,10 +11,6 @@ on:
         required: false
         default: '/app'
         type: string
-      ignore_docker_dirs:
-        required: false
-        default: ""
-        type: string
     secrets:
       HMPPS_SRE_SLACK_BOT_TOKEN:
         description: Slack bot token
@@ -78,7 +74,6 @@ jobs:
       uses: ministryofjustice/hmpps-github-actions/.github/actions/security_veracode_prepare_artifacts@v2 # WORKFLOW_VERSION
       with:
         docker_image_app_dir: ${{ inputs.docker_image_app_dir }}
-        ignore_docker_dirs: ${{ inputs.ignore_docker_dirs }}
     - name: "Download/Extract pipeline scanner"
       shell: bash
       run: |
