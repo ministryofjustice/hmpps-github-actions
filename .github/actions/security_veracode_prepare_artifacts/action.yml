@@ -9,6 +9,10 @@ inputs:
     description: additional build arguments
     required: false
     default: ""
+  ignore_docker_dirs:
+    description: ignore directories with image directory, provide with '-x <command>'
+    required: false
+    default: ""
 runs:
   using: "composite"
   steps:
@@ -25,6 +29,6 @@ runs:
 
       docker cp ${CONTAINER_ID}:${{ inputs.docker_image_app_dir }} ./temp_app
       cd temp_app   
-      zip -r ../source.zip . -x "*node_modules*" -x "*agent.jar*" -x "*vendor/bundle*"
+      zip -r ../source.zip . -x "*node_modules*" -x "*agent.jar*" -x "*vendor/bundle*" ${{ inputs.ignore_dirs }}
     env:
       BRANCH_NAME: ${{ github.head_ref || github.ref_name }} 
