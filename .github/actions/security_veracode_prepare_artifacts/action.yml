@@ -29,6 +29,6 @@ runs:
 
       docker cp ${CONTAINER_ID}:${{ inputs.docker_image_app_dir }} ./temp_app
       cd temp_app   
-      zip -r ../source.zip . -x "*node_modules*" -x "*agent.jar*" -x "*vendor/bundle*" ${{ inputs.ignore_dirs }}
+      zip -r ../source.zip . -x "*node_modules*" -x "*agent.jar*" -x "*vendor/bundle*" ${{ inputs.ignore_docker_dirs }}
     env:
       BRANCH_NAME: ${{ github.head_ref || github.ref_name }} 
