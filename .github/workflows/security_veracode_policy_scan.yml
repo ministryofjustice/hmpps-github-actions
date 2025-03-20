@@ -80,7 +80,7 @@ jobs:
         java-version: '21'
         distribution: 'temurin'
     - name: prepare assets
-      uses: ministryofjustice/hmpps-github-actions/.github/actions/security_veracode_prepare_artifacts@v2 # WORKFLOW_VERSION
+      uses: ministryofjustice/hmpps-github-actions/.github/actions/security_veracode_prepare_artifacts@CPR-589-allow-ignore-of-directories-in-docker-veracode # WORKFLOW_VERSION
       with:
         docker_image_app_dir: ${{ inputs.docker_image_app_dir }}
         ignore_docker_dirs: ${{ inputs.ignore_docker_dirs }}
