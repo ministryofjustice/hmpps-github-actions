@@ -76,7 +76,7 @@ The previous configuration will be retained in a backup file (config.bak.yyyymmd
 
 The `migrate-repo.sh` script can be run from a checked out repo:
 ```bash
-/bin/bash -c "$(curl -fsSL https://github.com/ministryofjustice/hmpps-github-actions/raw/refs/heads/main/migrate-repo.sh)
+/bin/bash -c "$(curl -fsSL https://github.com/ministryofjustice/hmpps-github-actions/raw/refs/heads/main/migrate-repo.sh)"
 ```
 
 ### TODO:
