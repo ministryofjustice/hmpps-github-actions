@@ -135,7 +135,8 @@ jobs:
                   "tags": [
                     "vulnerability",
                     "security",
-                    this_result['severity'].upper()
+                    this_result['severity'].upper(),
+                    via['name']
                   ]
                 }
               }  
