@@ -11,6 +11,10 @@ on:
         type: string
         default: '-Xmx512m -XX:ParallelGCThreads=2 -XX:ConcGCThreads=2 -Djava.util.concurrent.ForkJoinPool.common.parallelism=2 -Dorg.gradle.daemon=false -Dkotlin.compiler.execution.strategy=in-process'
         required: false
+      additional_gradle_args:
+        required: false
+        type: string
+        default: ""
 
 permissions:
   contents: read
@@ -43,7 +47,7 @@ jobs:
       shell: bash
       run: |
         export JAVA_OPTS="${{ inputs.java_options }}"
-        ./gradlew check
+        ./gradlew check ${{ inputs.additional_gradle_args }}
     - name: upload the artifacts
       if: always()
       uses: actions/upload-artifact@v4
