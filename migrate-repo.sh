@@ -248,8 +248,8 @@ migrate_deployment_jobs() {
     echo "    - helm_lint" >> ${pipeline_file}
 
     # additional needs for non-dev environments
-    if [ {each_env} != "dev" ]; then
-      needs=$(echo "${workflow_jobs}" | yq eval '.workflows.build-test-and-deploy.jobs.[]' .circleci/config.yml | yq ".request-${each_env}-approval.requires[] | select(test(\"^deploy_\"))") 
+    if [ ${each_env} != "dev" ]; then
+      needs=$(echo "${workflow_jobs}" | yq eval '.workflows.build-test-and-deploy.jobs.[]' .circleci/config.yml | yq ".request-${each_env}-approval.requires[] | select(test(\"^deploy_\"))")
       if [ -n "${needs}" ]; then
         echo "    - ${needs}" >> ${pipeline_file}
       fi
