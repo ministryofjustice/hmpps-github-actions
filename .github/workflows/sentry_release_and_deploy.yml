@@ -59,4 +59,4 @@ jobs:
         shell: bash
         run: |
           export SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }}
-          sentry-cli releases deploys ${{ inputs.app_version }} new -e ${{ inputs.sentry_environment }}}
+          sentry-cli releases deploys ${{ inputs.app_version }} new -e ${{ inputs.sentry_environment }}
