@@ -61,7 +61,7 @@ jobs:
     steps:
       - name: Check app_version
         run: |
-          if [ -z "${{ github.event.inputs.app_version }}" ]; then
+          if [ -z "${{ inputs.app_version }}" ]; then
             echo "ERROR: deploy_env.yml cannot continue; app_version is missing or blank."
             exit 1
           fi
