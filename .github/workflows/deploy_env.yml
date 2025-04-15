@@ -59,6 +59,12 @@ jobs:
       fail-fast: false
     environment: ${{ inputs.environment }}
     steps:
+      - name: Check app_version
+        run: |
+          if [ -z "${{ github.event.inputs.app_version }}" ]; then
+            echo "ERROR: deploy_env.yml cannot continue; app_version is missing or blank."
+            exit 1
+          fi
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
@@ -76,7 +82,7 @@ jobs:
             echo "slack_channel_id=${{ vars.NONPROD_RELEASES_SLACK_CHANNEL }}" | tee -a $GITHUB_OUTPUT
           fi
 
-      - uses: ministryofjustice/hmpps-github-actions/.github/actions/build-test-and-deploy/cloud-platform-deploy@v2 # WORKFLOW_VERSION
+      - uses: ministryofjustice/hmpps-github-actions/.gita-hub/actions/build-test-and-deploy/cloud-platform-deploy@v2 # WORKFLOW_VERSION
         id: deploy
         with:
           environment: ${{ inputs.environment }}
