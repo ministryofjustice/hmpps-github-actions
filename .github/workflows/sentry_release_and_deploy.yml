@@ -18,8 +18,8 @@ on:
         type: string
         description: "The environment into which Sentry is being installed"
       sentry_create_release:
-        default: false
-        type: boolean
+        default: 'false'
+        type: string
         required: false
         description: "Tell sentry-cli to work out the commits on this release - this should only be done ONCE, ideally when you push to DEV."
       app_version:
