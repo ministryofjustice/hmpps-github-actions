@@ -81,5 +81,5 @@ runs:
       echo "------------------------------------------"
       echo "DEPLOYMENT_CHANGELOG='$(cat .deployment_changelog)'"     
       echo "------------------------------------------"
-      echo "DEPLOYMENT_CHANGELOG=$(cat .deployment_changelog  >> $GITHUB_OUTPUT
+      echo "DEPLOYMENT_CHANGELOG=$(cat .deployment_changelog)"  >> $GITHUB_OUTPUT
 
