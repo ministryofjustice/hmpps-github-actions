@@ -72,7 +72,7 @@ runs:
         token: ${{ inputs.token }}
 
     - name: get version history
-      uses: ministryofjustice/hmpps-github-actions/.github/actions/version_history@bug/FEAT-577_commit_history # WORKFLOW VERSION
+      uses: ministryofjustice/hmpps-github-actions/.github/actions/version_history@bug/HEAT-577_commit_history # WORKFLOW VERSION
       if: ${{ inputs.show_changelog }}
       id: version_history
       with:
