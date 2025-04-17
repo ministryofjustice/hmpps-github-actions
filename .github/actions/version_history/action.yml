@@ -77,11 +77,9 @@ runs:
       else
         echo "Changelog not available." > .deployment_changelog
       fi
-      echo
       echo "Here is the DEPLOYMENT_CHANGELOG"
       echo "------------------------------------------"
       echo "DEPLOYMENT_CHANGELOG='$(cat .deployment_changelog)'"     
-      echo "------------------------------------------"
       echo "------------------------------------------"
       echo "DEPLOYMENT_CHANGELOG=$(cat .deployment_changelog  >> $GITHUB_OUTPUT
 
