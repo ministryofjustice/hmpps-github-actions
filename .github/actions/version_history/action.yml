@@ -75,7 +75,9 @@ runs:
       else
         echo "Changelog not available." > .deployment_changelog
       fi
-
+      echo "(debug) cat the .deployment_changelog file:"
+      cat .deployment_changelog
+      echo
       echo "Here is the unprocessed DEPLOYMENT_CHANGELOG"
       echo "------------------------------------------"
       echo "DEPLOYMENT_CHANGELOG='$(cat .deployment_changelog)'"     
