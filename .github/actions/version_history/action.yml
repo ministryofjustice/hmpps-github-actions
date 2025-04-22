@@ -67,17 +67,15 @@ runs:
       # Add the sed command to the end of this so it is only one line
       if git rev-parse --quiet --verify "${PREVIOUS_COMMIT}" &>/dev/null; then
         # shellcheck disable=SC2086
-          PAGER="cat" git log --oneline --no-decorate \
+          PAGER="cat" DEPLOYMENT_CHANGELOG="$(git log --oneline --no-decorate \
           --pretty=format:'%h %s (%cr)' --committer='noreply@github.com' --grep='#' \
           "${PREVIOUS_COMMIT}..${CURRENT_COMMIT}" $CHANGELOG_GIT_PATHS \
           | sed 's/Merge pull request /PR /g; s|from ministryofjustice/dependabot/|:dependabot:|g; s|from ministryofjustice/||g' \
-          | tr '"' "'" | tr "\`" "'" | sed ':a;N;$!ba;s/\n/\\n/g' >> .deployment_changelog
+          | tr '"' "'" | tr "\`" "'" | sed ':a;N;$!ba;s/\n/\\n/g')"
       else
-        echo "Changelog not available." > .deployment_changelog
+        DEPLOYMENT_CHANGELOG="Changelog not available."
       fi
-      echo "Here is the DEPLOYMENT_CHANGELOG"
+      echo "Here is the DEPLOYMENT_CHANGELOG: ${DEPLOYMENT_CHANGELOG}"  
       echo "------------------------------------------"
-      echo "DEPLOYMENT_CHANGELOG='$(cat .deployment_changelog)'"     
-      echo "------------------------------------------"
-      echo "DEPLOYMENT_CHANGELOG=$(cat .deployment_changelog)"  >> $GITHUB_OUTPUT
+      echo "DEPLOYMENT_CHANGELOG=${DEPLOYMENT_CHANGELOG}"  >> $GITHUB_OUTPUT
 
