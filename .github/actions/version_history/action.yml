@@ -49,7 +49,7 @@ runs:
       touch .deployment_changelog
 
       CURRENT_COMMIT="$(echo "${{ inputs.app_version }}" | cut -d'.' -f3)" 
-      K8S_PREVIOUS_APP_VERSION="$(expokubectl get "deployment/${K8S_DEPLOYMENT_NAME}" --namespace="${{ inputs.namespace }}" -o=jsonpath='{.metadata.labels.app\.kubernetes\.io/version}' || true)"
+      K8S_PREVIOUS_APP_VERSION="$(kubectl get "deployment/${K8S_DEPLOYMENT_NAME}" --namespace="${{ inputs.namespace }}" -o=jsonpath='{.metadata.labels.app\.kubernetes\.io/version}' || true)"
       echo "CURRENT_COMMIT=${CURRENT_COMMIT}"
       echo "K8S_PREVIOUS_APP_VERSION=${K8S_PREVIOUS_APP_VERSION}"      
 
