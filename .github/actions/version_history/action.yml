@@ -67,16 +67,12 @@ runs:
       # Add the sed command to the end of this so it is only one line
       if git rev-parse --quiet --verify "${PREVIOUS_COMMIT}" &>/dev/null; then
         # Run the actual thing so we can see what it's doing
-        PAGER="cat" git log --oneline --no-decorate \
-          --pretty=format:'%h %s (%cr)' --committer='noreply@github.com' --grep='#' \
-          "${PREVIOUS_COMMIT}..${CURRENT_COMMIT}" $CHANGELOG_GIT_PATHS \
-          | sed 's/Merge pull request /PR /g; s|from ministryofjustice/dependabot/|:dependabot:|g; s|from ministryofjustice/||g' | tr '"' "'" | tr "\`" "'"
+        PAGER="cat" git log --oneline --no-decorate  --pretty=format:'%h %s (%cr)'  --grep='#' "${PREVIOUS_COMMIT}..${CURRENT_COMMIT}"
         # Then load it into the variable
         # shellcheck disable=SC2086
-          PAGER="cat" DEPLOYMENT_CHANGELOG="$(git log --oneline --no-decorate \
-          --pretty=format:'%h %s (%cr)' --committer='noreply@github.com' --grep='#' \
+          PAGER="cat" DEPLOYMENT_CHANGELOG="$(git log --oneline --no-decorate --pretty=format:'%h %s (%cr)' --grep='#' \
           "${PREVIOUS_COMMIT}..${CURRENT_COMMIT}" $CHANGELOG_GIT_PATHS \
-          | sed 's/Merge pull request /PR /g; s|from ministryofjustice/dependabot/|:dependabot:|g; s|from ministryofjustice/||g' | tr '"' "'" | tr "\`" "'")"
+          | sed 's/Merge pull request /PR /g; s|from ministryofjustice/dependabot/|:dependabot:|g; s|from ministryofjustice/||g')"
       else
         DEPLOYMENT_CHANGELOG="Changelog not available."
       fi
