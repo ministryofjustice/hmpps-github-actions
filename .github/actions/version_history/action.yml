@@ -70,7 +70,7 @@ runs:
         PAGER="cat" git log --oneline --no-decorate \
           --pretty=format:'%h %s (%cr)' --committer='noreply@github.com' --grep='#' \
           "${PREVIOUS_COMMIT}..${CURRENT_COMMIT}" $CHANGELOG_GIT_PATHS \
-          | sed 's/Merge pull request /PR /g; s|from ministryofjustice/dependabot/|:dependabot:|g; s|from ministryofjustice/||g' tr '"' "'" | tr "\`" "'"
+          | sed 's/Merge pull request /PR /g; s|from ministryofjustice/dependabot/|:dependabot:|g; s|from ministryofjustice/||g' | tr '"' "'" | tr "\`" "'"
         # Then load it into the variable
         # shellcheck disable=SC2086
           PAGER="cat" DEPLOYMENT_CHANGELOG="$(git log --oneline --no-decorate \
