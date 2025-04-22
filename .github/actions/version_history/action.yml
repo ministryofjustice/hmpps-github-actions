@@ -70,7 +70,7 @@ runs:
         echo "Found previous commit - now getting the diffs"
         PAGER="cat" git log --oneline --no-decorate  --pretty=format:'%h %s (%cr)'  --grep='#' "${PREVIOUS_COMMIT}..${CURRENT_COMMIT}" >> .deployment_changelog
         echo "$(git log --oneline --no-decorate  --pretty=format:'%h %s (%cr)'  --grep='#' "${PREVIOUS_COMMIT}..${CURRENT_COMMIT}")"
-        echo "Deployment changelog file: 
+        echo "Deployment changelog file:"
         echo "------------------------------------------"
         cat .deployment_changelog
         echo "------------------------------------------"
