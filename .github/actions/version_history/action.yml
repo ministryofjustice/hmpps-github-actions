@@ -70,7 +70,7 @@ runs:
         PAGER="cat" git log --oneline --no-decorate  --pretty=format:'%h %s (%cr)'  --grep='#' "${PREVIOUS_COMMIT}..${CURRENT_COMMIT}" >> .deployment_changelog
         # Then load it into the variable
         # shellcheck disable=SC2086
-          DEPLOYMENT_CHANGELOG="$(git log --oneline --no-decorate --pretty=format:'%h %s (%cr)' --grep='#'  '${PREVIOUS_COMMIT}..${CURRENT_COMMIT}' $CHANGELOG_GIT_PATHS")
+          DEPLOYMENT_CHANGELOG="$(git log --oneline --no-decorate --pretty=format:'%h %s (%cr)' --grep='#'  '${PREVIOUS_COMMIT}..${CURRENT_COMMIT}' $CHANGELOG_GIT_PATHS)"
         else
         DEPLOYMENT_CHANGELOG="Changelog not available."
       fi
