@@ -46,7 +46,7 @@ runs:
 
       # initialise the changelog
       echo "Touching .deployment_changelog"
-      touch .dcl_a .dcl_b .dcl_c .dlc_d
+      touch /tmp/.dcl_a /tmp/.dcl_b /tmp/.dcl_c /tmp/.dlc_d
  
       CURRENT_COMMIT="$(echo "${{ inputs.app_version }}" | cut -d'.' -f3)" 
       K8S_PREVIOUS_APP_VERSION="$(kubectl get "deployment/${K8S_DEPLOYMENT_NAME}" --namespace="${{ inputs.namespace }}" -o=jsonpath='{.metadata.labels.app\.kubernetes\.io/version}' || true)"
@@ -69,29 +69,31 @@ runs:
         # Run the actual thing so we can see what it's doing
         echo "Found previous commit - now getting the diffs"
         echo "Processing change log using files"
-        PAGER="cat" git log --oneline --no-decorate  --pretty=format:'%h %s (%cr)' --committer='noreply@github.com' --grep='#' "${PREVIOUS_COMMIT}..${CURRENT_COMMIT}" >> .dcla
-        echo "Deployment changelog file so far (.dcl_a):"
+        PAGER="cat" git log --oneline --no-decorate  --pretty=format:'%h %s (%cr)' --committer='noreply@github.com' --grep='#' "${PREVIOUS_COMMIT}..${CURRENT_COMMIT}" >> /tmp/.dcla
+        echo "Deployment changelog file so far (/tmp/.dcl_a):"
         echo "------------------------------------------"
-        cat .dcl_a
+        cat /tmp/.dcl_a
         echo "------------------------------------------"
-        cat .dcl_a | sed 's/Merge pull request /PR /g; s|from ministryofjustice/dependabot/|:dependabot:|g; s|from ministryofjustice/||g'  > .dcl_b
-        echo "Deployment changelog file so far (.dcl_b):"
+        cat .dcl_a | sed 's/Merge pull request /PR /g; s|from ministryofjustice/dependabot/|:dependabot:|g; s|from ministryofjustice/||g'  > /tmp/.dcl_b
+        echo "Deployment changelog file so far (/tmp/.dcl_b):"
         echo "------------------------------------------"
-        cat .dcl_b
+        cat /tmp/.dcl_b
         echo "------------------------------------------"
-        cat .dcl_b | tr '"' "'" | tr "\`" "'" > .dcl_c
-        echo "Deployment changelog file so far (.dcl_c):"
+        cat /tmp/.dcl_b | tr '"' "'" | tr "\`" "'" > /tmp/.dcl_c
+        echo "Deployment changelog file so far (/tmp/.dcl_c):"
         echo "------------------------------------------"
-        cat .dcl_c
+        cat /tmp/.dcl_c
         echo "------------------------------------------"
-        cat .dcl_c | sed ':a;N;$!ba;s/\n/\\n/g' > .dcl_d
-        echo "Deployment changelog file so far (.dcl_d):"
+        cat /tmp/.dcl_c | sed ':a;N;$!ba;s/\n/\\n/g' > /tmp/.dcl_d
+        echo "Deployment changelog file so far (/tmp/.dcl_d):"
         echo "------------------------------------------"
-        cat .dcl_d
+        cat /tmp/.dcl_d
         echo "------------------------------------------"       
         # Then load it into the variable
         echo "Loading the difference into DEPLOYMENT_CHANGELOG"
-        DEPLOYMENT_CHANGELOG="$(cat ${.dcl_d})"
+        DEPLOYMENT_CHANGELOG="$(cat /tmp/.dcl_d)"
+        # Finally clear out the files
+        rm -f /tmp/.dcl*
 
         # Separate section to deal with the variable alternative
         echo "Processing change log using variables"
