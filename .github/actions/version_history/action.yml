@@ -68,6 +68,7 @@ runs:
       if git rev-parse --quiet --verify "${PREVIOUS_COMMIT}" &>/dev/null; then
         # Run the actual thing so we can see what it's doing
         echo "Found previous commit - now getting the diffs"
+        echo "Processing change log using files"
         PAGER="cat" git log --oneline --no-decorate  --pretty=format:'%h %s (%cr)' --committer='noreply@github.com' --grep='#' "${PREVIOUS_COMMIT}..${CURRENT_COMMIT}" >> .dcla
         echo "Deployment changelog file so far (.dcl_a):"
         echo "------------------------------------------"
@@ -79,12 +80,31 @@ runs:
         cat .dcl_b
         echo "------------------------------------------"
         cat .dcl_b | tr '"' "'" | tr "\`" "'" > .dcl_c
+        echo "Deployment changelog file so far (.dcl_c):"
         echo "------------------------------------------"
         cat .dcl_c
         echo "------------------------------------------"
+        cat .dcl_c | sed ':a;N;$!ba;s/\n/\\n/g' > .dcl_d
+        echo "Deployment changelog file so far (.dcl_d):"
+        echo "------------------------------------------"
+        cat .dcl_d
+        echo "------------------------------------------"       
         # Then load it into the variable
         echo "Loading the difference into DEPLOYMENT_CHANGELOG"
-        DEPLOYMENT_CHANGELOG="cat ${.dcl_c}"
+        DEPLOYMENT_CHANGELOG="$(cat ${.dcl_d})"
+
+        # Separate section to deal with the variable alternative
+        echo "Processing change log using variables"
+        dcl_a="$(git log --oneline --no-decorate  --pretty=format:'%h %s (%cr)' --committer='noreply@github.com' --grep='#' "${PREVIOUS_COMMIT}..${CURRENT_COMMIT}")"
+        echo "dcl_a=${dcl_a}"
+        dcl_b="$(echo "${dcl_a}" | sed 's/Merge pull request /PR /g; s|from ministryofjustice/dependabot/|:dependabot:|g; s|from ministryofjustice/||g')"
+        echo "dcl_b=${dcl_b}"  
+        dcl_c="$(echo "${dcl_b}" | tr '"' "'" | tr "\`" "'")"
+        echo "dcl_c=${dcl_c}"
+        dcl_d="$(echo "${dcl_c}" | sed ':a;N;$!ba;s/\n/\\n/g')"
+        echo "dcl_d=${dcl_d}"
+        echo "DEPLOYMENT_CHANGELOG could be: ${dcl_d}"
+
       else
         DEPLOYMENT_CHANGELOG="Changelog not available."
       fi
