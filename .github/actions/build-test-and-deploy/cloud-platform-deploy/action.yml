@@ -62,6 +62,8 @@ runs:
   using: composite
   steps:
     - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
     - name: Authenticate
       uses: ministryofjustice/hmpps-github-actions/.github/actions/build-test-and-deploy/cloud-platform-auth@v2 # WORKFLOW_VERSION
       with:
