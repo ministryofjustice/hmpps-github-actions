@@ -46,8 +46,8 @@ runs:
 
       # initialise the changelog
       echo "Touching .deployment_changelog"
-      touch .deployment_changelog
-
+      touch .dcl_a .dcl_b .dcl_c .dlc_d
+ 
       CURRENT_COMMIT="$(echo "${{ inputs.app_version }}" | cut -d'.' -f3)" 
       K8S_PREVIOUS_APP_VERSION="$(kubectl get "deployment/${K8S_DEPLOYMENT_NAME}" --namespace="${{ inputs.namespace }}" -o=jsonpath='{.metadata.labels.app\.kubernetes\.io/version}' || true)"
       echo "CURRENT_COMMIT=${CURRENT_COMMIT}"
