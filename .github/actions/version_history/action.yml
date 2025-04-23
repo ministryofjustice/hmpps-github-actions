@@ -64,13 +64,11 @@ runs:
       if git rev-parse --quiet --verify "${PREVIOUS_COMMIT}" &>/dev/null; then
         # Run the actual thing so we can see what it's doing
         echo "Found previous commit - now getting the diffs"
-        dcl_a="$(git log --oneline --no-decorate  --pretty=format:'%h %s (%cr)' --committer='noreply@github.com' --grep='#' "${PREVIOUS_COMMIT}..${CURRENT_COMMIT}")"
+        dcl_a="$(git log --oneline --no-decorate  --pretty=format:'%h %s (%cr)' --committer='noreply@github.com' --grep='#' "${PREVIOUS_COMMIT}..${CURRENT_COMMIT}"| sed ':a;N;$!ba;s/\n/\\n/g')"
         echo "dcl_a=${dcl_a}"
         dcl_b="$(echo "${dcl_a}" | sed 's/Merge pull request /PR /g; s|from ministryofjustice/dependabot/|:dependabot:|g; s|from ministryofjustice/||g')"
         echo "dcl_b=${dcl_b}"  
-        dcl_c="$(echo "${dcl_b}" | tr '"' "'" | tr "\`" "'")"
-        echo "dcl_c=${dcl_c}"
-        DEPLOYMENT_CHANGELOG="$(echo "${dcl_c}" | sed ':a;N;$!ba;s/\n/\\n/g')"
+        DEPLOYMENT_CHANGELOG="$(echo "${dcl_b}" | tr '"' "'" | tr "\`" "'")"
       else
         DEPLOYMENT_CHANGELOG="Changelog not available."
       fi
