@@ -74,7 +74,7 @@ runs:
         echo "------------------------------------------"
         cat /tmp/.dcl_a
         echo "------------------------------------------"
-        cat .dcl_a | sed 's/Merge pull request /PR /g; s|from ministryofjustice/dependabot/|:dependabot:|g; s|from ministryofjustice/||g'  > /tmp/.dcl_b
+        cat /tmp/.dcl_a | sed 's/Merge pull request /PR /g; s|from ministryofjustice/dependabot/|:dependabot:|g; s|from ministryofjustice/||g'  > /tmp/.dcl_b
         echo "Deployment changelog file so far (/tmp/.dcl_b):"
         echo "------------------------------------------"
         cat /tmp/.dcl_b
@@ -93,7 +93,7 @@ runs:
         echo "Loading the difference into DEPLOYMENT_CHANGELOG"
         DEPLOYMENT_CHANGELOG="$(cat /tmp/.dcl_d)"
         # Finally clear out the files
-        rm -f /tmp/.dcl*
+        rm -f /tmp/.dcl_*
 
         # Separate section to deal with the variable alternative
         echo "Processing change log using variables"
