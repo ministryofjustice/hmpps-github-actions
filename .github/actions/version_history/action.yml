@@ -68,15 +68,23 @@ runs:
       if git rev-parse --quiet --verify "${PREVIOUS_COMMIT}" &>/dev/null; then
         # Run the actual thing so we can see what it's doing
         echo "Found previous commit - now getting the diffs"
-        PAGER="cat" git log --oneline --no-decorate  --pretty=format:'%h %s (%cr)'  --grep='#' "${PREVIOUS_COMMIT}..${CURRENT_COMMIT}" >> .deployment_changelog
-        echo "$(git log --oneline --no-decorate  --pretty=format:'%h %s (%cr)'  --grep='#' "${PREVIOUS_COMMIT}..${CURRENT_COMMIT}")"
-        echo "Deployment changelog file:"
+        PAGER="cat" git log --oneline --no-decorate  --pretty=format:'%h %s (%cr)' --committer='noreply@github.com' --grep='#' "${PREVIOUS_COMMIT}..${CURRENT_COMMIT}" >> .dcla
+        echo "Deployment changelog file so far (.dcl_a):"
         echo "------------------------------------------"
-        cat .deployment_changelog
+        cat .dcl_a
+        echo "------------------------------------------"
+        cat .dcl_a | sed 's/Merge pull request /PR /g; s|from ministryofjustice/dependabot/|:dependabot:|g; s|from ministryofjustice/||g'  > .dcl_b
+        echo "Deployment changelog file so far (.dcl_b):"
+        echo "------------------------------------------"
+        cat .dcl_b
+        echo "------------------------------------------"
+        cat .dcl_b | tr '"' "'" | tr "\`" "'" > .dcl_c
+        echo "------------------------------------------"
+        cat .dcl_c
         echo "------------------------------------------"
         # Then load it into the variable
         echo "Loading the difference into DEPLOYMENT_CHANGELOG"
-        DEPLOYMENT_CHANGELOG="$(git log --oneline --no-decorate --pretty=format:'%h %s (%cr)' --grep='#'  "${PREVIOUS_COMMIT}..${CURRENT_COMMIT}" $CHANGELOG_GIT_PATHS)"
+        DEPLOYMENT_CHANGELOG="cat ${.dcl_c}"
       else
         DEPLOYMENT_CHANGELOG="Changelog not available."
       fi
