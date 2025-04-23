@@ -43,10 +43,6 @@ runs:
       else
         K8S_DEPLOYMENT_NAME="${{ inputs.k8s_deployment_name }}"
       fi
-
-      # initialise the changelog
-      echo "Touching .deployment_changelog"
-      touch /tmp/.dcl_a /tmp/.dcl_b /tmp/.dcl_c /tmp/.dlc_d
  
       CURRENT_COMMIT="$(echo "${{ inputs.app_version }}" | cut -d'.' -f3)" 
       K8S_PREVIOUS_APP_VERSION="$(kubectl get "deployment/${K8S_DEPLOYMENT_NAME}" --namespace="${{ inputs.namespace }}" -o=jsonpath='{.metadata.labels.app\.kubernetes\.io/version}' || true)"
@@ -68,45 +64,13 @@ runs:
       if git rev-parse --quiet --verify "${PREVIOUS_COMMIT}" &>/dev/null; then
         # Run the actual thing so we can see what it's doing
         echo "Found previous commit - now getting the diffs"
-        echo "Processing change log using files"
-        PAGER="cat" git log --oneline --no-decorate  --pretty=format:'%h %s (%cr)' --committer='noreply@github.com' --grep='#' "${PREVIOUS_COMMIT}..${CURRENT_COMMIT}" >> /tmp/.dcla
-        echo "Deployment changelog file so far (/tmp/.dcl_a):"
-        echo "------------------------------------------"
-        cat /tmp/.dcl_a
-        echo "------------------------------------------"
-        cat /tmp/.dcl_a | sed 's/Merge pull request /PR /g; s|from ministryofjustice/dependabot/|:dependabot:|g; s|from ministryofjustice/||g'  > /tmp/.dcl_b
-        echo "Deployment changelog file so far (/tmp/.dcl_b):"
-        echo "------------------------------------------"
-        cat /tmp/.dcl_b
-        echo "------------------------------------------"
-        cat /tmp/.dcl_b | tr '"' "'" | tr "\`" "'" > /tmp/.dcl_c
-        echo "Deployment changelog file so far (/tmp/.dcl_c):"
-        echo "------------------------------------------"
-        cat /tmp/.dcl_c
-        echo "------------------------------------------"
-        cat /tmp/.dcl_c | sed ':a;N;$!ba;s/\n/\\n/g' > /tmp/.dcl_d
-        echo "Deployment changelog file so far (/tmp/.dcl_d):"
-        echo "------------------------------------------"
-        cat /tmp/.dcl_d
-        echo "------------------------------------------"       
-        # Then load it into the variable
-        echo "Loading the difference into DEPLOYMENT_CHANGELOG"
-        DEPLOYMENT_CHANGELOG="$(cat /tmp/.dcl_d)"
-        # Finally clear out the files
-        rm -f /tmp/.dcl_*
-
-        # Separate section to deal with the variable alternative
-        echo "Processing change log using variables"
         dcl_a="$(git log --oneline --no-decorate  --pretty=format:'%h %s (%cr)' --committer='noreply@github.com' --grep='#' "${PREVIOUS_COMMIT}..${CURRENT_COMMIT}")"
         echo "dcl_a=${dcl_a}"
         dcl_b="$(echo "${dcl_a}" | sed 's/Merge pull request /PR /g; s|from ministryofjustice/dependabot/|:dependabot:|g; s|from ministryofjustice/||g')"
         echo "dcl_b=${dcl_b}"  
         dcl_c="$(echo "${dcl_b}" | tr '"' "'" | tr "\`" "'")"
         echo "dcl_c=${dcl_c}"
-        dcl_d="$(echo "${dcl_c}" | sed ':a;N;$!ba;s/\n/\\n/g')"
-        echo "dcl_d=${dcl_d}"
-        echo "DEPLOYMENT_CHANGELOG could be: ${dcl_d}"
-
+        DEPLOYMENT_CHANGELOG="$(echo "${dcl_c}" | sed ':a;N;$!ba;s/\n/\\n/g')"
       else
         DEPLOYMENT_CHANGELOG="Changelog not available."
       fi
