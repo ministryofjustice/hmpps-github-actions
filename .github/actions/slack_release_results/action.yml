@@ -39,8 +39,10 @@ runs:
       if commit_message:
         first_line=commit_message.split('\n')[0][:256]
         sanitised_message = re.sub(pattern, '', first_line)
-        print(f'commit_message_first_line={sanitised_message}')
-    shell: python {0} >> $GITHUB_ENV
+        with open(os.getenv('GITHUB_ENV'), 'a') as gh_env:
+        gh_env.write(f'commit_message_first_line={truncated_message}\n')
+        gh_env.close()
+    shell: python {0}
     env:
       COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
 
