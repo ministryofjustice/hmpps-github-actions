@@ -4,7 +4,10 @@ on:
   workflow_dispatch:
   schedule:
     - cron: "35 5 * * MON-FRI" # Every weekday at 05:35 UTC
-
+permissions:
+  contents: read
+  actions: read
+  security-events: write
 jobs:
   security-veracode-pipeline-scan:
     name: Project security veracode pipeline scan
