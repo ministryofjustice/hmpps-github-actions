@@ -18,7 +18,7 @@ permissions:
   security-events: write
 
 jobs:
-  security-codeql-check:
+  security-codeql-scan:
     name: Security CodeQL Github Actions scan
     runs-on: ubuntu-latest
     permissions:
@@ -35,6 +35,20 @@ jobs:
     - name: Perform CodeQL Analysis
       id: codeql_analysis
       uses: github/codeql-action/analyze@v3
+    - name: upload CodeQL artifact
+      uses: actions/upload-artifact@v4
+      id: codeql-upload-artifact
+      with:
+        name: codeql-check-${{ github.event.repository.name }}
+        path: codeql-results.sarif
+      continue-on-error: true
+    - name: CodeQL upload sarif
+      id: codeql-upload
+      if: ${{ github.event.repository.visibility != 'private' && github.event.repository.visibility != 'internal' }}
+      uses: github/codeql-action/upload-sarif@v3
+      with:
+        sarif_file: 'codeql-results.sarif'
+        category: actions-codeql-check
     - name: CodeQL slack notification
       uses: ministryofjustice/hmpps-github-actions/.github/actions/slack_codescan_notification@v2 # WORKFLOW_VERSION
       if: (failure() || steps.codeql_analysis.outcome == 'failure') && inputs.channel_id != 'NO_SLACK'
