@@ -9,8 +9,8 @@ permissions:
   actions: read
   security-events: write
 jobs:
-  security-kotlin-trivy-check:
-    name: Project security trivy dependency check
+  security-actions-codeql-check:
+    name: Project security Github Actions CodeQL check
     uses: ministryofjustice/hmpps-github-actions/.github/workflows/security_codeql_actions.yml@v2 # WORKFLOW_VERSION
     with:
       channel_id: ${{ vars.SECURITY_ALERTS_SLACK_CHANNEL_ID || 'NO_SLACK' }}
