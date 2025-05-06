@@ -5,6 +5,10 @@ on:
   schedule:
     - cron: "30 5 * * MON-FRI" # Every weekday at 05:35 UTC
 
+permissions:
+  contents: read
+  actions: read
+  security-events: write
 jobs:
   security-npm-dependency-check:
     name: Project security npm dependency check
