@@ -1,0 +1,45 @@
+name: Security CodeQL Github Actions scan
+
+on:
+  workflow_call:
+    inputs:
+      channel_id:
+        description: 'The slack channel ID to send a message on failure. If this is not provided then no message is sent.'
+        required: false
+        default: 'NO_SLACK'
+        type: string
+    secrets:
+      HMPPS_SRE_SLACK_BOT_TOKEN:
+        description: 'Slack bot token'
+        required: false
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  security-codeql-scan:
+    name: Security CodeQL Github Actions scan
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      contents: read
+      actions: read
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v3
+      with:
+        languages: python 
+    - name: Perform CodeQL Analysis
+      id: codeql_analysis
+      uses: github/codeql-action/analyze@v3
+    - name: CodeQL slack notification
+      uses: ministryofjustice/hmpps-github-actions/.github/actions/slack_codescan_notification@v2 # WORKFLOW_VERSION
+      if: (failure() || steps.codeql_analysis.outcome == 'failure') && inputs.channel_id != 'NO_SLACK'
+      with:
+        title: "CodeQL Actions Scan"
+        warningOnly: ${{ steps.codeql_analysis.outcome == 'success' }}
+        channel_id: ${{ inputs.channel_id}}
+        SLACK_BOT_TOKEN: ${{ secrets.HMPPS_SRE_SLACK_BOT_TOKEN }}
