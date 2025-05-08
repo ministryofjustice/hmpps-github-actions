@@ -506,7 +506,7 @@ migrate_deployment_jobs() {
   #
   
   # Find and replace in .yml and .yaml files
-  find "helm_deploy" -type f \( -name "*.yml" -o -name "*.yaml" \) -exec sed -i '' 's|quay.io/hmpps/|ghcr.io/ministryofjustice|g' {} +
+  find "helm_deploy" -type f \( -name "*.yml" -o -name "*.yaml" \) -exec sed -i '' 's|quay.io/hmpps/|ghcr.io/ministryofjustice/|g' {} +
   echo "INFO: quay.io -> ghcr.io migration complete."
 
 
