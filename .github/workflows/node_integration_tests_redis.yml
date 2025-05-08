@@ -38,14 +38,6 @@ jobs:
             ./node_modules
             ~/.cache/Cypress
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
-      - name: download the artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: npm_build_artifacts
-          path: |
-            build/
-            dist/
-            assets/stylesheets/
       - name: Get wiremock
         shell: bash
         run: |

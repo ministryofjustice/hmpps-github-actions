@@ -36,10 +36,6 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: npm_build_artifacts
-          path: |
-            build/
-            dist/
-            assets/stylesheets/
       - name: unit tests
         id: unit-tests
         shell: bash
