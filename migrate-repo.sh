@@ -502,6 +502,13 @@ migrate_deployment_jobs() {
 
   # ============== end of localstack ==============
 
+  # go through the helm deploy files and replace quay.io/hmpps with ghcr.io/ministryofjustice
+  #
+  
+  # Find and replace in .yml and .yaml files
+  find "helm_deploy" -type f \( -name "*.yml" -o -name "*.yaml" \) -exec sed -i '' 's|quay.io/hmpps/|ghcr.io/ministryofjustice/|g' {} +
+  echo "INFO: quay.io -> ghcr.io migration complete."
+
 
   # Tidy up at the end
   # ------------------
