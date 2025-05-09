@@ -111,7 +111,10 @@ migrate_deployment_jobs() {
   # Pull down the template pipeline and remove deploy_dev
   echo "Migrating using hmpps-template-$1 template"
 
-  gh api repos/ministryofjustice/hmpps-template-$1/contents/.github/workflows/pipeline.yml -H "Accept: application/vnd.github.v3.raw"  | grep -v  "^ *#" | yq eval 'del(.jobs.deploy_dev)' > ${pipeline_file}
+  gh api repos/ministryofjustice/hmpps-template-$1/contents/.github/workflows/pipeline.yml -H "Accept: application/vnd.github.v3.raw" \
+   | grep -v  "^ *#" | yq eval 'del(.jobs.deploy_dev)' > ${pipeline_file}
+  gh api repos/ministryofjustice/hmpps-template-$1/contents/.github/workflows/deploy_to_env.yml -H "Accept: application/vnd.github.v3.raw" \
+   | grep -v  "^ *#" > ".github/workflows/deploy_to_env.yml"
 
   # explode the aliases - will make the branch filtering work better in the long run
   yq eval 'explode(.)' -i .circleci/config.yml
