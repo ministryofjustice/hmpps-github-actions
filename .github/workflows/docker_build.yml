@@ -117,7 +117,6 @@ jobs:
           additional_docker_tag: ${{ inputs.additional_docker_tag }}
           tag_latest: ${{ inputs.tag_latest }}
           push: ${{ inputs.push }}
-          load: ${{ inputs.load }}
           app_version: ${{ steps.app_version.outputs.version }}
           additional_docker_build_args: ${{ inputs.additional_docker_build_args }}
 
@@ -130,7 +129,6 @@ jobs:
           additional_docker_tag: ${{ inputs.additional_docker_tag }}
           tag_latest: ${{ inputs.tag_latest }}
           push: ${{ inputs.push }}
-          load: ${{ inputs.load }}
           app_version: ${{ steps.app_version.outputs.version }}
           additional_docker_build_args: ${{ inputs.additional_docker_build_args }}
           HMPPS_QUAYIO_USER: ${{ secrets.HMPPS_QUAYIO_USER }}
