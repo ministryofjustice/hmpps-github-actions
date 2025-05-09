@@ -134,8 +134,8 @@ migrate_deployment_jobs() {
   #
   # Anything else will need to be done by the developer
 
-  # check to see if it's multiplatform or not 
-  if [ $(yq eval '.workflows.build-test-and-deploy | select(.jobs[]."hmpps/build_multiplatform_docker") | .jobs[] | select(has("hmpps/build_multiplatform_docker")) | .hmpps/build_multiplatform_docker' .circleci/config.yml | grep -c 'build_multiplatform_docker') -gt 0 ]; then
+  # check to see if it's multiplatform or not
+  if yq '.workflows.build-test-and-deploy.jobs[] | has("hmpps/build_multiplatform_docker")' .circleci/config.yml | grep -c "true" >/dev/null; then
     docker_build='build_multiplatform_docker'
   else
     docker_build='build_docker'
@@ -506,7 +506,7 @@ migrate_deployment_jobs() {
   #
   
   # Find and replace in .yml and .yaml files
-  find "helm_deploy" -type f \( -name "*.yml" -o -name "*.yaml" \) -exec sed -i '' 's|quay.io/hmpps/|ghcr.io/ministryofjustice/|g' {} +
+  find "helm_deploy" -type f \( -name "*.yml" -o -name "*.yaml" \) -exec sed -i.bak 's|quay.io/hmpps/|ghcr.io/ministryofjustice/|g' {} \; -exec rm {}.bak \;
   echo "INFO: quay.io -> ghcr.io migration complete."
 
 
