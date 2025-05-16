@@ -1,0 +1,65 @@
+name: Run gradle checks with a localstack instance
+on:
+  workflow_call:
+    inputs:
+      java-version:
+        type: string
+        required: false
+        default: '21'
+      java-options:
+        type: string
+        default: ''
+        required: false
+      gradle-command:
+        type: string
+        default: './gradlew check'
+        required: false
+      services:
+        type: string
+        default: 'sqs,sns'
+        required: false
+      localstack-tag:
+        type: string
+        default: 'latest'
+        required: false
+permissions:
+  contents: read
+jobs:
+  gradle-localstack-verify:
+    name: Verify the gradle app with localstack running
+    runs-on: ubuntu-latest
+    services:
+      localstack:
+        image: localstack/localstack:${{ inputs.localstack-tag }}
+        ports:
+          - 4566:4566
+          - 4571:4571
+        env:
+          ES_PORT_EXTERNAL: 4571
+          DOCKER_HOST: 'unix:///var/run/docker.sock'
+          AWS_EXECUTION_ENV: True
+          PERSISTENCE: 1
+          SERVICES: "${{ inputs.services }}"
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v4
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '${{ inputs.java-version }}'
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+      - name: Run checks with gradle
+        shell: bash
+        run: |
+          export JAVA_OPTS="${{ inputs.java-options }}"
+          ${{ inputs.gradle-command }}
+      - name: Upload the artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: upload test results
+          path: |
+            build/test-results
+            build/reports/tests
