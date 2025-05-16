@@ -36,17 +36,17 @@ jobs:
     runs-on: ubuntu-latest
     services:
       postgres:
-        # Docker Hub PostgreSQL image
         image: postgres:${{ inputs.postgres-tag }}
-        # Provide the configuration for postgres
         env:
           POSTGRES_USER: ${{ inputs.postgres-username }}
           POSTGRES_PASSWORD: ${{ inputs.postgres-password }}
           POSTGRES_DB: ${{ inputs.postgres-db}}
         options: >-
-          --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
         ports:
-          # Maps tcp port 5432 on service container to the host
           - 5432:5432
     steps:
       - name: Checkout sources
