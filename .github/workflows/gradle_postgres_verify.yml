@@ -1,0 +1,73 @@
+name: Run gradle checks with a postgres instances
+on:
+  workflow_call:
+    inputs:
+      java-version:
+        type: string
+        required: false
+        default: '21'
+      java-options:
+        type: string
+        default: ''
+        required: false
+      postgres-tag:
+        type: string
+        required: true
+      postgres-password:
+        type: string
+        default: 'dev'
+        required: false
+      postgres-username:
+        type: string
+        default: 'root'
+        required: true
+      postgres-db:
+        type: string
+        default: 'postgres'
+        required: false
+      gradle-command:
+        type: string
+        default: './gradlew check'
+        required: false
+permissions:
+  contents: read
+jobs:
+  gradle-postgres-verify:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:${{ inputs.postgres-tag }}
+        env:
+          POSTGRES_USER: ${{ inputs.postgres-username }}
+          POSTGRES_PASSWORD: ${{ inputs.postgres-password }}
+          POSTGRES_DB: ${{ inputs.postgres-db}}
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v4
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '${{ inputs.java-version }}'
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+      - name: Run checks with gradle
+        shell: bash
+        run: |
+          export JAVA_OPTS="${{ inputs.java-options }}"
+          ${{ inputs.gradle-command }}
+      - name: Upload the artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: upload test results
+          path: |
+            build/test-results
+            build/reports/tests
