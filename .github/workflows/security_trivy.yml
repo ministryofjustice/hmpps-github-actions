@@ -13,6 +13,21 @@ on:
         required: false
         default: ''
         type: string
+      ignore_unfixed:
+        description: 'Asserts the Trivy scan to ignore vulnerabilities that have no current fix'
+        required: false
+        default: true
+        type: boolean
+      severity:
+        description: 'Customisable severity levels'
+        required: false
+        default: 'HIGH,CRITICAL'
+        type: string
+      limit_severities_for_sarif:
+        description: 'only includes severities as defined in the sarif file'
+        required: false
+        default: true
+        type: boolean
     secrets:
       HMPPS_SRE_SLACK_BOT_TOKEN:
         description: 'Slack bot token'
@@ -42,14 +57,14 @@ jobs:
       uses: aquasecurity/trivy-action@915b19bbe73b92a6cf82a1bc12b087c9a19a5fe2 # v0.28.0
       with:
         image-ref: "${{ env.repo }}/${{ inputs.subproject == '' && github.event.repository.name || inputs.subproject}}:latest"
-        severity: 'HIGH,CRITICAL'
-        ignore-unfixed: true
+        severity: ${{ inputs.severity }}
+        ignore-unfixed: ${{ inputs.ignore_unfixed }}
         skip-dirs: '/usr/local/lib/node_modules/npm'
         skip-files: /app/agent.jar
         format: 'sarif'
         output: 'trivy-results.sarif'
         exit-code: 1
-        limit-severities-for-sarif: true
+        limit-severities-for-sarif: ${{ inputs.limit_severities_for_sarif }}
       env:
         TRIVY_DB_REPOSITORY: public.ecr.aws/aquasecurity/trivy-db:2,ghcr.io/aquasecurity/trivy-db:2
         TRIVY_JAVA_DB_REPOSITORY: public.ecr.aws/aquasecurity/trivy-java-db:1,ghcr.io/aquasecurity/trivy-java-db:1
