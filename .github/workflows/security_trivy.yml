@@ -13,6 +13,11 @@ on:
         required: false
         default: ''
         type: string
+      ignore_unfixed:
+        description: 'Asserts the Trivy scan to ignore vulnerabilities that have no current fix'
+        required: false
+        default: true
+        type: boolean
     secrets:
       HMPPS_SRE_SLACK_BOT_TOKEN:
         description: 'Slack bot token'
@@ -43,7 +48,7 @@ jobs:
       with:
         image-ref: "${{ env.repo }}/${{ inputs.subproject == '' && github.event.repository.name || inputs.subproject}}:latest"
         severity: 'HIGH,CRITICAL'
-        ignore-unfixed: false
+        ignore-unfixed: ${{ inputs.ignore_unfixed }}
         skip-dirs: '/usr/local/lib/node_modules/npm'
         skip-files: /app/agent.jar
         format: 'sarif'
