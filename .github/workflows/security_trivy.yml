@@ -23,7 +23,7 @@ on:
         required: false
         default: 'HIGH,CRITICAL'
         type: string
-      limit-severities-for-sarif:
+      limit_severities_for_sarif:
         description: 'only includes severities as defined in the sarif file'
         required: false
         default: true
@@ -64,7 +64,7 @@ jobs:
         format: 'sarif'
         output: 'trivy-results.sarif'
         exit-code: 1
-        limit-severities-for-sarif: ${{ inputs.limit-severities-for-sarif }}
+        limit-severities-for-sarif: ${{ inputs.limit_severities_for_sarif }}
       env:
         TRIVY_DB_REPOSITORY: public.ecr.aws/aquasecurity/trivy-db:2,ghcr.io/aquasecurity/trivy-db:2
         TRIVY_JAVA_DB_REPOSITORY: public.ecr.aws/aquasecurity/trivy-java-db:1,ghcr.io/aquasecurity/trivy-java-db:1
