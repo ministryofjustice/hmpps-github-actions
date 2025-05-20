@@ -43,7 +43,7 @@ jobs:
       with:
         image-ref: "${{ env.repo }}/${{ inputs.subproject == '' && github.event.repository.name || inputs.subproject}}:latest"
         severity: 'HIGH,CRITICAL'
-        ignore-unfixed: true
+        ignore-unfixed: false
         skip-dirs: '/usr/local/lib/node_modules/npm'
         skip-files: /app/agent.jar
         format: 'sarif'
