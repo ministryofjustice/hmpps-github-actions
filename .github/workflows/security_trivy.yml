@@ -16,7 +16,7 @@ on:
       ignore_unfixed:
         description: 'Asserts the Trivy scan to ignore vulnerabilities that have no current fix'
         required: false
-        default: true
+        default: false
         type: boolean
       severity:
         description: 'Customisable severity levels'
