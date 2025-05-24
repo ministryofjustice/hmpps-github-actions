@@ -206,11 +206,11 @@ If the workfow fails, Github sends a slack message and an email to notify users.
 
 For kotlin projects you can run:
 ```bash
-../hmpps-github-actions/migrate-kotlin-security-jobs.bash
+../hmpps-github-actions/recreate-kotlin-security-jobs.bash
 ```
 from the github repository.  For typescript projects there is also:
 ```bash
-../hmpps-github-actions/migrate-typescript-security-jobs.bash
+../hmpps-github-actions/recreate-typescript-security-jobs.bash
 ```
 see the scripts for more information.
 
