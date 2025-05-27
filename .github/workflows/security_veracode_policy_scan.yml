@@ -16,6 +16,11 @@ on:
         type: string
         default: "hmpps-tech"
         description: "Comma-separated list of team names associated with the specified application.  Validates against the names of existing teams for this account."
+      veracode_package_artifact_name:
+        required: false
+        type: string
+        default: ''
+        description: "The name of the artifact to download, containing a source.zip packaged application. Optional."
     secrets:
       HMPPS_SRE_SLACK_BOT_TOKEN:
         description: Slack bot token
@@ -76,9 +81,15 @@ jobs:
         java-version: '21'
         distribution: 'temurin'
     - name: prepare assets
+      if: inputs.veracode_package_artifact_name == ''
       uses: ministryofjustice/hmpps-github-actions/.github/actions/security_veracode_prepare_artifacts@v2 # WORKFLOW_VERSION
       with:
         docker_image_app_dir: ${{ inputs.docker_image_app_dir }}
+    - name: download assets artifact
+      if: inputs.veracode_package_artifact_name != ''
+      uses: actions/download-artifact@v4
+      with:
+        name: ${{ inputs.veracode_package_artifact_name }}
     - name: "Download/Extract veracode agent"
       run: wget https://repo1.maven.org/maven2/com/veracode/vosp/api/wrappers/vosp-api-wrappers-java/22.9.10.3/vosp-api-wrappers-java-22.9.10.3.jar -O VeracodeJavaAPI.jar
     - name: "Upload to Veracode"
@@ -127,4 +138,3 @@ jobs:
         channel_id: ${{ inputs.channel_id }}
         input_file: output.txt
 
-  
