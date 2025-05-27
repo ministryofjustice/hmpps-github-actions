@@ -1,4 +1,4 @@
-name: Security OWASP dependency check
+name: Security CodeQL actions scan
 
 on:
   workflow_dispatch:
@@ -6,13 +6,13 @@ on:
     - cron: "30 5 * * MON-FRI" # Every weekday at 05:30 UTC
 
 jobs:
-  security-kotlin-owasp-check:
+  security-codeql-actions-check:
     permissions:
       contents: read
       actions: read
       security-events: write
-    name: Kotlin security OWASP dependency check
-    uses: ministryofjustice/hmpps-github-actions/.github/workflows/security_owasp.yml@v2 # WORKFLOW_VERSION
+    name: Project security CodeQL actions scan
+    uses: ministryofjustice/hmpps-github-actions/.github/workflows/security_codeql_actions.yml@v2 # WORKFLOW_VERSION
     with:
       channel_id: ${{ vars.SECURITY_ALERTS_SLACK_CHANNEL_ID || 'NO_SLACK' }}
     secrets: inherit
