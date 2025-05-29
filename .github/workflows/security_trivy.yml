@@ -1,4 +1,4 @@
-name: Security trivy dependency check
+name: Security Trivy dependency check
 
 on:
   workflow_call:
