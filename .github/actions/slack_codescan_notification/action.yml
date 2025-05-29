@@ -64,13 +64,16 @@ runs:
                   {
                     "type": "mrkdwn",
                     "text": "*Project:*\n${{ inputs.subproject == '' && github.event.repository.name || inputs.subproject }}"
-                  },
-                  {
-                    "type": "mrkdwn",
-                    "text": "*Summary*\n`${{ inputs.summary }} }}"
                   }
                 ]
-              }
+              },
+              {
+                "type": "section",
+                "text": {
+                  "type": "mrkdwn",
+                  "text": "*Summary*\n```${{ inputs.summary }}\n```"
+                }
+              },
             ]
           }
       env:
