@@ -73,7 +73,7 @@ runs:
                   "type": "mrkdwn",
                   "text": "*Summary*\n```${{ inputs.summary }}\n```"
                 }
-              },
+              }
             ]
           }
       env:
