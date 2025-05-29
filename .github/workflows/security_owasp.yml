@@ -59,8 +59,11 @@ jobs:
       id: owasp-summary
       run: |
         formatted_output=$(jq -r '.runs[0].tool.driver.rules[] | [.id, .shortDescription.text, .properties.cvssv2_score, .properties.cvssv2_severity] | @tsv' ${{ inputs.subproject == '' && '.' || inputs.subproject }}/build/reports/dependency-check-report.sarif \
-        | awk -F'\t' '{print $1" - "$NF" ("$(NF-1)") - "substr($2,index($2,":")+1)}'sed 's/\\n/|/g' \
+        | awk -F'\t' '{print $1" - "$NF" ("$(NF-1)") - "substr($2,index($2,":")+1)}' \
         | awk '{printf "%s\\n", $0}')
+        echo "Vulnerability Summary"
+        echo "====================="
+        echo "${formatted_output}" | sed 's/\\n/\n/g'
         echo "summary=$formatted_output" >> $GITHUB_ENV
     - name: Gradle OWASP slack notification
       uses: ministryofjustice/hmpps-github-actions/.github/actions/slack_codescan_notification@feat/HEAT-512_results_in_slack # WORKFLOW_VERSION

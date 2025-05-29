@@ -93,11 +93,14 @@ jobs:
         | sed 's/\\n/|/g' \
         | awk -F\| '{gsub("Package: ","("); gsub("Severity: ",""); print $1") - "$4}' \
         | awk '{printf "%s\\n", $0}')
+        echo "Vulnerability Summary"
+        echo "====================="
+        echo "${formatted_output}" | sed 's/\\n/\n/g'
         echo "summary=$formatted_output" >> $GITHUB_ENV
     - name: Trivy slack notification
       uses: ministryofjustice/hmpps-github-actions/.github/actions/slack_codescan_notification@feat/HEAT-512_results_in_slack # WORKFLOW_VERSION
       # uses: ministryofjustice/hmpps-github-actions/.github/actions/slack_codescan_notification@v2 # WORKFLOW_VERSION
-      if: (failure() || steps.trivy-analyse.outcome == 'failure') && inputs.channel_id != 'NO_SLACK'
+      # if: (failure() || steps.trivy-analyse.outcome == 'failure') && inputs.channel_id != 'NO_SLACK'
       with:
         title: "Trivy"
         warningOnly: ${{ steps.trivy-upload.outcome == 'success' }}
