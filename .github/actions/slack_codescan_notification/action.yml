@@ -17,6 +17,10 @@ inputs:
     description: 'For gradle multi module projects, leave blank for single module projects'
     required: false
     default: ''
+  summary:
+    description: 'A summary of vulnerabilities'
+    required: false
+    default: ''
 runs:
   using: "composite"
   steps:
@@ -60,6 +64,10 @@ runs:
                   {
                     "type": "mrkdwn",
                     "text": "*Project:*\n${{ inputs.subproject == '' && github.event.repository.name || inputs.subproject }}"
+                  },                  },
+                  {
+                    "type": "mrkdwn",
+                    "text": "*Summary*\n`${{ inputs.summary }} }}"
                   }
                 ]
               }

@@ -41,19 +41,30 @@ jobs:
       id: owasp-analyse
       run: ./gradlew ${{ inputs.subproject }}:dependencyCheckAnalyze --info
       continue-on-error: true
-    - uses: github/codeql-action/upload-sarif@v3
+    # Upload Sarif file: this will attempt to upload the sarif file for private/internal repositories as well
+    - name: OWASP upload sarif
       id: owasp-upload-sarif
-      if: ${{ github.event.repository.visibility != 'private' && github.event.repository.visibility != 'internal' }}
+      uses: github/codeql-action/upload-sarif@v3
       with:
         sarif_file: ${{ inputs.subproject == '' && '.' || inputs.subproject }}/build/reports/dependency-check-report.sarif
         category: gradle-owasp-dependency-check
+      # don't stop the job even if Github Advanced Security isn't enabled
+      continue-on-error: true
     - uses: actions/upload-artifact@v4
       id: owasp-upload-artifact
       with:
         name: gradle-owasp-dependency-check-${{ inputs.subproject == '' && github.event.repository.name || inputs.subproject }}
         path: ${{ inputs.subproject == '' && '.' || inputs.subproject }}/build/reports/dependency-check-report.html
+    - name: Prepare OWASP summary
+      id: owasp-summary
+      run: |
+        formatted_output=$(jq -r '.runs[0].tool.driver.rules[] | [.id, .shortDescription.text, .properties.cvssv2_score, .properties.cvssv2_severity] | @tsv' ${{ inputs.subproject == '' && '.' || inputs.subproject }}/build/reports/dependency-check-report.sarif \
+        | awk -F'\t' '{print $1" - "$NF" ("$(NF-1)") - "substr($2,index($2,":")+1)}'sed 's/\\n/|/g' \
+        | awk '{printf "%s\\n", $0}')
+        echo "summary=$formatted_output" >> $GITHUB_ENV
     - name: Gradle OWASP slack notification
-      uses: ministryofjustice/hmpps-github-actions/.github/actions/slack_codescan_notification@v2 # WORKFLOW_VERSION
+      uses: ministryofjustice/hmpps-github-actions/.github/actions/slack_codescan_notification@feat/HEAT-512_results_in_slack # WORKFLOW_VERSION
+      # uses: ministryofjustice/hmpps-github-actions/.github/actions/slack_codescan_notification@v2 # WORKFLOW_VERSION
       if: (failure() || steps.owasp-analyse.outcome == 'failure') && inputs.channel_id != 'NO_SLACK'
       with:
         title: "Gradle OWASP"
@@ -61,3 +72,4 @@ jobs:
         channel_id: ${{ inputs.channel_id}}
         SLACK_BOT_TOKEN: ${{ secrets.HMPPS_SRE_SLACK_BOT_TOKEN }}
         subproject: ${{ inputs.subproject }}
+        summary: ${{ env.summary}}
