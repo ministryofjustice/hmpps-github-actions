@@ -96,7 +96,8 @@ jobs:
         echo "Vulnerability Summary"
         echo "====================="
         echo "${formatted_output}" | sed 's/\\n/\n/g'
-        echo "summary=$formatted_output | awk '{s=s $0} END {if (length(s) >= 3000) print substr(s, 1, 2997) "..."; else print s}'" >> $GITHUB_ENV
+        slack_summary="$(echo "${formatted_output}" | formatted_output | awk '{s=s $0} END {if (length(s) >= 3000) print substr(s, 1, 2997) "..."; else print s}')"
+        echo "summary=${slack_summary}" >> $GITHUB_ENV
     - name: Trivy slack notification
       uses: ministryofjustice/hmpps-github-actions/.github/actions/slack_codescan_notification@feat/HEAT-512_results_in_slack # WORKFLOW_VERSION
       # uses: ministryofjustice/hmpps-github-actions/.github/actions/slack_codescan_notification@v2 # WORKFLOW_VERSION
