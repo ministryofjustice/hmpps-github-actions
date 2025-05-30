@@ -92,7 +92,7 @@ jobs:
         formatted_output=$(jq -r '.runs[0].results[] | [.ruleId, .message.text] | @tsv' trivy-results.sarif \
         | sed 's/\t/\\t/g' \
         | awk -F\| '{gsub("Package: ","("); gsub("Severity: ",""); print $1") - "$4}' \
-        | awk '{printf "%s\\n", $0}')
+        | awk '{printf "%s\\n", $0}' | awk '{s=s $0} END {if (length(s) >= 3000) print substr(s, 1, 2997) "..."; else print s}')
         echo "Vulnerability Summary"
         echo "====================="
         echo "${formatted_output}" | sed 's/\\n/\n/g'

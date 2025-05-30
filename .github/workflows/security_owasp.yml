@@ -60,7 +60,7 @@ jobs:
       run: |
         formatted_output=$(jq -r '.runs[0].tool.driver.rules[] | [.id, .shortDescription.text, .properties.cvssv2_score, .properties.cvssv2_severity] | @tsv' ${{ inputs.subproject == '' && '.' || inputs.subproject }}/build/reports/dependency-check-report.sarif \
         | awk -F'\t' '{print $1" - "$NF" ("$(NF-1)") - "substr($2,index($2,":")+1)}' \
-        | awk '{printf "%s\\n", $0}')
+        | awk '{printf "%s\\n", $0}' | awk '{s=s $0} END {if (length(s) >= 3000) print substr(s, 1, 2997) "..."; else print s}') 
         echo "Vulnerability Summary"
         echo "====================="
         echo "${formatted_output}" | sed 's/\\n/\n/g'
