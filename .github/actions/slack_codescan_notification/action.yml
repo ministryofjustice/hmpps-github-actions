@@ -17,10 +17,17 @@ inputs:
     description: 'For gradle multi module projects, leave blank for single module projects'
     required: false
     default: ''
+  summary:
+    description: 'A summary of vulnerabilities'
+    required: false
+    default: '' 
 runs:
   using: "composite"
   steps:
-    - uses: slackapi/slack-github-action@37ebaef184d7626c5f204ab8d3baff4262dd30f0 # v1.27.0
+    - uses: slackapi/slack-github-action@37ebaef184d7626c5f204ab8d3baff4262dd30f0 # v1.27.0  
+      env:
+        summary_block: "${{ inputs.summary != '' && format(',{{\"type\": \"section\",\"text\":{{\"type\":\"mrkdwn\",\"text\":\"*Summary*```\\n{0}\\n```\"}}}}', inputs.summary) || '' }}"
+        SLACK_BOT_TOKEN: ${{ inputs.SLACK_BOT_TOKEN }}
       with:
         channel-id: ${{ inputs.channel_id}}
         payload: |
@@ -62,8 +69,6 @@ runs:
                     "text": "*Project:*\n${{ inputs.subproject == '' && github.event.repository.name || inputs.subproject }}"
                   }
                 ]
-              }
+              }${{ env.summary_block }}
             ]
           }
-      env:
-        SLACK_BOT_TOKEN: ${{ inputs.SLACK_BOT_TOKEN }}

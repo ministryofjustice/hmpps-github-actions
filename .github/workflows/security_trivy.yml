@@ -1,4 +1,4 @@
-name: Security trivy dependency check
+name: Security Trivy dependency check
 
 on:
   workflow_call:
@@ -25,6 +25,11 @@ on:
         type: string
       limit_severities_for_sarif:
         description: 'only includes severities as defined in the sarif file'
+        required: false
+        default: true
+        type: boolean
+      slack_include_summary:
+        description: 'boolean to include a summary of vulnerabilities in the Slack message'
         required: false
         default: true
         type: boolean
@@ -77,13 +82,27 @@ jobs:
         name: trivy-check-${{ inputs.subproject == '' && github.event.repository.name || inputs.subproject }}
         path: trivy-results.sarif
       continue-on-error: true
+    # Upload Sarif file: this will attempt to upload the sarif file for private/internal repositories as well
     - name: Trivy upload sarif
       id: trivy-upload
-      if: ${{ github.event.repository.visibility != 'private' && github.event.repository.visibility != 'internal' }}
       uses: github/codeql-action/upload-sarif@v3
       with:
         sarif_file: 'trivy-results.sarif'
         category: trivy-dependency-check
+      # don't stop the job even if Github Advanced Security isn't enabled
+      continue-on-error: true
+    - name: Prepare Trivy summary
+      id: trivy-summary
+      run: |
+        formatted_output=$(jq -r '.runs[0].results[] | [.ruleId, .message.text] | @tsv' trivy-results.sarif \
+        | sed -e 's/\t/\\t/g' -e 's/\\n/|/g' \
+        | awk -F\| '{gsub("Package: ","("); gsub("Severity: ",""); print $1") - "$4}' \
+        | awk '{printf "%s\\n", $0}')
+        echo "Vulnerability Summary"
+        echo "====================="
+        echo "${formatted_output}" | sed 's/\\n/\n/g'
+        slack_summary="$(echo "${formatted_output}" |  awk '{s=s $0} END {if (length(s) >= 3000) print substr(s, 1, 2997) "..."; else print s}')"
+        echo "summary=${slack_summary}" >> $GITHUB_ENV
     - name: Trivy slack notification
       uses: ministryofjustice/hmpps-github-actions/.github/actions/slack_codescan_notification@v2 # WORKFLOW_VERSION
       if: (failure() || steps.trivy-analyse.outcome == 'failure') && inputs.channel_id != 'NO_SLACK'
@@ -93,3 +112,4 @@ jobs:
         channel_id: ${{ inputs.channel_id}}
         SLACK_BOT_TOKEN: ${{ secrets.HMPPS_SRE_SLACK_BOT_TOKEN }}
         subproject: ${{ inputs.subproject }}
+        summary: ${{ inputs.slack_include_summary && env.summary || '' }}

@@ -164,13 +164,16 @@ jobs:
         if __name__ == '__main__':
           main()
       shell: python {0} npm-security-check-reports.json
-    - name: sarif upload
+    # Upload Sarif file: this will attempt to upload the sarif file for private/internal repositories as well
+    - name: npm upload sarif
       uses: github/codeql-action/upload-sarif@v3
       id: npm-upload-sarif
       if: ${{ github.event.repository.visibility != 'private' && github.event.repository.visibility != 'internal' }}
       with:
         sarif_file: 'npm-security-check-reports.sarif'
         category: npm-dependency-check
+      # don't stop the job even if Github Advanced Security isn't enabled
+      continue-on-error: true
     - name: Audit for vulnerabilities - better
       id: npm-better
       if: steps.npm.outcome == 'failure'
