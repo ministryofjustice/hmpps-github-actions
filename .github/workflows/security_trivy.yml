@@ -31,7 +31,7 @@ on:
       slack_include_summary:
         description: 'boolean to include a summary of vulnerabilities in the Slack message'
         required: false
-        default: false
+        default: true
         type: boolean
     secrets:
       HMPPS_SRE_SLACK_BOT_TOKEN:
@@ -95,7 +95,7 @@ jobs:
       id: trivy-summary
       run: |
         formatted_output=$(jq -r '.runs[0].results[] | [.ruleId, .message.text] | @tsv' trivy-results.sarif \
-        | sed 's/\t/\\t/g' \
+        | sed -e 's/\t/\\t/g' -e 's/\\n/|/g' \
         | awk -F\| '{gsub("Package: ","("); gsub("Severity: ",""); print $1") - "$4}' \
         | awk '{printf "%s\\n", $0}')
         echo "Vulnerability Summary"
