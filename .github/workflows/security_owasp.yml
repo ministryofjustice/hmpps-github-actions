@@ -13,6 +13,11 @@ on:
         required: false
         default: ''
         type: string
+      slack_include_summary:
+        description: 'boolean to include a summary of vulnerabilities in the Slack message'
+        required: false
+        default: false
+        type: boolean
     secrets:
       HMPPS_SRE_SLACK_BOT_TOKEN:
         description: 'Slack bot token'
@@ -76,4 +81,4 @@ jobs:
         channel_id: ${{ inputs.channel_id}}
         SLACK_BOT_TOKEN: ${{ secrets.HMPPS_SRE_SLACK_BOT_TOKEN }}
         subproject: ${{ inputs.subproject }}
-        summary: ${{ env.summary}}
+        summary: ${{ inputs.slack_include_summary && env.summary || '' }}
