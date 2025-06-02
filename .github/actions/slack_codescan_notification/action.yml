@@ -26,7 +26,7 @@ runs:
   steps:
     - uses: slackapi/slack-github-action@37ebaef184d7626c5f204ab8d3baff4262dd30f0 # v1.27.0  
       env:
-        summary_block: "${{ inputs.summary != '' && format(',{{\"type\": \"section\",\"fields\":[{{\"type\":\"mrkdwn\",\"text\":\"*Summary*```\n{0}\n```\"}}]}}', inputs.summary) || '' }}"
+        summary_block: "${{ inputs.summary != '' && format(',{{\"type\": \"section\",\"fields\":[{{\"type\":\"mrkdwn\",\"text\":\"*Summary*```\\n{0}\\n```\"}}]}}', inputs.summary) || '' }}"
         SLACK_BOT_TOKEN: ${{ inputs.SLACK_BOT_TOKEN }}
       with:
         channel-id: ${{ inputs.channel_id}}
