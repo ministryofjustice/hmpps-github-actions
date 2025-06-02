@@ -16,7 +16,7 @@ on:
       slack_include_summary:
         description: 'boolean to include a summary of vulnerabilities in the Slack message'
         required: false
-        default: false
+        default: true
         type: boolean
     secrets:
       HMPPS_SRE_SLACK_BOT_TOKEN:
