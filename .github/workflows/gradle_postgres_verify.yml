@@ -33,6 +33,10 @@ on:
         type: string
         default: 'test results'
         required: false
+      build-dir:
+        type: string
+        default: 'build'
+        required: false
 permissions:
   contents: read
 jobs:
@@ -73,5 +77,5 @@ jobs:
         with:
           name: ${{ inputs.artifact-name }}
           path: |
-            build/test-results
-            build/reports/tests
+            ${{ inputs.build-dir }}/test-results
+            ${{ inputs.build-dir }}/reports/tests
