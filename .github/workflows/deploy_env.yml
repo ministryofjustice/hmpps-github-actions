@@ -3,17 +3,16 @@ name: Build & push docker image and deploy to environment
 on:
   workflow_call:
     inputs:
-      environment: 
+      environment:
         description: Environment
-        required: true 
+        required: true
         type: string
       app_version:
         description: App version
-        required: true 
+        required: true
         type: string
       k8s_deployment_name:
         description: Kubernetes deployment name
-        default: "PROJECT_NAME"
         required: false
         type: string
       changelog_git_paths:
@@ -66,7 +65,7 @@ jobs:
         id: install
         with:
           version: latest
-     
+
       - name: Set Slack Channel ID
         id: set-slack-channel-id
         run: |
@@ -86,7 +85,7 @@ jobs:
           cluster: ${{ secrets.KUBE_CLUSTER }}
           namespace: ${{ secrets.KUBE_NAMESPACE }}
           token: ${{ secrets.KUBE_TOKEN }}
-          k8s_deployment_name: ${{ inputs.k8s_deployment_name }}
+          k8s_deployment_name: ${{ inputs.k8s_deployment_name || github.event.repository.name }}
           changelog_git_paths: ${{ inputs.changelog_git_paths }}
           show_changelog: ${{ inputs.show_changelog }}
           helm_additional_args: ${{ inputs.helm_additional_args }}
