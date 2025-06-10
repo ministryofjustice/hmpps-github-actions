@@ -2,8 +2,8 @@ name: Build and push docker image to registry
 description: 'action to build and push docker image'
 
 inputs:
-  repository_name: 
-    description: Repository name
+  image_name:
+    description: Image name
     required: true
   docker_registry:
     description: Docker registry
@@ -17,6 +17,9 @@ inputs:
   additional_docker_build_args:
     description: Additional docker build args
     required: false
+  file:
+    description: "Path to the Dockerfile"
+    required: false
   push:
     description: Push docker image to registry flag
     required: true
@@ -24,7 +27,7 @@ inputs:
     description: Load docker image into local docker
     required: false
     default: false
-  app_version: 
+  app_version:
     description: App version
     required: true
   tag_latest:
@@ -39,7 +42,7 @@ inputs:
     description: Number of days to keep the image in artifacts
     required: false
   HMPPS_QUAYIO_USER:
-    description: Docker registry username 
+    description: Docker registry username
     required: false
   HMPPS_QUAYIO_TOKEN:
     description: Docker registry token
@@ -58,7 +61,7 @@ runs:
         registry: ${{ inputs.docker_registry }}
         username: ${{ inputs.HMPPS_QUAYIO_USER }}
         password: ${{ inputs.HMPPS_QUAYIO_TOKEN }}
-        
+
     - name: Docker login if Docker registry is ghcr.io
       if: ${{ inputs.docker_registry  == 'ghcr.io' }}
       uses: docker/login-action@v3
@@ -83,14 +86,14 @@ runs:
       id: set_tags
       shell: bash
       run: |
-        TAGS="${{ inputs.docker_registry }}/${{ inputs.registry_org }}/${{ github.event.repository.name }}:${{ inputs.app_version }}"
+        TAGS="${{ inputs.docker_registry }}/${{ inputs.registry_org }}/${{ inputs.image_name }}:${{ inputs.app_version }}"
         
         if [[ "${{ inputs.tag_latest }}" == "true" ]]; then
-          TAGS="${TAGS},${{ inputs.docker_registry }}/${{ inputs.registry_org }}/${{ github.event.repository.name }}:latest"
+          TAGS="${TAGS},${{ inputs.docker_registry }}/${{ inputs.registry_org }}/${{ inputs.image_name }}:latest"
         fi
         
         if [[ -n "${{ inputs.additional_docker_tag }}" ]]; then
-          TAGS="${TAGS},${{ inputs.docker_registry }}/${{ inputs.registry_org }}/${{ github.event.repository.name }}:${{ inputs.additional_docker_tag }}"
+          TAGS="${TAGS},${{ inputs.docker_registry }}/${{ inputs.registry_org }}/${{ inputs.image_name }}:${{ inputs.additional_docker_tag }}"
         fi
         
         echo "tags=$TAGS" >> "$GITHUB_OUTPUT"
@@ -104,6 +107,7 @@ runs:
         push: ${{ inputs.push }}
         load: ${{ inputs.load }}
         provenance: false
+        file: ${{ inputs.file }}
         build-args: |
           "BUILD_NUMBER=${{ inputs.app_version }}"
           "GIT_REF=${{ github.sha }}"
@@ -115,7 +119,7 @@ runs:
       if: ${{ inputs.upload_image_artifact ==  'true' }}
       id: export_image
       shell: bash
-      run: docker save ${{ inputs.docker_registry }}/${{ inputs.registry_org }}/${{ github.event.repository.name }}:${{ inputs.app_version }} -o ${{ runner.temp }}/build_image.tar
+      run: docker save ${{ inputs.docker_registry }}/${{ inputs.registry_org }}/${{ inputs.image_name }}:${{ inputs.app_version }} -o ${{ runner.temp }}/build_image.tar
 
     - name: Upload image to artifacts
       if: ${{ inputs.upload_image_artifact ==  'true' }}
