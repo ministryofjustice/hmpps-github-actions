@@ -31,9 +31,9 @@ on:
         type: number
         default: 7
       additional_docker_build_args:
-          description: Additional docker build arguments
-          required: false
-          type: string
+        description: Additional docker build arguments
+        required: false
+        type: string
       push:
         description: Push docker image to registry flag
         required: true
@@ -48,12 +48,19 @@ on:
         required: true
         type: boolean
         default: true
-
+      image_name:
+        description: Name of the image
+        required: false
+        type: string
+      file:
+        description: "Path to the Dockerfile"
+        required: false
+        type: string
     secrets:
       HMPPS_QUAYIO_USER:
-        required: false 
+        required: false
       HMPPS_QUAYIO_TOKEN:
-        required: false 
+        required: false
 
     outputs:
       app_version:
@@ -68,7 +75,7 @@ jobs:
   docker_build:
     name: Build docker image
     runs-on: ubuntu-latest
-    outputs: 
+    outputs:
       version: ${{ steps.app_version.outputs.version }}
     steps:
       - id: app_version
@@ -88,6 +95,7 @@ jobs:
           load: ${{ inputs.load }}
           app_version: ${{ steps.app_version.outputs.version }}
           additional_docker_build_args: ${{ inputs.additional_docker_build_args }}
+          file: ${{ inputs.file }}
 
       - uses: ministryofjustice/hmpps-github-actions/.github/actions/build-test-and-deploy/build_docker@v2 # WORKFLOW_VERSION
         if: ${{ ( inputs.docker_registry  == 'quay.io' ) && ( ! inputs.docker_multiplatform )}}
