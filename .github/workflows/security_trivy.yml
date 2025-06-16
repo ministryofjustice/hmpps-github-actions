@@ -38,7 +38,7 @@ on:
         required: false
         default: 'image' # As per the Trivy inputs list https://github.com/aquasecurity/trivy-action?tab=readme-ov-file#inputs
         type: string      
-      scannners:
+      scanners:
         description: 'A comma-separated list of scanners to use to scan'
         required: false
         default: 'vuln,secret' # As per the Trivy inputs list https://github.com/aquasecurity/trivy-action?tab=readme-ov-file#inputs
