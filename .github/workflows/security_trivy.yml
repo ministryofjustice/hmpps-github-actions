@@ -43,6 +43,11 @@ on:
         required: false
         default: 'misconfig,vuln,secret'
         type: string
+      location:
+        description: 'A location for IaC scans to take place'
+        required: false
+        default: '.'
+        type: string        
     secrets:
       HMPPS_SRE_SLACK_BOT_TOKEN:
         description: 'Slack bot token'
@@ -90,11 +95,12 @@ jobs:
     - name: Trivy Image Vulnerability Scanner - filesystem
       id: trivy-analyse-fs
       uses: aquasecurity/trivy-action@915b19bbe73b92a6cf82a1bc12b087c9a19a5fe2 # v0.28.0
-      if: inputs.scan_type == 'config'
+      if: inputs.scan_type == 'fs'
       with:
         severity: ${{ inputs.severity }}
         scan-type: ${{ inputs.scan_type }}
         scanners: ${{ inputs.scanners }}
+        image-ref: ${{ inputs.location}}
         ignore-unfixed: ${{ inputs.ignore_unfixed }}
         format: 'sarif'
         output: 'trivy-results.sarif'
