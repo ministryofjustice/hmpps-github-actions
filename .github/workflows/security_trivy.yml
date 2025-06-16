@@ -33,6 +33,16 @@ on:
         required: false
         default: true
         type: boolean
+      scan_type:
+        description: 'A scan type to use - either image (default) or fs'
+        required: false
+        default: 'image' # As per the Trivy inputs list https://github.com/aquasecurity/trivy-action?tab=readme-ov-file#inputs
+        type: string
+      scannners:
+        description: 'A comma-separated list of scanners to use to scan'
+        required: false
+        default: 'vuln,secret' # As per the Trivy inputs list https://github.com/aquasecurity/trivy-action?tab=readme-ov-file#inputs
+        type: string
     secrets:
       HMPPS_SRE_SLACK_BOT_TOKEN:
         description: 'Slack bot token'
@@ -63,6 +73,8 @@ jobs:
       with:
         image-ref: "${{ env.repo }}/${{ inputs.subproject == '' && github.event.repository.name || inputs.subproject}}:latest"
         severity: ${{ inputs.severity }}
+        scan-type: ${{ inputs.scan_type }}
+        scanners: ${{ inputs.scanners }}
         ignore-unfixed: ${{ inputs.ignore_unfixed }}
         skip-dirs: '/usr/local/lib/node_modules/npm'
         skip-files: /app/agent.jar
