@@ -67,7 +67,7 @@ jobs:
       run: |
         echo 'checking package repository for ${{ inputs.subproject == '' && github.event.repository.name || inputs.subproject}}:'
         grep -rh 'repository: ' --include="values.yaml" | grep ${{ inputs.subproject == '' && github.event.repository.name || inputs.subproject}} | head -n1 | awk -F'[:/ ]+' '{print "repo="$3"/"$4}' >> $GITHUB_ENV
-     # run this scan for images
+     # run this scan for images  (default)
     - name: Trivy Image Vulnerability Scanner - image
       id: trivy-analyse-image
       uses: aquasecurity/trivy-action@915b19bbe73b92a6cf82a1bc12b087c9a19a5fe2 # v0.28.0
@@ -90,7 +90,7 @@ jobs:
     - name: Trivy Image Vulnerability Scanner - filesystem
       id: trivy-analyse-fs
       uses: aquasecurity/trivy-action@915b19bbe73b92a6cf82a1bc12b087c9a19a5fe2 # v0.28.0
-      if: inputs.scan_type == 'fs'
+      if: inputs.scan_type == 'config'
       with:
         severity: ${{ inputs.severity }}
         scan-type: ${{ inputs.scan_type }}
