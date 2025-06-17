@@ -33,6 +33,21 @@ on:
         required: false
         default: true
         type: boolean
+      scan_type:
+        description: 'A scan type to use - either image (default) or fs'
+        required: false
+        default: 'image' # As per the Trivy inputs list https://github.com/aquasecurity/trivy-action?tab=readme-ov-file#inputs
+        type: string      
+      scanners:
+        description: 'A comma-separated list of scanners to use to scan - used for filesystem scans'
+        required: false
+        default: 'misconfig,vuln,secret'
+        type: string
+      location:
+        description: 'A location for IaC scans to take place'
+        required: false
+        default: '.'
+        type: string        
     secrets:
       HMPPS_SRE_SLACK_BOT_TOKEN:
         description: 'Slack bot token'
@@ -57,9 +72,11 @@ jobs:
       run: |
         echo 'checking package repository for ${{ inputs.subproject == '' && github.event.repository.name || inputs.subproject}}:'
         grep -rh 'repository: ' --include="values.yaml" | grep ${{ inputs.subproject == '' && github.event.repository.name || inputs.subproject}} | head -n1 | awk -F'[:/ ]+' '{print "repo="$3"/"$4}' >> $GITHUB_ENV
-    - name: Trivy Image Vulnerability Scanner
-      id: trivy-analyse
+     # run this scan for images  (default)
+    - name: Trivy Image Vulnerability Scanner - image
+      id: trivy-analyse-image
       uses: aquasecurity/trivy-action@915b19bbe73b92a6cf82a1bc12b087c9a19a5fe2 # v0.28.0
+      if: inputs.scan_type == 'image'
       with:
         image-ref: "${{ env.repo }}/${{ inputs.subproject == '' && github.event.repository.name || inputs.subproject}}:latest"
         severity: ${{ inputs.severity }}
@@ -74,7 +91,25 @@ jobs:
         TRIVY_DB_REPOSITORY: public.ecr.aws/aquasecurity/trivy-db:2,ghcr.io/aquasecurity/trivy-db:2
         TRIVY_JAVA_DB_REPOSITORY: public.ecr.aws/aquasecurity/trivy-java-db:1,ghcr.io/aquasecurity/trivy-java-db:1
       continue-on-error: true
-    # Upload the trivy results as an artifact in case the repo is private or internal
+     # run this scan for filesystem scans
+    - name: Trivy Image Vulnerability Scanner - filesystem
+      id: trivy-analyse-fs
+      uses: aquasecurity/trivy-action@915b19bbe73b92a6cf82a1bc12b087c9a19a5fe2 # v0.28.0
+      if: inputs.scan_type == 'fs'
+      with:
+        severity: ${{ inputs.severity }}
+        scan-type: ${{ inputs.scan_type }}
+        scanners: ${{ inputs.scanners }}
+        image-ref: ${{ inputs.location}}
+        ignore-unfixed: ${{ inputs.ignore_unfixed }}
+        format: 'sarif'
+        output: 'trivy-results.sarif'
+        exit-code: 1
+        limit-severities-for-sarif: ${{ inputs.limit_severities_for_sarif }}
+      env:
+        TRIVY_DB_REPOSITORY: public.ecr.aws/aquasecurity/trivy-db:2,ghcr.io/aquasecurity/trivy-db:2
+        TRIVY_JAVA_DB_REPOSITORY: public.ecr.aws/aquasecurity/trivy-java-db:1,ghcr.io/aquasecurity/trivy-java-db:1
+      continue-on-error: true    # Upload the trivy results as an artifact in case the repo is private or internal
     - name: upload trivy artifact
       uses: actions/upload-artifact@v4
       id: trivy-upload-artifact
