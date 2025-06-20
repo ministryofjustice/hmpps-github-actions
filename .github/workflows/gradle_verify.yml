@@ -59,4 +59,5 @@ jobs:
           name: Test Report
           path: 'test-results/**/*.xml'
           reporter: java-junit
+          fail-on-empty: false
           fail-on-error: false
