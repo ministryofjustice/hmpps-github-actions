@@ -16,7 +16,7 @@ on:
         required: false
       artifact-name:
         type: string
-        default: 'test results'
+        default: 'test-results'
         required: false
       build-dir:
         type: string
@@ -51,3 +51,12 @@ jobs:
           path: |
             ${{ inputs.build-dir }}/test-results
             ${{ inputs.build-dir }}/reports/tests
+      - name: publish test report
+        if: ${{ !cancelled() }}
+        uses: dorny/test-reporter@v2
+        with:
+          artifact: ${{ inputs.artifact-name }}
+          name: Test Report
+          path: 'test-results/**/*.xml'
+          reporter: java-junit
+          fail-on-error: false
