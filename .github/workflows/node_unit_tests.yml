@@ -50,7 +50,7 @@ jobs:
           name: npm_unit_test_artifacts
           path: test_results
       - name: publish test report
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && github.event.repository.visibility == 'public' }}
         uses: dorny/test-reporter@v2
         with:
           artifact: npm_unit_test_artifacts

@@ -62,7 +62,7 @@ jobs:
             test_results/
             ctrf/
       - name: publish test report
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && github.event.repository.visibility == 'public' }}
         uses: dorny/test-reporter@v2
         with:
           artifact: npm_integration_test_artifacts
