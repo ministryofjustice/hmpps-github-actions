@@ -105,7 +105,7 @@ jobs:
             ${{ inputs.build-dir }}/test-results
             ${{ inputs.build-dir }}/reports/tests
       - name: publish test report
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && github.event.repository.visibility == 'public' }}
         uses: dorny/test-reporter@v2
         with:
           artifact: ${{ inputs.artifact-name }}
