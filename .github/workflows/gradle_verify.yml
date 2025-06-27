@@ -44,7 +44,7 @@ jobs:
           export JAVA_OPTS="${{ inputs.java-options }}"
           ${{ inputs.gradle-command }}
       - name: Upload the artifacts
-        if: always()
+        if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
         with:
           name: ${{ inputs.artifact-name }}
@@ -61,3 +61,5 @@ jobs:
           reporter: java-junit
           fail-on-empty: false
           fail-on-error: false
+          list-suites: 'failed'
+          list-tests: 'failed'
