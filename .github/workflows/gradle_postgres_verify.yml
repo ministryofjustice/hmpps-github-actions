@@ -1,4 +1,4 @@
-name: Run gradle checks with a postgres instances
+name: Run gradle checks with a postgres instance
 on:
   workflow_call:
     inputs:
@@ -7,6 +7,7 @@ on:
         required: false
         default: '21'
       java-options:
+        description: Any JAVA_OPTS that need to be set.  Not normally required when using github actions
         type: string
         default: ''
         required: false
@@ -26,21 +27,30 @@ on:
         default: 'postgres'
         required: false
       gradle-command:
+        description: The gradle command to execute
         type: string
         default: './gradlew check'
         required: false
       artifact-name:
+        description: Unique name (across the pipeline) for the uploaded artifact
         type: string
         default: 'test-results'
         required: false
       build-dir:
+        description: Path to find the artifacts e.g. necessary for multi-project gradle builds.
         type: string
         default: 'build'
+        required: false
+      upload-test-artifacts:
+        description: Whether to upload test artifacts and generate test report
+        type: boolean
+        default: true
         required: false
 permissions:
   contents: read
 jobs:
   gradle-postgres-verify:
+    name: Verify the gradle app with postgres running
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -71,8 +81,8 @@ jobs:
         run: |
           export JAVA_OPTS="${{ inputs.java-options }}"
           ${{ inputs.gradle-command }}
-      - name: Upload the artifacts
-        if: ${{ !cancelled() }}
+      - name: Upload the test artifacts
+        if: ${{ inputs.upload-test-artifacts && !cancelled() }}
         uses: actions/upload-artifact@v4
         with:
           name: ${{ inputs.artifact-name }}
@@ -80,7 +90,7 @@ jobs:
             ${{ inputs.build-dir }}/test-results
             ${{ inputs.build-dir }}/reports/tests
       - name: publish test report
-        if: ${{ !cancelled() && github.event.repository.visibility == 'public' }}
+        if: ${{ inputs.upload-test-artifacts && !cancelled() && github.event.repository.visibility == 'public' }}
         uses: dorny/test-reporter@v2
         with:
           artifact: ${{ inputs.artifact-name }}
