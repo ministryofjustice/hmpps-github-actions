@@ -140,7 +140,7 @@ jobs:
         echo "summary=${slack_summary}" >> $GITHUB_ENV
     - name: Trivy slack notification
       uses: ministryofjustice/hmpps-github-actions/.github/actions/slack_codescan_notification@v2 # WORKFLOW_VERSION
-      if: (failure() || steps.trivy-analyse.outcome == 'failure') && inputs.channel_id != 'NO_SLACK'
+      if: (failure() || steps.trivy-analyse-image.outcome == 'failure' || steps.trivy-analyse-fs.outcome == 'failure') && inputs.channel_id != 'NO_SLACK'
       with:
         title: "Trivy"
         warningOnly: ${{ steps.trivy-upload.outcome == 'success' }}
