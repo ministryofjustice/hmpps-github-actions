@@ -105,7 +105,7 @@ jobs:
           deploy_outcome: ${{ steps.deploy.outcome }}
           slack_bot_token: ${{ secrets.HMPPS_SRE_SLACK_BOT_TOKEN }}
           deployment_changelog: ${{ steps.deploy.outputs.deployment_changelog }}
-
+          k8s_deployment_name: ${{ inputs.k8s_deployment_name || github.event.repository.name }}
 
       # Optional prod releases slack channel (using PROD_RELEASES_SLACK_CHANNEL variable)
       - if: ${{ always() && ( inputs.slack_notification == 'true' && steps.set-slack-channel-id.outputs.slack_channel_id != '' ) }}
@@ -118,3 +118,4 @@ jobs:
           deploy_outcome: ${{ steps.deploy.outcome }}
           slack_bot_token: ${{ secrets.HMPPS_SRE_SLACK_BOT_TOKEN }}
           deployment_changelog: ${{ steps.deploy.outputs.deployment_changelog }}
+          k8s_deployment_name: ${{ inputs.k8s_deployment_name || github.event.repository.name }}
