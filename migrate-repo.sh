@@ -30,7 +30,7 @@ configurations for docker build and deployment to the environments specified in 
 Any other custom or specific jobs within the CircleCI workflows (eg. Snyk scans or other integration tests) 
 will need to be migrated separately.
 
-See docs/deployment-migration.md for more information.
+See docs/workflow-migration.md for more information.
 
 Security
 --------
@@ -48,6 +48,11 @@ Review
 ------
 The script will create a backup of the existing .circleci/config.yml file before making changes.
 Any custom or extra components will need to be migrated separately - please review these within the .circleci/config.yml.bak file
+
+Further Information
+-------------------
+More information on the process of migrating to Github Actions (including required Cloud Platform configurations) 
+can be found in the HMPPS Shared Tooling Tech Docs - https://tech-docs.hmpps.service.justice.gov.uk/shared-tooling/migrating-to-GHA
 '
 
 # Functions

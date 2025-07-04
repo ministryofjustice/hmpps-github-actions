@@ -7,6 +7,10 @@ Because CircleCI has been around for many years, and each project may well have 
 
 This is intended to be a 'get you started' process, although it may well be that other common components are added to the migration if there are common elements.
 
+### Other documentation
+
+More information on the process of migrating to Github Actions (including required Cloud Platform configurations) can be found in the [HMPPS Shared Tooling Tech Docs](https://tech-docs.hmpps.service.justice.gov.uk/shared-tooling/migrating-to-GHA/)
+
 ## Components
 The migration script solely to translate the **build-test-and-deploy** jobs under **workflows:** in `.circleci/config.yml`:
 ```
