@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# To be run from inside the github project that you would like to create / update the security jobs, expected usage is:
+# To be run from inside the github project that you would like to create / update the security jobs; expected usage is:
 # ../hmpps-github-actions/recreate-typescript-security-jobs.bash
 #
 # Will delete all existing security workflows and replace with the standard npm / trivy and veracode workflows for
@@ -17,7 +17,7 @@
 
 function get_yaml() {
   yml_file=$1
-  gh api repos/ministryofjustice/hmpps-github-actions/contents/templates/workflows/$yml_file -H "Accept: application/vnd.github.v3.raw" > .github/workflows/$yml_file
+  gh api repos/ministryofjustice/hmpps-template-typescript/contents/.github/workflows/$yml_file -H "Accept: application/vnd.github.v3.raw" > .github/workflows/$yml_file
 }
 
 if [[ -w .circleci/config.yml ]]; then
