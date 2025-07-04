@@ -47,7 +47,8 @@ This contains a library of Github actions for use by other projects. These inclu
 
 #### Migrating from CircleCI
 
-Documentation for migrating security scans from CircleCI to Github Actions can be found in [this document](docs/security-migration.md)
+Documentation for migrating security scans from CircleCI to Github Actions can be found in [this document](docs/security-migration.md).
+Documentation for migrating build/test/deploy workflows from CircleCI to Github Actions can be found in [this document](docs/workflow-migration.md).
 
 
 ### Slack actions
