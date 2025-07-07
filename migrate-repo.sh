@@ -374,8 +374,7 @@ migrate_deployment_jobs() {
     for executor_job in $java_postgres_executors; do
       # validate - point the kotlin_validate job to the kotlin_postgres_validate.yml shared workflow and add configurations
       if [ ${executor_job} = "validate" ] ; then
-        gh api repos/ministryofjustice/hmpps-github-actions/contents/templates/workflows/kotlin_postgres_validate.yml -XGET -H "Accept: application/vnd.github.v3.raw" > .github/workflows/kotlin_postgres_validate.yml
-        yq eval '.jobs.kotlin_validate.uses = "./.github/workflows/kotlin_postgres_validate.yml"' -i .github/workflows/pipeline.yml
+        yq eval '.jobs.kotlin_validate.uses = "ministryofjustice/hmpps-github-actions/.github/workflows/gradle_postgres_verify.yml@v2" # WORKFLOW_VERSION' -i .github/workflows/pipeline.yml
         # loop through for the 'with' parameters
         # Define the keys to extract
         keys=("jdk_tag" "postgres_tag" "postgres_db" "postgres_username" "postgres_password")
@@ -390,24 +389,15 @@ migrate_deployment_jobs() {
           fi
           # Update the pipeline.yml with the extracted values
           if [ "$value" != "null" ]; then
-            yq eval ".jobs.kotlin_validate.with.$key = \"$value\"" -i .github/workflows/pipeline.yml
+            yq eval ".jobs.kotlin_validate.with.${key//_/-} = \"$value\"" -i .github/workflows/pipeline.yml
           fi
         done
-        # rename it to the new job
-        yq eval "with(.jobs; .[\"$executor_job\"] = .[\"template_job\"] | del(.\"template_job\"))" -i .github/workflows/kotlin_postgres_${executor_job}.yml
         # INFO message
-        echo "INFO: A template file - .github/workflows/kotlin_postgres_${executor_job}.yml has been created for"
-        echo "----  the ${executor_job} workflow using Postgres."
-        echo "      This will require manual modification to match the ${executor_job} job within .circleci/config.yml"
-        echo "      A reference to this workflow has been made for the kotlin_validate job in .github/workflows/pipeline.yml"
+        echo "INFO: A kotlin_validate workflow has been created using Postgres."
+        echo "      This may will require manual modification to match the validate job within .circleci/config.yml"
       else
-        # copy the template workflow down
-        gh api repos/ministryofjustice/hmpps-github-actions/contents/templates/workflows/kotlin_postgres.yml -XGET -H "Accept: application/vnd.github.v3.raw" > .github/workflows/kotlin_postgres_${executor_job}.yml
-        # rename it to the new job
-        yq eval "with(.jobs; .[\"$executor_job\"] = .[\"template_job\"] | del(.\"template_job\"))" -i .github/workflows/kotlin_postgres_${executor_job}.yml
         # INFO message
-        echo "INFO: A template file - .github/workflows/kotlin_postgres_${executor_job}.yml has been created for"
-        echo "----  the ${executor_job} workflow using Postgres."
+        echo "INFO: The ${executor_job} workflow using Postgres has been detected."
         echo "      This will require manual modification to match the ${executor_job} job within .circleci/config.yml"
         echo "      It will also need a reference to this workflow to be added in .github/workflows/pipeline.yml"
       fi
@@ -422,11 +412,9 @@ migrate_deployment_jobs() {
 
   if [ -n "$java_localstack_postgres_executors" ]; then
     for executor_job in $java_localstack_postgres_executors; do
-      # copy the template workflow down
-      gh api repos/ministryofjustice/hmpps-github-actions/contents/templates/workflows/kotlin_localstack_postgres.yml -XGET -H "Accept: application/vnd.github.v3.raw" > .github/workflows/kotlin_localstack_postgres_${executor_job}.yml
       # if it's validate we can replace kotlin_validate with this workflow
       if [ ${executor_job} = "validate" ] ; then
-        yq eval '.jobs.kotlin_validate.uses = "./.github/workflows/kotlin_localstack_postgres_validate.yml"' -i .github/workflows/pipeline.yml
+        yq eval '.jobs.kotlin_validate.uses = "ministryofjustice/hmpps-github-actions/.github/workflows/gradle_localstack_postgres_verify.yml@v2" # WORKFLOW_VERSION' -i .github/workflows/pipeline.yml
         # import the parameters (if they exist)
         keys=("services" "localstack_tag" "postgres_tag" "postgres_db" "postgres_username" "postgres_password")
 
@@ -440,22 +428,15 @@ migrate_deployment_jobs() {
           fi          
           if [ "$value" != "null" ]; then
           # Update the pipeline.yml with the extracted values
-            yq eval ".jobs.kotlin_validate.with.$key = \"$value\"" -i .github/workflows/pipeline.yml
+            yq eval ".jobs.kotlin_validate.with.${key//_/-} = \"$value\"" -i .github/workflows/pipeline.yml
           fi
         done
-        # rename it to the new job
-        yq eval "with(.jobs; .[\"$executor_job\"] = .[\"template_job\"] | del(.\"template_job\"))" -i .github/workflows/kotlin_localstack_postgres_${executor_job}.yml
         # INFO message
-        echo "INFO: A workflow file - .github/workflows/kotlin_localstack_postgres_${executor_job}.yml has been created for"
-        echo "----  the ${executor_job} workflow using Postgres and localstack."
-        echo "      This will require manual modification to match the validate within .circleci/config.yml"
-        echo "      A reference to this workflow has been made for the kotlin_validate job in .github/workflows/pipeline.yml"
-      else  
-        # rename it to the new job
-        yq eval "with(.jobs; .[\"$executor_job\"] = .[\"template_job\"] | del(.\"template_job\"))" -i .github/workflows/kotlin_localstack_postgres_${executor_job}.yml
+        echo "INFO: A kotlin_validate workflow has been created using Postgres and localstack."
+        echo "      This may will require manual modification to match the validate job within .circleci/config.yml"
+      else
         # INFO message
-        echo "INFO: A template file - .github/workflows/kotlin_localstack_postgres_${executor_job}.yml has been created for"
-        echo "----  the ${executor_job} workflow using Postgres and localstack."
+        echo "INFO: The ${executor_job} workflow using Postgres and localstack has been detected."
         echo "      This will require manual modification to match the ${executor_job} job within .circleci/config.yml"
         echo "      It will also need a reference to this workflow to be added in .github/workflows/pipeline.yml"
       fi
@@ -470,11 +451,9 @@ migrate_deployment_jobs() {
 
   if [ -n "$localstack" ]; then
     for executor_job in $localstack; do
-      # copy the template workflow down
-      gh api repos/ministryofjustice/hmpps-github-actions/contents/templates/workflows/kotlin_localstack.yml -XGET -H "Accept: application/vnd.github.v3.raw" > .github/workflows/kotlin_localstack_${executor_job}.yml
       # if it's validate we can replace kotlin_validate with this workflow
       if [ ${executor_job} = "validate" ] ; then
-        yq eval '.jobs.kotlin_validate.uses = "./.github/workflows/kotlin_localstack_validate.yml"' -i .github/workflows/pipeline.yml
+        yq eval '.jobs.kotlin_validate.uses = "ministryofjustice/hmpps-github-actions/.github/workflows/gradle_localstack_verify.yml@v2" # WORKFLOW_VERSION' -i .github/workflows/pipeline.yml
         # import the parameters (if they exist)
         # localstack_tag: "3"
         # services: "sqs,sns"
@@ -490,20 +469,15 @@ migrate_deployment_jobs() {
           fi
           if [ "$value" != "null" ]; then
           # Update the pipeline.yml with the extracted values
-            yq eval ".jobs.kotlin_validate.with.$key = \"$value\"" -i .github/workflows/pipeline.yml
+            yq eval ".jobs.kotlin_validate.with.${key//_/-} = \"$value\"" -i .github/workflows/pipeline.yml
           fi
         done
         # INFO message
-        echo "INFO: A workflow file - .github/workflows/kotlin_localstack_${executor_job}.yml has been created for"
-        echo "----  the ${executor_job} workflow using localstack."
-        echo "      This will require manual modification to match the validate within .circleci/config.yml"
-        echo "      A reference to this workflow has been made for the kotlin_validate job in .github/workflows/pipeline.yml"
-      else  
-        # rename it to the new job
-        yq eval "with(.jobs; .[\"$executor_job\"] = .[\"template_job\"] | del(.\"template_job\"))" -i .github/workflows/kotlin_localstack_${executor_job}.yml
+        echo "INFO: A kotlin_validate workflow has been created using localstack."
+        echo "      This may will require manual modification to match the validate job within .circleci/config.yml"
+      else
         # INFO message
-        echo "INFO: A template file - .github/workflows/kotlin_localstack_${executor_job}.yml has been created for"
-        echo "----  the ${executor_job} workflow using localstack."
+        echo "INFO: The ${executor_job} workflow using localstack has been detected."
         echo "      This will require manual modification to match the ${executor_job} job within .circleci/config.yml"
         echo "      It will also need a reference to this workflow to be added in .github/workflows/pipeline.yml"
       fi
