@@ -24,7 +24,7 @@ inputs:
     description: The KUBE_TOKEN
     required: true
   k8s_deployment_name:
-    description: "Kubernetes deployment name"
+    description: "Kubernetes deployment name, also Helm release name"
     required: true
   changelog_git_paths:
     default: ""
@@ -45,6 +45,9 @@ inputs:
     description: location of helm configuration
     required: false
     default: helm_deploy
+  helm_chart_name:
+    description: location of helm chart within the helm_dir
+    required: true
   helm_allowlist_groups:
     description: values for location of allowlist groups file
     required: false
@@ -105,9 +108,9 @@ runs:
       run: |
         eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
         brew install helm
-        yq -i ".appVersion = \"${{ inputs.version }}\"" "${{ inputs.helm_dir }}/${{ inputs.k8s_deployment_name }}/Chart.yaml"
-        helm dependency update "${{ inputs.helm_dir }}/${{ inputs.k8s_deployment_name }}"
-        exec helm upgrade '${{ inputs.k8s_deployment_name }}' '${{ inputs.helm_dir }}/${{ inputs.k8s_deployment_name }}' \
+        yq -i ".appVersion = \"${{ inputs.version }}\"" "${{ inputs.helm_dir }}/${{ inputs.helm_chart_name }}/Chart.yaml"
+        helm dependency update "${{ inputs.helm_dir }}/${{ inputs.helm_chart_name }}"
+        exec helm upgrade '${{ inputs.k8s_deployment_name }}' '${{ inputs.helm_dir }}/${{ inputs.helm_chart_name }}' \
           --atomic \
           --history-max 10 \
           --force \
