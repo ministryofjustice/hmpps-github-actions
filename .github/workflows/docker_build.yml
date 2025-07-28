@@ -56,6 +56,11 @@ on:
         description: "Path to the Dockerfile"
         required: false
         type: string
+      download_build_artifacts:
+        description: Whether to download the build artifacts prior to running the docker build
+        required: false
+        type: boolean
+        default: false
     secrets:
       HMPPS_QUAYIO_USER:
         required: false
@@ -96,6 +101,7 @@ jobs:
           app_version: ${{ steps.app_version.outputs.version }}
           additional_docker_build_args: ${{ inputs.additional_docker_build_args }}
           file: ${{ inputs.file }}
+          download_build_artifacts: ${{ inputs.download_build_artifacts }}
 
       - uses: ministryofjustice/hmpps-github-actions/.github/actions/build-test-and-deploy/build_docker@v2 # WORKFLOW_VERSION
         if: ${{ ( inputs.docker_registry  == 'quay.io' ) && ( ! inputs.docker_multiplatform )}}
@@ -113,6 +119,7 @@ jobs:
           HMPPS_QUAYIO_USER: ${{ secrets.HMPPS_QUAYIO_USER }}
           HMPPS_QUAYIO_TOKEN: ${{ secrets.HMPPS_QUAYIO_TOKEN}}
           additional_docker_build_args: ${{ inputs.additional_docker_build_args }}
+          download_build_artifacts: ${{ inputs.download_build_artifacts }}
           # git_head_ref: ${{ github.head_ref }}
           # git_branch_ref: ${{ github.ref_name }}
 
@@ -127,6 +134,7 @@ jobs:
           push: ${{ inputs.push }}
           app_version: ${{ steps.app_version.outputs.version }}
           additional_docker_build_args: ${{ inputs.additional_docker_build_args }}
+          download_build_artifacts: ${{ inputs.download_build_artifacts }}
 
       - uses: ministryofjustice/hmpps-github-actions/.github/actions/build-test-and-deploy/build_multiplatform_docker@v2 # WORKFLOW_VERSION
         if: ${{ ( inputs.docker_registry  == 'quay.io' ) && ( inputs.docker_multiplatform )}}
@@ -141,3 +149,4 @@ jobs:
           additional_docker_build_args: ${{ inputs.additional_docker_build_args }}
           HMPPS_QUAYIO_USER: ${{ secrets.HMPPS_QUAYIO_USER }}
           HMPPS_QUAYIO_TOKEN: ${{ secrets.HMPPS_QUAYIO_TOKEN}}
+          download_build_artifacts: ${{ inputs.download_build_artifacts }}
