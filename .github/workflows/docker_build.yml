@@ -86,7 +86,7 @@ jobs:
       - id: app_version
         name: Application version creators
         uses: ministryofjustice/hmpps-github-actions/.github/actions/build-test-and-deploy/create_app_version@v2 # WORKFLOW_VERSION
-      - uses: ministryofjustice/hmpps-github-actions/.github/actions/build-test-and-deploy/build_docker@v2 # WORKFLOW_VERSION
+      - uses: ministryofjustice/hmpps-github-actions/.github/actions/build-test-and-deploy/build_docker@pgp-SDIT-2937-build-outside-docker-2 # WORKFLOW_VERSION
         if: ${{ ( inputs.docker_registry  == 'ghcr.io' ) && ( ! inputs.docker_multiplatform )}}
         with:
           image_name: ${{ inputs.image_name || github.event.repository.name }}
@@ -103,7 +103,7 @@ jobs:
           file: ${{ inputs.file }}
           download_build_artifacts: ${{ inputs.download_build_artifacts }}
 
-      - uses: ministryofjustice/hmpps-github-actions/.github/actions/build-test-and-deploy/build_docker@v2 # WORKFLOW_VERSION
+      - uses: ministryofjustice/hmpps-github-actions/.github/actions/build-test-and-deploy/build_docker@pgp-SDIT-2937-build-outside-docker-2 # WORKFLOW_VERSION
         if: ${{ ( inputs.docker_registry  == 'quay.io' ) && ( ! inputs.docker_multiplatform )}}
         with:
           image_name: ${{ inputs.image_name || github.event.repository.name }}
@@ -123,7 +123,7 @@ jobs:
           # git_head_ref: ${{ github.head_ref }}
           # git_branch_ref: ${{ github.ref_name }}
 
-      - uses: ministryofjustice/hmpps-github-actions/.github/actions/build-test-and-deploy/build_multiplatform_docker@v2 # WORKFLOW_VERSION
+      - uses: ministryofjustice/hmpps-github-actions/.github/actions/build-test-and-deploy/build_multiplatform_docker@pgp-SDIT-2937-build-outside-docker-2 # WORKFLOW_VERSION
         if: ${{ ( inputs.docker_registry  == 'ghcr.io' ) && ( inputs.docker_multiplatform )}}
         with:
           repository_name: ${{ github.event.repository.name }}
@@ -136,7 +136,7 @@ jobs:
           additional_docker_build_args: ${{ inputs.additional_docker_build_args }}
           download_build_artifacts: ${{ inputs.download_build_artifacts }}
 
-      - uses: ministryofjustice/hmpps-github-actions/.github/actions/build-test-and-deploy/build_multiplatform_docker@v2 # WORKFLOW_VERSION
+      - uses: ministryofjustice/hmpps-github-actions/.github/actions/build-test-and-deploy/build_multiplatform_docker@pgp-SDIT-2937-build-outside-docker-2 # WORKFLOW_VERSION
         if: ${{ ( inputs.docker_registry  == 'quay.io' ) && ( inputs.docker_multiplatform )}}
         with:
           repository_name: ${{ github.event.repository.name }}
