@@ -36,6 +36,11 @@ on:
         type: string
         default: 'test-results'
         required: false
+      build-artifact-name:
+        description: Unique name (across the pipeline) for the uploaded build artifact
+        type: string
+        default: 'build-results'
+        required: false
       build-dir:
         description: Path to find the artifacts e.g. necessary for multi-project gradle builds.
         type: string
@@ -45,6 +50,11 @@ on:
         description: Whether to upload test artifacts and generate test report
         type: boolean
         default: true
+        required: false
+      upload-build-artifacts:
+        description: Whether to upload the uber jar and other required artifacts to build a docker image
+        type: boolean
+        default: false
         required: false
 permissions:
   contents: read
@@ -89,6 +99,14 @@ jobs:
           path: |
             ${{ inputs.build-dir }}/test-results
             ${{ inputs.build-dir }}/reports/tests
+      - name: Upload the build artifacts
+        if: ${{ inputs.upload-build-artifacts && !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.build-artifact-name }}
+          path: |
+            ${{ inputs.build-dir }}/libs
+          retention-days: 1
       - name: publish test report
         if: ${{ inputs.upload-test-artifacts && !cancelled() && github.event.repository.visibility == 'public' }}
         uses: dorny/test-reporter@v2
