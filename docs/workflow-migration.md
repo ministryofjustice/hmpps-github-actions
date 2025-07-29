@@ -43,7 +43,8 @@ Note: Github Actions doesn't suppport regex filtering of branch filters, so it u
 ### Deploy
 This will create a deployment activity for each corresponding environment within `config.yml`
 
-Approval gates are configured within the repository settings under **environments**, so aren't included within the deployment here,
+Approval gates (a.k.a. **manual approval**, or **approvals** in CircleCI) are set within the repository itself, so aren't included within the deployment here.  These values are set by the Cloud Platform configuration, but can be verified in the Web UI at **environments > (env name) > Required reviewers** and ensuring this checkbox is checked.  See GitHub's ["Deployments and environments"](https://docs.github.com/en/actions/reference/workflows-and-actions/deployments-and-environments#required-reviewers) documentation for further information.
+
 The *needs* configurations are based on any 'required' element associated with the request-${each_env}-approval.requires[] configuration
 
 #### Parameters
