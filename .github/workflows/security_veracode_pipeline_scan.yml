@@ -15,7 +15,12 @@ on:
         required: false
         type: string
         default: ''
-        description: "The name of the artifact to download, containing a source.zip packaged application. Optional."
+        description: "The name of the artifact to download, containing a veracode_artifact_name (default source.zip) packaged application. Optional."
+      veracode_artifact_name:
+        required: false
+        type: string
+        default: 'source.zip'
+        description: "The name of the artifact within the package, Optional."
     secrets:
       HMPPS_SRE_SLACK_BOT_TOKEN:
         description: Slack bot token
@@ -129,7 +134,7 @@ jobs:
           java -jar pipeline-scan.jar \
           $(test -f results.json && echo "--baseline_file results.json") \
           --json_output true \
-          --file source.zip \
+          --file ${{ inputs.veracode_artifact_name }} \
           --policy_file Ministry_of_Justice.json \
           --veracode_api_id "${VERACODE_API_ID}" \
           --veracode_api_key "${VERACODE_API_KEY}" \

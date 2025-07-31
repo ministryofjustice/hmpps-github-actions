@@ -20,7 +20,12 @@ on:
         required: false
         type: string
         default: ''
-        description: "The name of the artifact to download, containing a source.zip packaged application. Optional."
+        description: "The name of the artifact to download, containing a veracode_artifact_name (default source.zip) packaged application. Optional."
+      veracode_artifact_name:
+        required: false
+        type: string
+        default: 'source.zip'
+        description: "The name of the artifact within the package, Optional."
     secrets:
       HMPPS_SRE_SLACK_BOT_TOKEN:
         description: Slack bot token
@@ -111,8 +116,8 @@ jobs:
           -createprofile true \
           -deleteincompletescan 2 \
           -version "github_id:${{ github.run_id }} ${{ github.ref_type}}:${{ github.ref_name}} sha:${GITHUB_SHA::7}" \
-          -filepath source.zip \
-          2>&1 | tee output.txt 
+          -filepath ${{ inputs.veracode_artifact_name }} \
+          2>&1 | tee output.txt
 #      continue-on-error: true
       env:
         VERACODE_API_ID_0: ${{ secrets.HMPPS_VERACODE_API_ID_0 }}
