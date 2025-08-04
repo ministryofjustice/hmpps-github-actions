@@ -26,6 +26,11 @@ on:
         type: string
         default: 'source.zip'
         description: "The name of the artifact within the package, Optional."
+      application_name:
+        required: false
+        type: string
+        default: ''
+        description: "The name of the application, defaulting to the repository name if not provided."
     secrets:
       HMPPS_SRE_SLACK_BOT_TOKEN:
         description: Slack bot token
@@ -112,7 +117,7 @@ jobs:
           -vkey "${VERACODE_API_KEY}" \
           -teams "${{ inputs.teams }}" \
           -action UploadAndScan \
-          -appname ${{ github.event.repository.name }} \
+          -appname ${{ inputs.application_name || github.event.repository.name }} \
           -createprofile true \
           -deleteincompletescan 2 \
           -version "github_id:${{ github.run_id }} ${{ github.ref_type}}:${{ github.ref_name}} sha:${GITHUB_SHA::7}" \
@@ -133,7 +138,7 @@ jobs:
     - uses: actions/upload-artifact@v4
       if: success() 
       with:
-        name: veracode-policy-check-${{ github.event.repository.name }}
+        name: veracode-policy-check-${{ inputs.application_name || github.event.repository.name }}
         path: output.txt
     - name: send a failure slack message
       if: failure()  && inputs.channel_id != 'NO_SLACK'
