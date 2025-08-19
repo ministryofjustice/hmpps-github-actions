@@ -30,7 +30,7 @@ permissions:
 jobs:
   security-owasp-check:
     name: Security OWASP dependency check
-    runs-on: ubuntu-latest
+    runs-on:  [ self-hosted, hmpps-github-actions-runner-security ]
     permissions:
       security-events: write
       contents: read
