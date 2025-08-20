@@ -35,7 +35,7 @@ permissions:
 jobs:
   # NVD v2 API version of the scan - using self-hosted runner
   security-owasp-check-nvd2:
-    name: Security OWASP dependency check
+    name: Security OWASP dependency check (NVD API 2)
     runs-on:  [ self-hosted, hmpps-github-actions-runner-security ]
     if: startsWith(github.repository, 'ministryofjustice/') && inputs.nvd_feed_version=='2'
     permissions:
@@ -90,7 +90,7 @@ jobs:
         summary: ${{ inputs.slack_include_summary && env.summary || '' }}
   # Previous NVD API version - this will no longer be default when the database is no longer available
   security-owasp-check-nvd1:
-    name: Security OWASP dependency check
+    name: Security OWASP dependency check (NVD API 1)
     runs-on:  ubuntu-latest
     if: inputs.nvd_feed_version=='1'
     permissions:
