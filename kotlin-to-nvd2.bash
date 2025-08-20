@@ -18,7 +18,7 @@ function update_security_owasp_yml() {
   yml_file=".github/workflows/security_owasp.yml"
   if [ $(yq '.jobs."security-kotlin-owasp-check".with.nvd_feed_version' ${yml_file}) != "2" ] ; 
   then 
-    yq e -i '.jobs."security-kotlin-owasp-check".with.nvd_feed_version = 2' ${yml_file}
+    yq e -i '.jobs."security-kotlin-owasp-check".with.nvd_feed_version = "2"' ${yml_file}
     echo "Added nvd_feed_version: 2 to ${yml_file}"
   else
     echo "nvd_feed_version: 2 already in ${yml_file} - no action taken"
