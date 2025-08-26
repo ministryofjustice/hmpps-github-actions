@@ -37,7 +37,7 @@ jobs:
   security-owasp-check-nvd2:
     name: Security OWASP dependency check (NVD API 2)
     runs-on:  [ self-hosted, hmpps-github-actions-runner-security ]
-    if: github.repository_owner ==  'ministryofjustice' && inputs.nvd_feed_version=='2'
+    if: github.repository_owner == 'ministryofjustice' && inputs.nvd_feed_version == '2'
     permissions:
       security-events: write
       contents: read
@@ -51,7 +51,7 @@ jobs:
         distribution: 'temurin'
     - name: Run gradle OWASP Dependency Check Analyse
       id: owasp-analyse
-      run: ./gradlew ${{ inputs.subproject }}:dependencyCheckAnalyze --info
+      run: ./gradlew ${{ inputs.subproject }}:dependencyCheckAnalyze -Pdatafeed.url='file:///opt/vulnz/cache' --info
       continue-on-error: true
     # Upload Sarif file: this will attempt to upload the sarif file for private/internal repositories as well
     - name: OWASP upload sarif
@@ -92,7 +92,7 @@ jobs:
   security-owasp-check-nvd1:
     name: Security OWASP dependency check (NVD API 1)
     runs-on:  ubuntu-latest
-    if: inputs.nvd_feed_version=='1'
+    if: inputs.nvd_feed_version == '1'
     permissions:
       security-events: write
       contents: read
