@@ -28,7 +28,6 @@ function update_security_owasp_yml() {
 function update_build_gradle_kts() {
   FILE='build.gradle.kts'
   PLUGIN_LINE='  id("org.owasp.dependencycheck") version "12.1.3"'
-  DEPENDENCY_BLOCK='dependencyCheck {\n  nvd.datafeedUrl = "file:///opt/vulnz/cache"\n}'
 
   # 1. Check and fix plugin version
   echo "Checking for dependencyCheck plugin version"
@@ -64,16 +63,6 @@ function update_build_gradle_kts() {
     print
   }
   ' "$FILE" > "${FILE}.tmp" && mv "${FILE}.tmp" "$FILE"
-
-
-  # 2. Check and add dependencyCheck block
-  echo "Checking for dependencyCheck feed configuration"
-  if ! grep -q 'dependencyCheck {' "$FILE"; then
-    echo "Adding dependencyCheck block..."
-    echo -e "\n$DEPENDENCY_BLOCK" >> "$FILE"
-  else
-    echo "dependencyCheck block already exists - no action taken"
-  fi
 
 }
 
