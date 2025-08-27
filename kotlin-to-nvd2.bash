@@ -27,43 +27,7 @@ function update_security_owasp_yml() {
 
 function update_build_gradle_kts() {
   FILE='build.gradle.kts'
-  PLUGIN_LINE='  id("org.owasp.dependencycheck") version "12.1.3"'
-
-  # 1. Check and fix plugin version
-  echo "Checking for dependencyCheck plugin version"
-  
-  awk -v plugin='  id("org.owasp.dependencycheck") version "12.1.3"' '
-  BEGIN {
-    step = 0 
-    found = 0
-  }
-  # change to step 1 when we are at the plugins stage
-  {
-    if ($0 ~ /plugins[[:space:]]*{/) {
-      print
-      step = 1
-      next
-    }
-    if (step==1){
-    # Check for existing plugin line
-      if ($0 ~ /id\(\"org\.owasp\.dependencycheck\"\)/) {
-        found = 1
-        # Replace incorrect version
-        if ($0 !~ /version "12\.1\.3"/) {
-          sub(/version "[^"]+"/, "version \"12.1.3\"")
-        }
-      }
-      if (found==0 && $0 ~ /}/) {
-        step = 2
-        print plugin
-        print
-        next
-      }
-    }
-    print
-  }
-  ' "$FILE" > "${FILE}.tmp" && mv "${FILE}.tmp" "$FILE"
-
+  gsed -i -E -e 's/spring-boot"\) version "[3-9].[0-9]{1,}.[0-9]{1,}(-beta)?(-beta-[1-9])?"$/spring-boot") version "9.0.0-beta"/' ${FILE}
 }
 
 update_security_owasp_yml
