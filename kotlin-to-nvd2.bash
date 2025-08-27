@@ -27,7 +27,7 @@ function update_security_owasp_yml() {
 
 function update_build_gradle_kts() {
   FILE='build.gradle.kts'
-  gsed -i -E -e 's/spring-boot"\) version "[3-9].[0-9]{1,}.[0-9]{1,}(-beta)?(-beta-[1-9])?"$/spring-boot") version "9.0.0-beta"/' ${FILE}
+  gsed -i -E -e 's/spring-boot"\) version "[3-9].[0-9]{1,}.[0-9]{1,}(-beta)?(-beta-[1-9])?"$/spring-boot") version "9.0.0"/' ${FILE}
 }
 
 update_security_owasp_yml
