@@ -61,7 +61,9 @@ jobs:
   security-trivy-check:
     name: Security trivy dependency check
     runs-on: ubuntu-latest
+    continue-on-error: true
     permissions:
+      packages: read
       security-events: write
       contents: read
       actions: read
@@ -85,12 +87,14 @@ jobs:
         skip-files: /app/agent.jar
         format: 'sarif'
         output: 'trivy-results.sarif'
-        exit-code: 1
+        exit-code: 0
         limit-severities-for-sarif: ${{ inputs.limit_severities_for_sarif }}
       env:
         TRIVY_DB_REPOSITORY: public.ecr.aws/aquasecurity/trivy-db:2,ghcr.io/aquasecurity/trivy-db:2
         TRIVY_JAVA_DB_REPOSITORY: public.ecr.aws/aquasecurity/trivy-java-db:1,ghcr.io/aquasecurity/trivy-java-db:1
-      continue-on-error: true
+        # Set credentials only if using ghcr.io as the image registry
+        TRIVY_USERNAME: ${{ startsWith(env.repo, 'ghcr.io/') && github.actor || '' }}
+        TRIVY_PASSWORD: ${{ startsWith(env.repo, 'ghcr.io/') && secrets.GITHUB_TOKEN || '' }}
      # run this scan for filesystem scans
     - name: Trivy Image Vulnerability Scanner - filesystem
       id: trivy-analyse-fs
@@ -109,14 +113,13 @@ jobs:
       env:
         TRIVY_DB_REPOSITORY: public.ecr.aws/aquasecurity/trivy-db:2,ghcr.io/aquasecurity/trivy-db:2
         TRIVY_JAVA_DB_REPOSITORY: public.ecr.aws/aquasecurity/trivy-java-db:1,ghcr.io/aquasecurity/trivy-java-db:1
-      continue-on-error: true    # Upload the trivy results as an artifact in case the repo is private or internal
+    # Upload the trivy results as an artifact in case the repo is private or internal
     - name: upload trivy artifact
       uses: actions/upload-artifact@v4
       id: trivy-upload-artifact
       with:
         name: trivy-check-${{ inputs.subproject == '' && github.event.repository.name || inputs.subproject }}
         path: trivy-results.sarif
-      continue-on-error: true
     # Upload Sarif file: this will attempt to upload the sarif file for private/internal repositories as well
     - name: Trivy upload sarif
       id: trivy-upload
@@ -125,18 +128,23 @@ jobs:
         sarif_file: 'trivy-results.sarif'
         category: trivy-dependency-check
       # don't stop the job even if Github Advanced Security isn't enabled
-      continue-on-error: true
     - name: Prepare Trivy summary
       id: trivy-summary
       run: |
-        formatted_output=$(jq -r '.runs[0].results[] | [.ruleId, .message.text] | @tsv' trivy-results.sarif \
-        | sed -e 's/\t/\\t/g' -e 's/\\n/|/g' \
-        | awk -F\| '{gsub("Package: ","("); gsub("Severity: ",""); print $1") - "$4}' \
-        | awk '{printf "%s\\n", $0}')
+        results_count=$(jq '.runs[0].results | length' trivy-results.sarif)
         echo "Vulnerability Summary"
         echo "====================="
-        echo "${formatted_output}" | sed 's/\\n/\n/g'
-        slack_summary="$(echo "${formatted_output}" |  awk '{s=s $0} END {if (length(s) >= 3000) print substr(s, 1, 2997) "..."; else print s}')"
+
+        if [ "$results_count" -gt 0 ]; then
+          formatted_output=$(jq -r '.runs[0].results[] | 
+            "\(.ruleId) - \(.message.text | gsub("Package: "; "(") | gsub("Severity: "; "") | gsub("\n"; " "))"' trivy-results.sarif)
+          echo "${formatted_output}"
+          slack_summary="$(echo "${formatted_output}" | awk '{s=s $0} END {if (length(s) >= 3000) print substr(s, 1, 2997) "..."; else print s}')"
+        else
+          echo "No vulnerabilities found"
+          slack_summary="No vulnerabilities found"
+        fi
+
         echo "summary=${slack_summary}" >> $GITHUB_ENV
     - name: Trivy slack notification
       uses: ministryofjustice/hmpps-github-actions/.github/actions/slack_codescan_notification@v2 # WORKFLOW_VERSION
