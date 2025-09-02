@@ -63,6 +63,7 @@ jobs:
     runs-on: ubuntu-latest
     continue-on-error: true
     permissions:
+      packages: read
       security-events: write
       contents: read
       actions: read
