@@ -90,6 +90,9 @@ jobs:
       env:
         TRIVY_DB_REPOSITORY: public.ecr.aws/aquasecurity/trivy-db:2,ghcr.io/aquasecurity/trivy-db:2
         TRIVY_JAVA_DB_REPOSITORY: public.ecr.aws/aquasecurity/trivy-java-db:1,ghcr.io/aquasecurity/trivy-java-db:1
+        # Set credentials only if using ghcr.io as the image registry
+        TRIVY_USERNAME: ${{ startsWith(env.repo, 'ghcr.io/') && github.actor || '' }}
+        TRIVY_PASSWORD: ${{ startsWith(env.repo, 'ghcr.io/') && secrets.GITHUB_TOKEN || '' }}
       continue-on-error: true
      # run this scan for filesystem scans
     - name: Trivy Image Vulnerability Scanner - filesystem
