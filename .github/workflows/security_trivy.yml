@@ -134,7 +134,7 @@ jobs:
         results_count=$(jq '.runs[0].results | length' trivy-results.sarif)
         echo "Vulnerability Summary"
         echo "====================="
-        
+
         if [ "$results_count" -gt 0 ]; then
           formatted_output=$(jq -r '.runs[0].results[] | 
             "\(.ruleId) - \(.message.text | gsub("Package: "; "(") | gsub("Severity: "; "") | gsub("\n"; " "))"' trivy-results.sarif)
@@ -144,7 +144,7 @@ jobs:
           echo "No vulnerabilities found"
           slack_summary="No vulnerabilities found"
         fi
-        
+
         echo "summary=${slack_summary}" >> $GITHUB_ENV
     - name: Trivy slack notification
       uses: ministryofjustice/hmpps-github-actions/.github/actions/slack_codescan_notification@v2 # WORKFLOW_VERSION
