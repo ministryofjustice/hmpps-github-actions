@@ -1,0 +1,127 @@
+name: 'Trivy Security Scan'
+description: 'Run Trivy vulnerability scanning with configurable options'
+
+inputs:
+  subproject:
+    description: 'For gradle multi module projects, leave blank for single module projects'
+    required: false
+    default: ''
+  severity:
+    description: 'Customisable severity levels'
+    required: false
+    default: 'HIGH,CRITICAL'
+  scan_type:
+    description: 'A scan type to use - either image (default) or fs'
+    required: false
+    default: 'image'
+  scanners:
+    description: 'A comma-separated list of scanners to use to scan'
+    required: false
+    default: 'misconfig,vuln,secret'
+  location:
+    description: 'A location for IaC scans to take place'
+    required: false
+    default: '.'
+  ignore_unfixed:
+    description: 'Ignore vulnerabilities that have no current fix'
+    required: false
+    default: 'true'
+  limit_severities_for_sarif:
+    description: 'only includes severities as defined in the sarif file'
+    required: false
+    default: 'true'
+
+outputs:
+  results_count:
+    description: 'Number of vulnerabilities found'
+    value: ${{ steps.trivy-summary.outputs.results_count }}
+  summary:
+    description: 'Formatted summary of vulnerabilities'
+    value: ${{ steps.trivy-summary.outputs.summary }}
+  sarif_upload_outcome:
+    description: 'Outcome of the SARIF upload step'
+    value: ${{ steps.trivy-upload.outcome }}
+
+runs:
+  using: composite
+  steps:
+    - name: Check repository in helm_deploy/values.yaml
+      id: check-package-repo
+      shell: bash
+      run: |
+        echo 'checking package repository for ${{ inputs.subproject == '' && github.event.repository.name || inputs.subproject}}:'
+        grep -rh 'repository: ' --include="values.yaml" | grep ${{ inputs.subproject == '' && github.event.repository.name || inputs.subproject}} | head -n1 | awk -F'[:/ ]+' '{print "repo="$3"/"$4}' >> $GITHUB_ENV
+
+    - name: Trivy Image Vulnerability Scanner - image
+      id: trivy-analyse-image
+      uses: aquasecurity/trivy-action@915b19bbe73b92a6cf82a1bc12b087c9a19a5fe2 # v0.28.0
+      if: inputs.scan_type == 'image'
+      with:
+        image-ref: "${{ env.repo }}/${{ inputs.subproject == '' && github.event.repository.name || inputs.subproject}}:latest"
+        severity: ${{ inputs.severity }}
+        ignore-unfixed: ${{ inputs.ignore_unfixed }}
+        skip-dirs: '/usr/local/lib/node_modules/npm'
+        skip-files: /app/agent.jar
+        format: 'sarif'
+        output: 'trivy-results.sarif'
+        exit-code: 0
+        limit-severities-for-sarif: ${{ inputs.limit_severities_for_sarif }}
+      env:
+        TRIVY_DB_REPOSITORY: public.ecr.aws/aquasecurity/trivy-db:2,ghcr.io/aquasecurity/trivy-db:2
+        TRIVY_JAVA_DB_REPOSITORY: public.ecr.aws/aquasecurity/trivy-java-db:1,ghcr.io/aquasecurity/trivy-java-db:1
+        # Set credentials only if using ghcr.io as the image registry and repo is private/internal
+        TRIVY_USERNAME: ${{ startsWith(env.repo, 'ghcr.io/') && github.event.repository.visibility != 'public' && github.actor || '' }}
+        TRIVY_PASSWORD: ${{ startsWith(env.repo, 'ghcr.io/') && github.event.repository.visibility != 'public' && secrets.GITHUB_TOKEN || '' }}
+
+    - name: Trivy Image Vulnerability Scanner - filesystem
+      id: trivy-analyse-fs
+      uses: aquasecurity/trivy-action@915b19bbe73b92a6cf82a1bc12b087c9a19a5fe2 # v0.28.0
+      if: inputs.scan_type == 'fs'
+      with:
+        severity: ${{ inputs.severity }}
+        scan-type: ${{ inputs.scan_type }}
+        scanners: ${{ inputs.scanners }}
+        image-ref: ${{ inputs.location}}
+        ignore-unfixed: ${{ inputs.ignore_unfixed }}
+        format: 'sarif'
+        output: 'trivy-results.sarif'
+        exit-code: 0
+        limit-severities-for-sarif: ${{ inputs.limit_severities_for_sarif }}
+      env:
+        TRIVY_DB_REPOSITORY: public.ecr.aws/aquasecurity/trivy-db:2,ghcr.io/aquasecurity/trivy-db:2
+        TRIVY_JAVA_DB_REPOSITORY: public.ecr.aws/aquasecurity/trivy-java-db:1,ghcr.io/aquasecurity/trivy-java-db:1
+
+    - name: Upload trivy artifact
+      uses: actions/upload-artifact@v4
+      id: trivy-upload-artifact
+      with:
+        name: trivy-check-${{ inputs.subproject == '' && github.event.repository.name || inputs.subproject }}
+        path: trivy-results.sarif
+
+    - name: Trivy upload sarif
+      id: trivy-upload
+      uses: github/codeql-action/upload-sarif@v3
+      with:
+        sarif_file: 'trivy-results.sarif'
+        category: trivy-dependency-check
+
+    - name: Prepare Trivy summary
+      id: trivy-summary
+      shell: bash
+      run: |
+        results_count=$(jq '.runs[0].results | length' trivy-results.sarif)
+        echo "Vulnerability Summary"
+        echo "====================="
+        
+        if [ "$results_count" -gt 0 ]; then
+          formatted_output=$(jq -r '.runs[0].results[] | 
+            "\(.ruleId) - \(.message.text | gsub("Package: "; "(") | gsub("Severity: "; "") | gsub("\n"; " "))"' trivy-results.sarif)
+          echo "${formatted_output}"
+          slack_summary="$(echo "${formatted_output}" | awk '{s=s $0} END {if (length(s) >= 3000) print substr(s, 1, 2997) "..."; else print s}')"
+        else
+          echo "No vulnerabilities found"
+          slack_summary="No vulnerabilities found"
+        fi
+        
+        echo "results_count=${results_count}" >> $GITHUB_OUTPUT
+        echo "summary=${slack_summary}" >> $GITHUB_OUTPUT
