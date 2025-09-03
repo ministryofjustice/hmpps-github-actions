@@ -50,14 +50,15 @@ runs:
       shell: bash
       run: |
         echo 'checking package repository for ${{ inputs.subproject == '' && github.event.repository.name || inputs.subproject}}:'
-        grep -rh 'repository: ' --include="values.yaml" | grep ${{ inputs.subproject == '' && github.event.repository.name || inputs.subproject}} | head -n1 | awk -F'[:/ ]+' '{print "repo="$3"/"$4}' >> $GITHUB_ENV
+        repo_info=$(grep -rh 'repository: ' --include="values.yaml" | grep ${{ inputs.subproject == '' && github.event.repository.name || inputs.subproject}} | head -n1 | awk -F'[:/ ]+' '{print $3"/"$4}')
+        echo "repo=${repo_info}" >> $GITHUB_OUTPUT
 
     - name: Trivy Image Vulnerability Scanner - image
       id: trivy-analyse-image
       uses: aquasecurity/trivy-action@915b19bbe73b92a6cf82a1bc12b087c9a19a5fe2 # v0.28.0
       if: inputs.scan_type == 'image'
       with:
-        image-ref: "${{ env.repo }}/${{ inputs.subproject == '' && github.event.repository.name || inputs.subproject}}:latest"
+        image-ref: "${{ steps.check-package-repo.outputs.repo }}/${{ inputs.subproject == '' && github.event.repository.name || inputs.subproject}}:latest"
         severity: ${{ inputs.severity }}
         ignore-unfixed: ${{ inputs.ignore_unfixed }}
         skip-dirs: '/usr/local/lib/node_modules/npm'
@@ -70,8 +71,8 @@ runs:
         TRIVY_DB_REPOSITORY: public.ecr.aws/aquasecurity/trivy-db:2,ghcr.io/aquasecurity/trivy-db:2
         TRIVY_JAVA_DB_REPOSITORY: public.ecr.aws/aquasecurity/trivy-java-db:1,ghcr.io/aquasecurity/trivy-java-db:1
         # Set credentials only if using ghcr.io as the image registry and repo is private/internal
-        TRIVY_USERNAME: ${{ startsWith(env.repo, 'ghcr.io/') && github.event.repository.visibility != 'public' && github.actor || '' }}
-        TRIVY_PASSWORD: ${{ startsWith(env.repo, 'ghcr.io/') && github.event.repository.visibility != 'public' && secrets.GITHUB_TOKEN || '' }}
+        TRIVY_USERNAME: ${{ startsWith(steps.check-package-repo.outputs.repo, 'ghcr.io/') && github.event.repository.visibility != 'public' && github.actor || '' }}
+        TRIVY_PASSWORD: ${{ startsWith(steps.check-package-repo.outputs.repo, 'ghcr.io/') && github.event.repository.visibility != 'public' && secrets.GITHUB_TOKEN || '' }}
 
     - name: Trivy Image Vulnerability Scanner - filesystem
       id: trivy-analyse-fs
