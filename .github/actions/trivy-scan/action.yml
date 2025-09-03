@@ -30,6 +30,10 @@ inputs:
     description: 'only includes severities as defined in the sarif file'
     required: false
     default: 'true'
+  github_token:
+    description: 'GitHub token for authentication'
+    required: false
+    default: ''
 
 outputs:
   results_count:
@@ -72,7 +76,7 @@ runs:
         TRIVY_JAVA_DB_REPOSITORY: public.ecr.aws/aquasecurity/trivy-java-db:1,ghcr.io/aquasecurity/trivy-java-db:1
         # Set credentials only if using ghcr.io as the image registry and repo is private/internal
         TRIVY_USERNAME: ${{ startsWith(steps.check-package-repo.outputs.repo, 'ghcr.io/') && github.event.repository.visibility != 'public' && github.actor || '' }}
-        TRIVY_PASSWORD: ${{ startsWith(steps.check-package-repo.outputs.repo, 'ghcr.io/') && github.event.repository.visibility != 'public' && secrets.GITHUB_TOKEN || '' }}
+        TRIVY_PASSWORD: ${{ startsWith(steps.check-package-repo.outputs.repo, 'ghcr.io/') && github.event.repository.visibility != 'public' && inputs.github_token || '' }}
 
     - name: Trivy Image Vulnerability Scanner - filesystem
       id: trivy-analyse-fs
