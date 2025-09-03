@@ -72,7 +72,7 @@ jobs:
     
     - name: Run Trivy Security Scan
       id: trivy-scan
-      uses: ministryofjustice/hmpps-github-actions/.github/actions/trivy-scan@v2 # WORKFLOW_VERSION
+      uses: ministryofjustice/hmpps-github-actions/.github/actions/trivy-scan@update_trivy_workflows # WORKFLOW_VERSION
       with:
         subproject: ${{ inputs.subproject }}
         severity: ${{ inputs.severity }}
