@@ -114,7 +114,7 @@ runs:
 
         # For services that have the startup/shutdown script enabled.
         # Get pseudo-random, deterministic number for the cron start/shutdown minute.
-        # This is to help ensure the startup/shutdown pods do not all run at the exact same time - which can ause cluster auto-scalling issues.
+        # This is to help ensure the startup/shutdown pods do not all run at the exact same time - which can cause cluster auto-scalling issues.
         cron_minute=$(echo -n "${{ inputs.k8s_deployment_name }}" | md5sum | awk '{print $1}' | tr -dc '0-9' | head -c 3)
         cron_minute=$((cron_minute % 60))
         startup_cron="$cron_minute 6 * * 1-5"
