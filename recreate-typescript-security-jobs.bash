@@ -13,7 +13,8 @@
 # Can be run multiple times to generate different cron expressions / refresh from the template.
 #
 # Note that yq will reformat your circleci yaml file so worth checking the results before raising
-# PRs especially if you've got multi-line commands in your file.
+# PRs especially if you've got multi-line commands in your file. It may also prepend the merge operator
+# shorthand (!!merge) to existing uses of the merge operator (<<). You can also undo this.
 
 function get_yaml() {
   yml_file=$1
