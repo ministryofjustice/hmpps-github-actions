@@ -110,6 +110,18 @@ runs:
         brew install helm
         yq -i ".appVersion = \"${{ inputs.version }}\"" "${{ inputs.helm_dir }}/${{ inputs.helm_chart_name }}/Chart.yaml"
         helm dependency update "${{ inputs.helm_dir }}/${{ inputs.helm_chart_name }}"
+
+
+        # For services that have the startup/shutdown script enabled.
+        # Get pseudo-random, deterministic number for the cron start/shutdown minute.
+        # This is to help ensure the startup/shutdown pods do not all run at the exact same time - which can ause cluster auto-scalling issues.
+        startup_minute=$(echo -n "${{ inputs.k8s_deployment_name }}" | md5sum | awk '{print $1}' | tr -dc '0-9' | head -c 3)
+        startup_minute=$((startup_minute % 60))
+        startup_cron="$startup_minute 6 * * 1-5"
+        shutdown_minute=$(echo -n "${{ inputs.k8s_deployment_name }}-shutdown" | md5sum | awk '{print $1}' | tr -dc '0-9' | head -c 3)
+        shutdown_minute=$((shutdown_minute % 60))
+        shutdown_cron="$shutdown_minute 21 * * 1-5"
+
         exec helm upgrade '${{ inputs.k8s_deployment_name }}' '${{ inputs.helm_dir }}/${{ inputs.helm_chart_name }}' \
           --atomic \
           --history-max 10 \
@@ -117,6 +129,8 @@ runs:
           --install \
           --reset-values \
           --set 'generic-service.image.tag=${{ inputs.version }}' \
+          --set "generic-service.scheduledDowntime.startup=${startup_cron}" \
+          --set "generic-service.scheduledDowntime.shutdown=${shutdown_cron}" \
           --set 'version=${{ inputs.version }}' \
           --set 'global.environment=${{ inputs.environment }}' \
           --timeout ${{ inputs.helm_timeout }} \
