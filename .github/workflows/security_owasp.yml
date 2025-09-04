@@ -51,7 +51,7 @@ jobs:
         distribution: 'temurin'
     - name: Run gradle OWASP Dependency Check Analyse
       id: owasp-analyse
-      run: ./gradlew ${{ inputs.subproject }}:dependencyCheckAnalyze -Pdatafeed.url='file:///opt/vulnz/cache' --info
+      run: ./gradlew ${{ inputs.subproject }}:dependencyCheckAnalyze -Pdatafeed.url='file:///opt/vulnz/cache' -Danalyzer.central.url="https://central.sonatype.com/solrsearch/select" --info
       continue-on-error: true
     # Upload Sarif file: this will attempt to upload the sarif file for private/internal repositories as well
     - name: OWASP upload sarif
