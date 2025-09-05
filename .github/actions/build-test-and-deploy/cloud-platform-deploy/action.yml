@@ -115,6 +115,7 @@ runs:
         yq -i ".appVersion = \"${{ inputs.version }}\"" "${{ inputs.helm_dir }}/${{ inputs.helm_chart_name }}/Chart.yaml"
         helm dependency update "${{ inputs.helm_dir }}/${{ inputs.helm_chart_name }}"
 
+        helm_additional_args="${{ inputs.helm_additional_args }}"
 
         # For services that have the startup/shutdown script enabled.
         # Get pseudo-random, deterministic number for the cron start/shutdown minute.
@@ -124,7 +125,7 @@ runs:
           cron_minute=$((cron_minute % 60))
           startup_cron="$cron_minute 6 * * 1-5"
           shutdown_cron="$cron_minute 21 * * 1-5"
-          helm_additional_args+=" --set generic-service.scheduledDowntime.startup=${startup_cron} --set generic-service.scheduledDowntime.shutdown=${shutdown_cron}"
+          helm_additional_args+=" --set generic-service.scheduledDowntime.startup=${startup_cron} --set generic-service.scheduledDowntime.shutdown=${shutdown_cron} "
         fi
 
         exec helm upgrade '${{ inputs.k8s_deployment_name }}' '${{ inputs.helm_dir }}/${{ inputs.helm_chart_name }}' \
@@ -138,7 +139,7 @@ runs:
           --set 'global.environment=${{ inputs.environment }}' \
           --timeout ${{ inputs.helm_timeout }} \
           --values '${{ inputs.helm_dir }}/values-${{ inputs.environment }}.yaml' \
-          ${{ inputs.helm_additional_args }} \
+          "${helm_additional_args}" \
           ${{ steps.check-ip-allowlists.outputs.ALLOWLIST_GROUPS }} \
           ${{ steps.check-ip-allowlists-version.outputs.ALLOWLIST_VERSION }} \
           --wait
