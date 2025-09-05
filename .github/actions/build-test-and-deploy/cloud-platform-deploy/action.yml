@@ -134,8 +134,6 @@ runs:
           --install \
           --reset-values \
           --set 'generic-service.image.tag=${{ inputs.version }}' \
-          --set "generic-service.scheduledDowntime.startup=${startup_cron}" \
-          --set "generic-service.scheduledDowntime.shutdown=${shutdown_cron}" \
           --set 'version=${{ inputs.version }}' \
           --set 'global.environment=${{ inputs.environment }}' \
           --timeout ${{ inputs.helm_timeout }} \
