@@ -37,7 +37,7 @@ jobs:
             ~/.cache/Cypress
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
       - name: Init testing framework if necessary
-        run: npm run int-test-init --if-present
+        run: npm run int-test-init:ci --if-present
       - name: Get wiremock
         shell: bash
         run: |
