@@ -52,6 +52,7 @@ runs:
     - name: Check repository in helm_deploy/values.yaml
       id: check-package-repo
       shell: bash
+      if: inputs.scan_type == 'image'
       run: |
         echo 'checking package repository for ${{ inputs.subproject == '' && github.event.repository.name || inputs.subproject}}:'
         repo_info=$(grep -rh 'repository: ' --include="values.yaml" | grep ${{ inputs.subproject == '' && github.event.repository.name || inputs.subproject}} | head -n1 | awk -F'[:/ ]+' '{print $3"/"$4}')
