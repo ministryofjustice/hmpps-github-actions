@@ -36,6 +36,8 @@ jobs:
             ./node_modules
             ~/.cache/Cypress
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
+      - name: Init testing framework if necessary
+        run: npm run int-test-init --if-present
       - name: Get wiremock
         shell: bash
         run: |
@@ -48,8 +50,6 @@ jobs:
           nohup npm run start-feature &
           sleep 5
           npm run int-test
-        # continue-on-error: true
-        # replacing the above with if: always()
       - name: upload results
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
