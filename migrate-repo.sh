@@ -16,7 +16,7 @@ the given project type.
 
 
 CONSIDERATIONS
- 
+
 General
 --------
 Requires yq to be installed and gh to be installed (both can be done using brew install yq gh)
@@ -27,7 +27,7 @@ Build/test/deploy
 -----------------
 The script will copy down the most recent template build/test/deployment pipeline and attempt to copy over
 configurations for docker build and deployment to the environments specified in the existing circleci config.
-Any other custom or specific jobs within the CircleCI workflows (eg. Snyk scans or other integration tests) 
+Any other custom or specific jobs within the CircleCI workflows (eg. Snyk scans or other integration tests)
 will need to be migrated separately.
 
 See docs/workflow-migration.md for more information.
@@ -51,7 +51,7 @@ Any custom or extra components will need to be migrated separately - please revi
 
 Further Information
 -------------------
-More information on the process of migrating to Github Actions (including required Cloud Platform configurations) 
+More information on the process of migrating to Github Actions (including required Cloud Platform configurations)
 can be found in the HMPPS Shared Tooling Tech Docs - https://tech-docs.hmpps.service.justice.gov.uk/shared-tooling/migrating-to-GHA
 '
 
@@ -61,7 +61,48 @@ can be found in the HMPPS Shared Tooling Tech Docs - https://tech-docs.hmpps.ser
 # MIGRATION - SECURITY JOBS #
 #############################
 
+set_repo_security_channel_id() {
+  echo
+  echo "This script can use your CircleCI config's default alert-slack-channel value to set your repo's SECURITY_ALERTS_SLACK_CHANNEL_ID variable."
+  echo "Do you want the script to do this? Type in your selection (y or n) and hit Enter:"
+  echo
+  echo "y - Yes, set this variable for me"
+  echo "n - No, I will do this myself"
+  echo "Any other selection will exit"
+
+  read -p "Enter your selection: " alert_channel_selection
+  if [[ $alert_channel_selection = "y" ]]; then
+    echo "Setting SECURITY_ALERTS_SLACK_CHANNEL_ID variable"
+
+    CHANNEL_ID=$(yq  -r .parameters.alerts-slack-channel.default .circleci/config.yml)
+    REPO_NAME="${PWD##*/}"
+
+    if [[ $CHANNEL_ID != "null" ]]; then
+      echo "updating CHANNEL_ID to '$CHANNEL_ID'"
+
+      gh variable set SECURITY_ALERTS_SLACK_CHANNEL_ID --body "${CHANNEL_ID}" -R "ministryofjustice/${REPO_NAME}"
+
+      echo "
+        The 'HMPPS SRE App Slack bot' may need to be added to the '$CHANNEL_ID' slack channel:
+
+        * In slack use the /invite command.
+        * Select 'Add apps to this channel', and look for the 'hmpps-sre-app' app.
+        * Click 'Add' - this will enable messages to be sent by the bot.
+      "
+    else
+      echo "CHANNEL_ID not available in circleci config. Check value at https://github.com/ministryofjustice/${REPO_NAME}/settings/variables/actions "
+    fi
+  elif [[ $alert_channel_selection = "n" ]]; then
+    echo "Skipping alert slack channel variable setting"
+  else
+    echo "Exiting"
+    exit 0
+  fi
+}
+
 migrate_kotlin_security_jobs() {
+  set_repo_security_channel_id
+
   yq -i 'del(.workflows.security) | del(.workflows.security-weekly) | del(.parameters.alerts-slack-channel)' .circleci/config.yml
   mkdir -p .github/workflows
 
@@ -83,6 +124,8 @@ migrate_kotlin_security_jobs() {
 }
 
 migrate_node_security_jobs() {
+  set_repo_security_channel_id
+
   yq -i 'del(.workflows.security) | del(.workflows.security-weekly) | del(.parameters.alerts-slack-channel)' .circleci/config.yml
   mkdir -p .github/workflows
 
@@ -125,7 +168,7 @@ migrate_deployment_jobs() {
 
   # explode the aliases - will make the branch filtering work better in the long run
   yq eval 'explode(.)' -i .circleci/config.yml
-  
+
   # Load the list of build / test / deploy jobs into a string
   # only build-test-deploy will be populated - the others will be added at the bottom and commented out
   all_btd_jobs=$(yq eval '.workflows | keys | map(select(test("build|test|deploy")))' .circleci/config.yml | awk '{print $2}')
@@ -133,7 +176,7 @@ migrate_deployment_jobs() {
   # Create a list of environments that are deployed to
   workflow_jobs=$(yq eval '.workflows.build-test-and-deploy.jobs.[]' .circleci/config.yml)
   deploy_envs=$(yq eval '.workflows.build-test-and-deploy | select(.jobs[]."hmpps/deploy_env") | .jobs[] | select(has("hmpps/deploy_env")) | ."hmpps/deploy_env".env' .circleci/config.yml)
-  
+
   # BUILD modifications
   # -------------------
 
@@ -158,8 +201,8 @@ migrate_deployment_jobs() {
     nb=0
     for each_branch in $(echo $branch_filter); do
       if [ $nb -eq 0 ] ; then
-        nb=1 
-        else branch_filter_string="${branch_filter_string} || " 
+        nb=1
+        else branch_filter_string="${branch_filter_string} || "
       fi
       # check for regex in the branch filter
       if [ $(echo $each_branch | grep -c '/') -eq 1 ]; then
@@ -185,13 +228,13 @@ migrate_deployment_jobs() {
   fi
 
   # additional_docker_build_args
-  additional_docker_build_args="$(yq eval ".workflows.build-test-and-deploy | select(.jobs[].\"hmpps/${docker_build}\") | .jobs[] | select (has(\"hmpps/${docker_build}\")) | .hmpps/${docker_build}.additional_docker_build_args " .circleci/config.yml)" 
+  additional_docker_build_args="$(yq eval ".workflows.build-test-and-deploy | select(.jobs[].\"hmpps/${docker_build}\") | .jobs[] | select (has(\"hmpps/${docker_build}\")) | .hmpps/${docker_build}.additional_docker_build_args " .circleci/config.yml)"
   if [ "${additional_docker_build_args}" != 'null' ]; then
     yq eval ".jobs.build.with.additional_docker_build_args = \"${additional_docker_build_args}\"" -i .github/workflows/pipeline.yml
   fi
 
   # additional_docker_tag
-  additional_docker_tag=$(yq eval ".workflows.build-test-and-deploy | select(.jobs[].\"hmpps/${docker_build}\") | .jobs[] | select (has(\"hmpps/${docker_build}\")) | .hmpps/${docker_build}.additional_docker_tag " .circleci/config.yml)  
+  additional_docker_tag=$(yq eval ".workflows.build-test-and-deploy | select(.jobs[].\"hmpps/${docker_build}\") | .jobs[] | select (has(\"hmpps/${docker_build}\")) | .hmpps/${docker_build}.additional_docker_tag " .circleci/config.yml)
   if [ "${additional_docker_tag}" != 'null' ]; then
     # little tweak to change from CIRCLE_SHA1 to github.sha
     additional_docker_tag="$(echo $additional_docker_tag | sed -e 's/\$CIRCLE_SHA1/\${{ github.sha }}/g')"
@@ -215,7 +258,7 @@ migrate_deployment_jobs() {
   echo -n "Migrating deployment job for: "
   for each_env in $deploy_envs; do
     echo -n "$each_env .. "
-    env_params=$(yq eval '.workflows.build-test-and-deploy | select(.jobs[]."hmpps/deploy_env") | .jobs[] | select(has("hmpps/deploy_env")) | select(."hmpps/deploy_env".env == "'$each_env'")' .circleci/config.yml) 
+    env_params=$(yq eval '.workflows.build-test-and-deploy | select(.jobs[]."hmpps/deploy_env") | .jobs[] | select(has("hmpps/deploy_env")) | select(."hmpps/deploy_env".env == "'$each_env'")' .circleci/config.yml)
 
   # identify when the environment has two deployments (normally feature/main)
     if [ $(echo "$env_params" | grep -c 'hmpps/deploy_env') -gt 1 ]; then
@@ -233,8 +276,8 @@ migrate_deployment_jobs() {
       nb=0
       for each_branch in $(echo $branch_filter); do
         if [ $nb -eq 0 ] ; then
-          nb=1 
-          else branch_filter_string="${branch_filter_string} || " 
+          nb=1
+          else branch_filter_string="${branch_filter_string} || "
         fi
         # check for regex in the branch filter
         if [ $(echo $each_branch | grep -c '/') -eq 1 ]; then
@@ -259,7 +302,7 @@ migrate_deployment_jobs() {
 
     # additional needs for non-dev environments
     if [ {each_env} != "dev" ]; then
-      needs=$(echo "${workflow_jobs}" | yq eval '.workflows.build-test-and-deploy.jobs.[]' .circleci/config.yml | yq ".request-${each_env}-approval.requires[] | select(test(\"^deploy_\"))") 
+      needs=$(echo "${workflow_jobs}" | yq eval '.workflows.build-test-and-deploy.jobs.[]' .circleci/config.yml | yq ".request-${each_env}-approval.requires[] | select(test(\"^deploy_\"))")
       if [ -n "${needs}" ]; then
         echo "    - ${needs}" >> ${pipeline_file}
       fi
@@ -272,7 +315,7 @@ migrate_deployment_jobs() {
     echo "    with:" >> ${pipeline_file}
     echo "      environment: '${each_env}'" >> ${pipeline_file}
     echo "      app_version: '\${{ needs.build.outputs.app_version }}'" >> ${pipeline_file}
-    
+
     # optional helm_timeout
     if [ "$(echo "${env_params}" | yq eval '.hmpps/deploy_env.helm_timeout')" != 'null' ]; then
       echo "      helm_timeout: '$(echo "${env_params}" | yq eval '.hmpps/deploy_env.helm_timeout')'" >> ${pipeline_file}
@@ -295,8 +338,8 @@ migrate_deployment_jobs() {
     echo "WARNING: Duplicate environments found in the CircleCI config (likely due to separate"
     echo "-------  deployments for feature/main branches)."
     echo -e "${duplicate_envs} " | sort | uniq -d | awk '{print "         - " $1}'
-    echo 
-    echo "         This will need to be resolved manually by renaming the job IDs within pipeline.yml" 
+    echo
+    echo "         This will need to be resolved manually by renaming the job IDs within pipeline.yml"
     echo "         to ensure they are unique, and applying the appropriate branch filters and 'needs' values to each job."
     echo
   fi
@@ -312,7 +355,7 @@ migrate_deployment_jobs() {
   # java_postgres
   # localstack
   # java_localstack_postgres (and db_name)
-  
+
   # Each of these will print a warning for the developer to carry out whatever manual steps are required to complete the migration
 
   # node_redis
@@ -346,7 +389,7 @@ migrate_deployment_jobs() {
         # Remove the ''
         echo "INFO: .github/workflows/node_unit_tests_redis.yml created for node unit tests including redis."
         echo "----  This will require manual modification to match the unit test within .circleci/config.yml"
-      
+
       else
         # copy down node_unit_tests as a template since it's simplest
         gh api repos/ministryofjustice/hmpps-github-actions/contents/.github/workflows/node_unit_tests.yml -H "Accept: application/vnd.github.v3.raw" > .github/workflows/node_${executor_job}_redis.yml
@@ -363,7 +406,7 @@ migrate_deployment_jobs() {
       fi
     done
   fi
-  
+
   # ============== end of node_redis ==============
 
   # java_postgres
@@ -402,7 +445,7 @@ migrate_deployment_jobs() {
         echo "      It will also need a reference to this workflow to be added in .github/workflows/pipeline.yml"
       fi
     done
-  fi 
+  fi
 
   # ============== end of java_postgres ==============
 
@@ -425,7 +468,7 @@ migrate_deployment_jobs() {
           if echo "${value}" | grep -q 'pipeline.parameters'; then
             default_value="$(echo ${value} | awk {'gsub ("pipeline.","");print $2'}).default"
             value=$(yq eval ".$default_value" .circleci/config.yml)
-          fi          
+          fi
           if [ "$value" != "null" ]; then
           # Update the pipeline.yml with the extracted values
             yq eval ".jobs.kotlin_validate.with.${key//_/-} = \"$value\"" -i .github/workflows/pipeline.yml
@@ -441,7 +484,7 @@ migrate_deployment_jobs() {
         echo "      It will also need a reference to this workflow to be added in .github/workflows/pipeline.yml"
       fi
     done
-  fi 
+  fi
 
   # ============== end of java_localstack_postgres ==============
 
@@ -482,13 +525,13 @@ migrate_deployment_jobs() {
         echo "      It will also need a reference to this workflow to be added in .github/workflows/pipeline.yml"
       fi
     done
-  fi 
+  fi
 
   # ============== end of localstack ==============
 
   # go through the helm deploy files and replace quay.io/hmpps with ghcr.io/ministryofjustice
   #
-  
+
   # Find and replace in .yml and .yaml files
   find "helm_deploy" -type f \( -name "*.yml" -o -name "*.yaml" \) -exec sed -i.bak 's|quay.io/hmpps/|ghcr.io/ministryofjustice/|g' {} \; -exec rm {}.bak \;
   echo "INFO: quay.io -> ghcr.io migration complete."
@@ -538,19 +581,6 @@ if ! command -v gh &> /dev/null; then
   exit 1
 fi
 
-CHANNEL_ID=$(yq  -r .parameters.alerts-slack-channel.default .circleci/config.yml)
-REPO_NAME="${PWD##*/}"
-
-if [[ $CHANNEL_ID != "null" ]]; then
-  echo "updating CHANNEL_ID to '$CHANNEL_ID'"  
-
-  gh variable set SECURITY_ALERTS_SLACK_CHANNEL_ID --body "${CHANNEL_ID}" -R "ministryofjustice/${REPO_NAME}"
-else
-  echo "CHANNEL_ID not available in circleci config. Check value at https://github.com/ministryofjustice/${REPO_NAME}/settings/variables/actions "
-fi
-
-echo "Using '$CHANNEL_ID' as the slack channel for security alerts"
-
 
 ## Main menu
 echo
@@ -566,7 +596,7 @@ echo "3. Migrate security and deployment workflows"
 echo "4. Get information about this migration script"
 echo "Any other selection will exit"
 
-read -p "Enter your selection: " selection 
+read -p "Enter your selection: " selection
 if [[ $selection -eq 1 ]]; then
   echo "Migrating security workflows only"
 elif [[ $selection -eq 2 ]]; then
@@ -604,22 +634,13 @@ if [[ $((selection & 2)) -ne 0 ]] ; then
 # the same function can be used for both repo types - just with a couple of tweaks
   if [[ -f "package.json" ]]; then
     migrate_deployment_jobs "typescript"
-    
+
   elif [[ -f "build.gradle.kts" ]]; then
     migrate_deployment_jobs "kotlin"
-    
+
   else
     echo "No package.json or build.gradle.kts found."
     echo "No deployment jobs will be migrated"
   fi
 
 fi
-
-
-echo "
-  The 'HMPPS SRE App Slack bot' may need to be added to the '$CHANNEL_ID' slack channel:
-
-  * In slack use the /invite command.
-  * Select 'Add apps to this channel', and look for the 'hmpps-sre-app' app.
-  * Click 'Add' - this will enable messages to be sent by the bot.
-"
