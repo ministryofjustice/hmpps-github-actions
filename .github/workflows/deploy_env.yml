@@ -51,10 +51,6 @@ on:
         required: false
         default: ${{ github.event.repository.name }}
         type: string
-      scheduled_downtime_cron:
-        description: "Whether to set the deterministic scheduled downtime cron values"
-        required: false
-        default: "true"
 
 permissions:
   contents: read
