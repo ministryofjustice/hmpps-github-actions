@@ -54,7 +54,8 @@ on:
       scheduled_downtime_cron:
         description: "Whether to set the deterministic scheduled downtime cron values"
         required: false
-        default: "true"
+        default: true
+        type: boolean
 
 permissions:
   contents: read
@@ -104,7 +105,7 @@ jobs:
           helm_chart_name: ${{ inputs.helm_chart_name }}
           helm_allowlist_groups: ${{ vars.HMPPS_IP_ALLOWLIST_GROUPS_YAML }}
           helm_allowlist_version: ${{ vars.HMPPS_IP_ALLOWLIST_GROUPS_VERSION }}
-          scheduled_downtime_cron: ${{inputs.scheduled_downtime_cron }}
+          scheduled_downtime_cron: ${{ inputs.scheduled_downtime_cron }}
 
       # Notification bit - always send prod releases to dps-releases - CVA3MKDTR
       - if: ${{ always() && ( inputs.environment == 'prod' || inputs.environment == 'production' ) }}
