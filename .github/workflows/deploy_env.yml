@@ -54,8 +54,8 @@ on:
       scheduled_downtime_cron:
         description: "Whether to set the deterministic scheduled downtime cron values"
         required: false
-        default: true
-        type: boolean
+        default: "true"
+        type: string
 
 permissions:
   contents: read
