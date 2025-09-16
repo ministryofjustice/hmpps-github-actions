@@ -16,6 +16,21 @@ on:
         type: string
         default: "hmpps-tech"
         description: "Comma-separated list of team names associated with the specified application.  Validates against the names of existing teams for this account."
+      veracode_package_artifact_name:
+        required: false
+        type: string
+        default: ''
+        description: "The name of the artifact to download, containing a veracode_artifact_name (default source.zip) packaged application. Optional."
+      veracode_artifact_name:
+        required: false
+        type: string
+        default: 'source.zip'
+        description: "The name of the artifact within the package, Optional."
+      application_name:
+        required: false
+        type: string
+        default: ''
+        description: "The name of the application, defaulting to the repository name if not provided."
     secrets:
       HMPPS_SRE_SLACK_BOT_TOKEN:
         description: Slack bot token
@@ -76,9 +91,15 @@ jobs:
         java-version: '21'
         distribution: 'temurin'
     - name: prepare assets
+      if: inputs.veracode_package_artifact_name == ''
       uses: ministryofjustice/hmpps-github-actions/.github/actions/security_veracode_prepare_artifacts@v2 # WORKFLOW_VERSION
       with:
         docker_image_app_dir: ${{ inputs.docker_image_app_dir }}
+    - name: download assets artifact
+      if: inputs.veracode_package_artifact_name != ''
+      uses: actions/download-artifact@v4
+      with:
+        name: ${{ inputs.veracode_package_artifact_name }}
     - name: "Download/Extract veracode agent"
       run: wget https://repo1.maven.org/maven2/com/veracode/vosp/api/wrappers/vosp-api-wrappers-java/22.9.10.3/vosp-api-wrappers-java-22.9.10.3.jar -O VeracodeJavaAPI.jar
     - name: "Upload to Veracode"
@@ -96,12 +117,12 @@ jobs:
           -vkey "${VERACODE_API_KEY}" \
           -teams "${{ inputs.teams }}" \
           -action UploadAndScan \
-          -appname ${{ github.event.repository.name }} \
+          -appname ${{ inputs.application_name || github.event.repository.name }} \
           -createprofile true \
           -deleteincompletescan 2 \
           -version "github_id:${{ github.run_id }} ${{ github.ref_type}}:${{ github.ref_name}} sha:${GITHUB_SHA::7}" \
-          -filepath source.zip \
-          2>&1 | tee output.txt 
+          -filepath ${{ inputs.veracode_artifact_name }} \
+          2>&1 | tee output.txt
 #      continue-on-error: true
       env:
         VERACODE_API_ID_0: ${{ secrets.HMPPS_VERACODE_API_ID_0 }}
@@ -117,7 +138,7 @@ jobs:
     - uses: actions/upload-artifact@v4
       if: success() 
       with:
-        name: veracode-policy-check-${{ github.event.repository.name }}
+        name: veracode-policy-check-${{ inputs.application_name || github.event.repository.name }}
         path: output.txt
     - name: send a failure slack message
       if: failure()  && inputs.channel_id != 'NO_SLACK'
@@ -127,4 +148,3 @@ jobs:
         channel_id: ${{ inputs.channel_id }}
         input_file: output.txt
 
-  

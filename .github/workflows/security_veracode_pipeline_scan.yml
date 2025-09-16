@@ -11,6 +11,16 @@ on:
         required: false
         default: '/app'
         type: string
+      veracode_package_artifact_name:
+        required: false
+        type: string
+        default: ''
+        description: "The name of the artifact to download, containing a veracode_artifact_name (default source.zip) packaged application. Optional."
+      veracode_artifact_name:
+        required: false
+        type: string
+        default: 'source.zip'
+        description: "The name of the artifact within the package, Optional."
     secrets:
       HMPPS_SRE_SLACK_BOT_TOKEN:
         description: Slack bot token
@@ -71,9 +81,15 @@ jobs:
         java-version: '21'
         distribution: 'temurin'
     - name: prepare assets
+      if: inputs.veracode_package_artifact_name == ''
       uses: ministryofjustice/hmpps-github-actions/.github/actions/security_veracode_prepare_artifacts@v2 # WORKFLOW_VERSION
       with:
         docker_image_app_dir: ${{ inputs.docker_image_app_dir }}
+    - name: download assets artifact
+      if: inputs.veracode_package_artifact_name != ''
+      uses: actions/download-artifact@v4
+      with:
+        name: ${{ inputs.veracode_package_artifact_name }}
     - name: "Download/Extract pipeline scanner"
       shell: bash
       run: |
@@ -118,7 +134,7 @@ jobs:
           java -jar pipeline-scan.jar \
           $(test -f results.json && echo "--baseline_file results.json") \
           --json_output true \
-          --file source.zip \
+          --file ${{ inputs.veracode_artifact_name }} \
           --policy_file Ministry_of_Justice.json \
           --veracode_api_id "${VERACODE_API_ID}" \
           --veracode_api_key "${VERACODE_API_KEY}" \

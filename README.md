@@ -11,19 +11,39 @@ This contains a library of Github actions for use by other projects. These inclu
 - testing / deployments
 - slack messaging templates
 
+### Build / deploy workflows
+
+- `deploy_env`: orchestrates deployment to a Cloud Platforms environment
+- `docker_build`: builds a Docker image (including options for multiplatform)
+- `docker_push`: pushes a Docker image
+
+### Test workflows
+
+#### Gradle
+- `gradle_localstack_postgres_verify`: runs a Gradle check with additional Localstack & Postgres services
+- `gradle_localstack_verify`: runs a Gradle check with additional Localstack service
+- `gradle_postgres_verify`: runs a Gradle check with additional Postgres service
+- `kotlin_validate`: runs a Gradle check
+
+#### Node
+- `node_build`: runs a node build
+- `node_integration_tests_redis`: runs integration tests against a node installation with a REdis interface
+- `node_integration_tests`: runs integration tests against a node installation
+- `node_unit_tests`: runs unit tests against a node installation
+
+#### Helm
+- `test_helm_lint`: validates Helm configurations
+
+
 ### Security workflows
 
 - NPM dependency
 - NPM outdated
 - OWASP reports
-- Trivy reports
+- Trivy scan (image and filesystem)
 - Veracode pipeline scan
 - Veracode policy scan
-
-#### Migrating from CircleCI
-
-Documentation for migrating security scans from CircleCI to Github Actions can be found in [this document](docs/security-migration.md)
-
+- CodeQL scan (Github Actions and specific languages)
 
 ### Slack actions
 - `slack_prepare_results`: filter non-Slack compatible text out of a text file and load it into a variable
@@ -31,9 +51,16 @@ Documentation for migrating security scans from CircleCI to Github Actions can b
 - `slack_codescan_notification`: links to the Codescan section of a repository to show the currently identified issues
 
 
+## Migrating from CircleCI
+
+Documentation for migrating security scans from CircleCI to Github Actions can be found in [this document](docs/security-migration.md).
+Documentation for migrating build/test/deploy workflows from CircleCI to Github Actions can be found in [this document](docs/workflow-migration.md).
+
 ## Templates
 
-These workflows are called by other repositories. Templates to call these are in the `templates` directory.
+Example templates that can be used to call shared workflows can be found in the `templates` directory.
+
+*Note:* Examples of security scans can be found within the [Kotlin](https://github.com/ministryofjustice/hmpps-template-kotlin/tree/main/.github/workflows) and [Typescript](https://github.com/ministryofjustice/hmpps-template-typescript/tree/main/.github/workflows) repositories.
 
 
 ## Version Control
@@ -50,7 +77,7 @@ When a new release is issued, all of these referred workflows (as well as the ca
 
 To perform a release:
 
-* Update the WORKFLOW_VERSION across the project
+* Update the WORKFLOW_VERSION across the project (if doing a major release)
 * Ensure the `CHANGELOG.md` has been updated
 * Create a pull request and get it merged
 * Create a new release, and select create new tag, incrementing the version appropriately.
@@ -60,7 +87,10 @@ e.g: For a new version: `v2.1.5`
 ```sh
 git tag -f v2 && git push -f origin v2
 git tag -f v2.1 && git push -f origin v2.1
+git tag -f v2.1.5 && git push -f origin v2.1.5
 ```
+
+This requires maintenance permissions (or greater) on this repository.
 
 ### TODO
 

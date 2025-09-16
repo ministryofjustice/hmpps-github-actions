@@ -7,8 +7,28 @@ Because CircleCI has been around for many years, and each project may well have 
 
 This is intended to be a 'get you started' process, although it may well be that other common components are added to the migration if there are common elements.
 
+### Other documentation
+
+More information on the process of migrating to Github Actions (including required Cloud Platform configurations) can be found in the [HMPPS Shared Tooling Tech Docs](https://tech-docs.hmpps.service.justice.gov.uk/shared-tooling/migrating-to-GHA/)
+
+## The Easy Automated Way
+
+Before running the script below, please review the information below, which covers the components that are included in the migration, and what needs to be considered for each stage.
+
+It's not quite as straightforward as the security job migrations, since there are a number of different methods of build, test and deployment, and some of the behaviour (including branch filters) needs special consideration.
+
+It may well be the case that rather than migrating the repo using this script, you may wish to look at the template repositories or another team's Github workflows to save having to make too many changes to fix the items that are missed or different.
+
+Having said all that, the `migrate-repo.sh` script can be run from a checked out repo:
+```bash
+/bin/bash -c "$(curl -fsSL https://github.com/ministryofjustice/hmpps-github-actions/raw/refs/heads/main/migrate-repo.sh)"
+```
+
+Depending on the option chosen, it will migrate components as detailed below.
+
+
 ## Components
-The migration script solely to translate the **build-test-and-deploy** jobs under **workflows:** in `.circleci/config.yml`:
+The function of the migration script is solely to translate the **build-test-and-deploy** jobs under **workflows:** in `.circleci/config.yml`:
 ```
 workflows:
   build-test-and-deploy:
@@ -22,7 +42,9 @@ to the templated jobs within `.github/workflows/pipeline.yml`:
 jobs:
 ```
 
-There will be sufficient parameters to carry out a simple deployment.
+...with sufficient parameters to carry out a simple deployment. 
+
+Each component that can be migrated is detailed below.
 
 ### Docker Build
 This will either call `build_multiplatform_docker` or `build_docker` with custom parameters.
@@ -39,7 +61,8 @@ Note: Github Actions doesn't suppport regex filtering of branch filters, so it u
 ### Deploy
 This will create a deployment activity for each corresponding environment within `config.yml`
 
-Approval gates are configured within the repository settings under **environments**, so aren't included within the deployment here,
+Approval gates (a.k.a. **manual approval**, or **approvals** in CircleCI) are set within the repository itself, so aren't included within the deployment here.  These values are set by the Cloud Platform configuration, but can be verified in the Web UI at **environments > (env name) > Required reviewers** and ensuring this checkbox is checked.  See GitHub's ["Deployments and environments"](https://docs.github.com/en/actions/reference/workflows-and-actions/deployments-and-environments#required-reviewers) documentation for further information.
+
 The *needs* configurations are based on any 'required' element associated with the request-${each_env}-approval.requires[] configuration
 
 #### Parameters
@@ -72,12 +95,5 @@ Once the tasks have been migrated, the `build-test-and-deploy` workflow is remov
 The previous configuration will be retained in a backup file (config.bak.yyyymmdd_HHMMSS)
 
 
-## Automation
-
-The `migrate-repo.sh` script can be run from a checked out repo:
-```bash
-/bin/bash -c "$(curl -fsSL https://github.com/ministryofjustice/hmpps-github-actions/raw/refs/heads/main/migrate-repo.sh)
-```
-
 ### TODO:
-Depending on feedback from developers, further parameters or build/test/deploy steps may be migrated
+Depending on feedback from developers, further parameters or build/test/deploy steps may be added to this migration script.

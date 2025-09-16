@@ -1,0 +1,92 @@
+name: Run gradle checks
+on:
+  workflow_call:
+    inputs:
+      java-version:
+        type: string
+        required: false
+        default: '21'
+      java-options:
+        description: Any JAVA_OPTS that need to be set.  Not normally required when using github actions
+        type: string
+        default: ''
+        required: false
+      gradle-command:
+        description: The gradle command to execute
+        type: string
+        default: './gradlew check'
+        required: false
+      artifact-name:
+        description: Unique name (across the pipeline) for the uploaded artifact
+        type: string
+        default: 'test-results'
+        required: false
+      build-artifact-name:
+        description: Unique name (across the pipeline) for the uploaded build artifact
+        type: string
+        default: 'build-results'
+        required: false
+      build-dir:
+        description: Path to find the artifacts e.g. necessary for multi-project gradle builds.
+        type: string
+        default: 'build'
+        required: false
+      upload-test-artifacts:
+        description: Whether to upload test artifacts and generate test report
+        type: boolean
+        default: true
+        required: false
+      upload-build-artifacts:
+        description: Whether to upload the uber jar and other required artifacts to build a docker image
+        type: boolean
+        default: false
+        required: false
+permissions:
+  contents: read
+jobs:
+  gradle-verify:
+    name: Verify the gradle app
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v4
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '${{ inputs.java-version }}'
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+      - name: Run checks with gradle
+        shell: bash
+        run: |
+          export JAVA_OPTS="${{ inputs.java-options }}"
+          ${{ inputs.gradle-command }}
+      - name: Upload the test artifacts
+        if: ${{ inputs.upload-test-artifacts && !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.artifact-name }}
+          path: |
+            ${{ inputs.build-dir }}/test-results
+            ${{ inputs.build-dir }}/reports/tests
+      - name: Upload the build artifacts
+        if: ${{ inputs.upload-build-artifacts && !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.build-artifact-name }}
+          path: |
+            ${{ inputs.build-dir }}/libs
+          retention-days: 1
+      - name: publish test report
+        if: ${{ inputs.upload-test-artifacts && !cancelled() && github.event.repository.visibility == 'public' }}
+        uses: dorny/test-reporter@v2
+        with:
+          artifact: ${{ inputs.artifact-name }}
+          name: Test Report
+          path: 'test-results/**/*.xml'
+          reporter: java-junit
+          fail-on-empty: false
+          fail-on-error: false
+          list-suites: 'failed'
+          list-tests: 'failed'

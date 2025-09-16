@@ -24,9 +24,8 @@ inputs:
     description: The KUBE_TOKEN
     required: true
   k8s_deployment_name:
-    description: "Kubernetes deployment name"
-    default: 'PROJECT_NAME'
-    required: false
+    description: "Kubernetes deployment name, also Helm release name"
+    required: true
   changelog_git_paths:
     default: ""
     description: When set it will limit the file changes shown in the changelog to the specified paths only. This is useful for multi-project builds where otherwise it will show all changes from all projects.
@@ -41,14 +40,17 @@ inputs:
     description: any additional helm arguments
     required: false
     default: ""
-  helm_timeout: 
+  helm_timeout:
     description: helm timeout period
     required: false
     default: 5m
-  helm_dir: 
+  helm_dir:
     description: location of helm configuration
     required: false
     default: helm_deploy
+  helm_chart_name:
+    description: location of helm chart within the helm_dir
+    required: true
   helm_allowlist_groups:
     description: values for location of allowlist groups file
     required: false
@@ -58,13 +60,15 @@ inputs:
 
 outputs:
   deployment_changelog:
-    description: "The changelog for the deployment" 
+    description: "The changelog for the deployment"
     value: ${{ steps.version_history.outputs.deployment_changelog }}
 
 runs:
   using: composite
   steps:
     - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
     - name: Authenticate
       uses: ministryofjustice/hmpps-github-actions/.github/actions/build-test-and-deploy/cloud-platform-auth@v2 # WORKFLOW_VERSION
       with:
@@ -107,7 +111,7 @@ runs:
       shell: bash
       run: |
         if [[ -z "${{ inputs.helm_release_name }}" ]]; then
-          echo "helm_release_name=${{ github.event.repository.name }}" >> "$GITHUB_OUTPUT"
+          echo "helm_release_name=${{ inputs.helm_chart_name }}" >> "$GITHUB_OUTPUT"
         else
           echo "helm_release_name=${{ inputs.helm_release_name }}" >> "$GITHUB_OUTPUT"
         fi
@@ -117,12 +121,12 @@ runs:
       run: |
         eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
         brew install helm
-        yq -i ".appVersion = \"${{ inputs.version }}\"" "${{ inputs.helm_dir }}/${{ github.event.repository.name }}/Chart.yaml"
-        helm dependency update "${{ inputs.helm_dir }}/${{ github.event.repository.name }}"
+        yq -i ".appVersion = \"${{ inputs.version }}\"" "${{ inputs.helm_dir }}/${{ inputs.helm_chart_name }}/Chart.yaml"
+        helm dependency update "${{ inputs.helm_dir }}/${{ inputs.helm_chart_name }}"
 
         exec helm upgrade \
           "${{ steps.set-helm-release-name.outputs.helm_release_name }}" \
-          "${{ inputs.helm_dir }}/${{ github.event.repository.name }}" \
+          "${{ inputs.helm_dir }}/${{ inputs.helm_chart_name }}" \
           --atomic \
           --history-max 10 \
           --force \
@@ -132,7 +136,7 @@ runs:
           --set 'version=${{ inputs.version }}' \
           --set 'global.environment=${{ inputs.environment }}' \
           --timeout ${{ inputs.helm_timeout }} \
-          --values 'helm_deploy/values-${{ inputs.environment }}.yaml' \
+          --values '${{ inputs.helm_dir }}/values-${{ inputs.environment }}.yaml' \
           ${{ inputs.helm_additional_args }} \
           ${{ steps.check-ip-allowlists.outputs.ALLOWLIST_GROUPS }} \
           ${{ steps.check-ip-allowlists-version.outputs.ALLOWLIST_VERSION }} \

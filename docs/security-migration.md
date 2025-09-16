@@ -1,36 +1,65 @@
 # Migrating security scans from CircleCI to Github Actions
 
+- [Introduction](#introduction)
+- [Requirements](#requirements)
+- [Automated Process](#the-easy-automated-process)
+- [Scripts](#scripts)
+
+
 ## Introduction
 
-Periodic (so non-pipeline) security scans have, for a long while, been run by CircleCI. Towards the bottom of the
-`.circleci/config.yml` file in a number of projects, there is a collection of jobs that are instigated on a schedule.
+Periodic (so non-pipeline) security scans have, for a long while, been run by CircleCI. In a number of projects, the
+`.circleci/config.yml` file contains a list of jobs that are instigated on a schedule.
 
-It's now possible to run scans and upload them (when appropriate) to the Code Scanning section of the repo and send a
-Slack notification using Github actions.
+It's now possible to run scans and upload them (when appropriate) to the Code Scanning section of the repo and send a Slack notification using Github actions.
 
 This document details how to move over from CircleCI for each scan and what files and configurations are required.
 
-Template workflows can be found in the `templates` directory of this repository.
+The security workflows in the [Typescript](https://github.com/ministryofjustice/hmpps-template-typescript/tree/main/.github/workflows) and [Kotlin](https://github.com/ministryofjustice/hmpps-template-kotlin/tree/main/.github/workflows) template projects are used as the basis of the security scans, since they will represent the most recent configurations.
 
-## Components
+## Requirements
 
 ### Common components
 
 Currently the only common component that's required for all action is the **Security Alerts Slack Channel ID**.
 
-This needs to be added to the Actions variables of the project's Github repository, with the name *
-*`SECURITY_ALERTS_SLACK_CHANNEL_ID`**, and the appropriate Slack channel ID as the value.
-Note that this should be the channel ID, as reported at the bottom of _View channel details_ and not the channel name as
-the channel name can be changed at any point.
+This needs to be added to the Actions variables of the project's Github repository, with the name **`SECURITY_ALERTS_SLACK_CHANNEL_ID`**, and the appropriate Slack channel ID as the value.
+Note that this should be the channel ID, as reported at the bottom of _View channel details_ and not the channel name as the channel could be renamed at a later stage.
 
-The **HMPPS SRE App Slack bot** then needs to be added to the channel - using `/invite`, select "Add apps to this
+If the channel is private, the **HMPPS SRE App Slack bot** then needs to be invited to the channel - using `/invite`, select "Add apps to this
 channel", and look for **hmpps-sre-app**. Click 'Add' - this will enable messages to be sent by the bot.
 
 ![Invite apps to the channel](pics/slack-invite.png)
 ![Search for hmpps-sre-app](pics/slack-app.png)
 
-Note: if the Slack Channel ID variable is empty, no slack messages will be sent within any of these workflows below.
+**Note:** if the Slack Channel ID variable is empty, no slack messages will be sent within any of these workflows below.
 Only failed workflow emails will be sent (Veracode scans and code scanning uploads will continue).
+
+## The easy automated process
+
+This is the recommended way to update security jobs. What you need to do:
+
+- check out [hmpps-github-actions](https://github.com/ministryofjustice/hmpps-github-actions) into the same parent folder as your project.
+
+- For kotlin projects you can run:
+```
+/bin/bash -c ../hmpps-github-actions/recreate-kotlin-security-jobs.bash
+```
+from your cloned Github repository.
+
+- For typescript projects you can run:
+```
+/bin/bash -c ../hmpps-github-actions/recreate-typescript-security-jobs.bash
+```
+
+Alternatively you can run this from a checked out repo:
+```
+/bin/bash -c "$(curl -fsSL https://github.com/ministryofjustice/hmpps-github-actions/raw/refs/heads/main/migrate-repo.sh)
+```
+
+For more information about how it works, see the 'Scripts' section below.
+
+## Scripts
 
 ### ***security_trivy***
 
@@ -50,7 +79,7 @@ within `.circleci/config.yml` of the target project, comment out or remove the f
 From this repo, copy:
 
 - from `templates/workflows/security_trivy.yml`
-- to `.github/workflows/security_trivy.yml` of the target project.
+- to `.github/workflows/security_trivy.yml` in the target project.
 
 #### Outputs
 
@@ -83,8 +112,8 @@ within `.circleci/config.yml` of the target project, comment out or remove the f
 
 From this repo, copy:
 
-- from `templates/workflows/security_owasp.yml`
-- to`.github/workflows/security_owasp.yml` of the target project.
+- from `.github/workflows/security_owasp.yml` in the template project
+- to `.github/workflows/security_owasp.yml` in the target project.
 
 #### Outputs
 
@@ -116,7 +145,7 @@ within `.circleci/config.yml` of the target project, comment out or remove the f
 
 From this repo, copy:
 
-- from `templates/workflows/security_npm_dependency.yml`
+- from `.github/workflows/security_npm_dependency.yml` in the template project
 - to `.github/workflows/security_npm_dependency.yml` of the target project.
 
 #### Outputs
@@ -150,8 +179,8 @@ within `.circleci/config.yml` of the target project, comment out or remove the f
 
 From this repo, copy:
 
-- from `templates/workflows/security_veracode_pipeline_scan.yml`
-- to `.github/workflows/security_veracode_pipeline_scan.yml` of the target project.
+- from `.github/workflows/security_veracode_pipeline_scan.yml` in the template project
+- to `.github/workflows/security_veracode_pipeline_scan.yml` in the target project.
 
 To ensure all the scans don't run at the same time, please change the time of this scan.
 
@@ -190,8 +219,8 @@ security-weekly:
 
 From this repo, copy:
 
-- from `templates/workflows/security_veracode_policy_scan.yml`
-- to `.github/workflows/security_veracode_policy_scan.yml` of the target project.
+- from `.github/workflows/security_veracode_policy_scan.yml` in the template project
+- to `.github/workflows/security_veracode_policy_scan.yml` in the target project
 
 To ensure all the scans don't run at the same time, please change the time of this scan.
 
@@ -202,22 +231,6 @@ the [Developer Portal](https://developer-portal.hmpps.service.justice.gov.uk/rep
 
 If the workfow fails, Github sends a slack message and an email to notify users.
 
-## Automation
-
-For kotlin projects you can run:
-```bash
-../hmpps-github-actions/migrate-kotlin-security-jobs.bash
-```
-from the github repository.  For typescript projects there is also:
-```bash
-../hmpps-github-actions/migrate-typescript-security-jobs.bash
-```
-see the scripts for more information.
-
-Alternatively you can run this from a checked out repo:
-```bash
-/bin/bash -c "$(curl -fsSL https://github.com/ministryofjustice/hmpps-github-actions/raw/refs/heads/main/migrate-repo.sh)
-```
 
 ### TODO:
 

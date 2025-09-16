@@ -33,12 +33,20 @@ inputs:
   HMPPS_QUAYIO_TOKEN:
     description: Docker registry token
     required: false
-
+  download_build_artifacts:
+    description: Whether to download the build artifacts prior to running the docker build
+    required: false
+    default: 'false'
 
 runs:
   using: "composite"
   steps:
     - uses: actions/checkout@v4
+    - name: Download build artifacts needed for docker build
+      if: inputs.download_build_artifacts == 'true'
+      uses: actions/download-artifact@v4
+      with:
+        name: build-results
     - uses: docker/setup-qemu-action@v3
       with:
         image: tonistiigi/binfmt:qemu-v7.0.0-28

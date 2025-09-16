@@ -1,0 +1,17 @@
+name: Security CodeQL Github Actions check
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "00 05 * * *" # Every weekday at 05:00 UTC
+
+permissions:
+  contents: read
+  actions: read
+  security-events: write
+jobs:
+  security-actions-codeql-check:
+    name: Project security Github Actions CodeQL check
+    uses: ministryofjustice/hmpps-github-actions/.github/workflows/security_codeql_actions.yml@v2 # WORKFLOW_VERSION
+    with:
+      channel_id: ${{ vars.SECURITY_ALERTS_SLACK_CHANNEL_ID || 'NO_SLACK' }}
+    secrets: inherit

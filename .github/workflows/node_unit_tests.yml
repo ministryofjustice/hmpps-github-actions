@@ -36,10 +36,6 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: npm_build_artifacts
-          path: |
-            build/
-            dist/
-            assets/stylesheets/
       - name: unit tests
         id: unit-tests
         shell: bash
@@ -48,11 +44,23 @@ jobs:
         # continue-on-error: true
         # Replacing the above with if: always()
       - name: upload the artifacts
-        if: always()
+        if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
         with:
           name: npm_unit_test_artifacts
-          path: test_results/
+          path: test_results
+      - name: publish test report
+        if: ${{ !cancelled() && github.event.repository.visibility == 'public' }}
+        uses: dorny/test-reporter@v2
+        with:
+          artifact: npm_unit_test_artifacts
+          name: Test Report
+          path: 'jest/**/*.xml'
+          reporter: java-junit
+          fail-on-empty: false
+          fail-on-error: false
+          list-suites: 'failed'
+          list-tests: 'failed'
       - name: fail the action if the tests failed
         if: ${{ steps.unit-tests.outcome == 'failure' }}
         uses: actions/github-script@v7

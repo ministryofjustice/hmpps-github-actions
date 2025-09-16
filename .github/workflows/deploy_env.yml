@@ -3,9 +3,9 @@ name: Build & push docker image and deploy to environment
 on:
   workflow_call:
     inputs:
-      environment: 
+      environment:
         description: Environment
-        required: true 
+        required: true
         type: string
       environment_url:
         description: URL for deployment/environment
@@ -14,12 +14,12 @@ on:
         type: string
       app_version:
         description: App version
-        required: true 
+        required: true
         type: string
       k8s_deployment_name:
         description: Kubernetes deployment name
-        default: "PROJECT_NAME"
         required: false
+        default: ${{ github.event.repository.name }}
         type: string
       changelog_git_paths:
         description: Changelog git paths
@@ -55,6 +55,11 @@ on:
         default: "helm_deploy"
         required: false
         type: string
+      helm_chart_name:
+        description: Name of the helm chart - defaults to the repo name
+        required: false
+        default: ${{ github.event.repository.name }}
+        type: string
 
 permissions:
   contents: read
@@ -77,11 +82,11 @@ jobs:
         id: install
         with:
           version: latest
-     
+
       - name: Set Slack Channel ID
         id: set-slack-channel-id
         run: |
-          if [[ "${{ inputs.environment }}" == "prod" ]]; then
+          if [[ "${{ inputs.environment }}" == "prod" || "${{ inputs.environment }}" == "production" ]]; then
             echo "slack_channel_id=${{ vars.PROD_RELEASES_SLACK_CHANNEL }}" | tee -a $GITHUB_OUTPUT
           else
             echo "slack_channel_id=${{ vars.NONPROD_RELEASES_SLACK_CHANNEL }}" | tee -a $GITHUB_OUTPUT
@@ -104,6 +109,7 @@ jobs:
           helm_additional_args: ${{ inputs.helm_additional_args }}
           helm_timeout: ${{ inputs.helm_timeout }}
           helm_dir: ${{ inputs.helm_dir }}
+          helm_chart_name: ${{ inputs.helm_chart_name }}
           helm_allowlist_groups: ${{ vars.HMPPS_IP_ALLOWLIST_GROUPS_YAML }}
           helm_allowlist_version: ${{ vars.HMPPS_IP_ALLOWLIST_GROUPS_VERSION }}
 
@@ -118,7 +124,7 @@ jobs:
           deploy_outcome: ${{ steps.deploy.outcome }}
           slack_bot_token: ${{ secrets.HMPPS_SRE_SLACK_BOT_TOKEN }}
           deployment_changelog: ${{ steps.deploy.outputs.deployment_changelog }}
-
+          k8s_deployment_name: ${{ inputs.k8s_deployment_name }}
 
       # Optional prod releases slack channel (using PROD_RELEASES_SLACK_CHANNEL variable)
       - if: ${{ always() && ( inputs.slack_notification == 'true' && steps.set-slack-channel-id.outputs.slack_channel_id != '' ) }}
@@ -131,3 +137,4 @@ jobs:
           deploy_outcome: ${{ steps.deploy.outcome }}
           slack_bot_token: ${{ secrets.HMPPS_SRE_SLACK_BOT_TOKEN }}
           deployment_changelog: ${{ steps.deploy.outputs.deployment_changelog }}
+          k8s_deployment_name: ${{ inputs.k8s_deployment_name }}

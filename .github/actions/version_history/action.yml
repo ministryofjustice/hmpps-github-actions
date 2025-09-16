@@ -43,11 +43,7 @@ runs:
       else
         K8S_DEPLOYMENT_NAME="${{ inputs.k8s_deployment_name }}"
       fi
-
-      # initialise the changelog
-      echo "Touching .deployment_changelog"
-      touch .deployment_changelog
-
+ 
       CURRENT_COMMIT="$(echo "${{ inputs.app_version }}" | cut -d'.' -f3)" 
       K8S_PREVIOUS_APP_VERSION="$(kubectl get "deployment/${K8S_DEPLOYMENT_NAME}" --namespace="${{ inputs.namespace }}" -o=jsonpath='{.metadata.labels.app\.kubernetes\.io/version}' || true)"
       echo "CURRENT_COMMIT=${CURRENT_COMMIT}"
@@ -64,26 +60,19 @@ runs:
       # Some apps may not have set the correct k8s label with a valid app version containing a sha1
 
       # Check $PREVIOUS_COMMIT sha1 is valid
+      # Add the sed command to the end of this so it is only one line
       if git rev-parse --quiet --verify "${PREVIOUS_COMMIT}" &>/dev/null; then
-        # shellcheck disable=SC2086
-        PAGER="cat" git log --oneline --no-decorate \
-          --pretty=format:'%h %s (%cr)' --committer='noreply@github.com' --grep='#' \
-          "${PREVIOUS_COMMIT}..${CURRENT_COMMIT}" $CHANGELOG_GIT_PATHS \
-          | sed 's/Merge pull request /PR /g; s|from ministryofjustice/dependabot/|:dependabot:|g; s|from ministryofjustice/||g' \
-          | tr '"' "'" | tr "\`" "'" \
-          >> .deployment_changelog
+        # Run the actual thing so we can see what it's doing
+        echo "Found previous commit - now getting the diffs"
+        dcl_a="$(git log --oneline --no-decorate  --pretty=format:'%h %s (%cr)' --committer='noreply@github.com' --grep='#' "${PREVIOUS_COMMIT}..${CURRENT_COMMIT}"| sed ':a;N;$!ba;s/\n/\\n/g')"
+        echo "dcl_a=${dcl_a}"
+        dcl_b="$(echo "${dcl_a}" | sed 's/Merge pull request /PR /g; s|from ministryofjustice/dependabot/|:dependabot:|g; s|from ministryofjustice/||g')"
+        echo "dcl_b=${dcl_b}"  
+        DEPLOYMENT_CHANGELOG="$(echo "${dcl_b}" | tr '"' "'" | tr "\`" "'")"
       else
-        echo "Changelog not available." > .deployment_changelog
+        DEPLOYMENT_CHANGELOG="Changelog not available."
       fi
-
-      echo "Here is the unprocessed DEPLOYMENT_CHANGELOG"
+      echo "Here is the DEPLOYMENT_CHANGELOG: ${DEPLOYMENT_CHANGELOG}"  
       echo "------------------------------------------"
-      echo "DEPLOYMENT_CHANGELOG='$(cat .deployment_changelog)'"     
-      echo "------------------------------------------"
-      echo
-      echo "Here is the processed DEPLOYMENT_CHANGELOG - should not have double quotes or backticks"
-      echo "------------------------------------------"
-      echo "DEPLOYMENT_CHANGELOG=$(cat .deployment_changelog | sed ':a;N;$!ba;s/\n/\\n/g')"
-      echo "------------------------------------------"
-      echo "DEPLOYMENT_CHANGELOG=$(cat .deployment_changelog | sed ':a;N;$!ba;s/\n/\\n/g')" >> $GITHUB_OUTPUT
+      echo "DEPLOYMENT_CHANGELOG=${DEPLOYMENT_CHANGELOG}"  >> $GITHUB_OUTPUT
 
