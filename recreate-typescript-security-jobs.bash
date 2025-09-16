@@ -38,7 +38,7 @@ RANDOM_MINUTE=$((RANDOM%60))
 RANDOM_MINUTE2=$((RANDOM%60))
 
 # daily checks
-for file in security_npm_dependency.yml security_trivy.yml security_veracode_pipeline_scan.yml security_codeql_actions_scan.yml; do
+for file in security_npm_dependency.yml security_trivy.yml security_veracode_pipeline_scan.yml; do
   get_yaml $file
   yq -i ".on.schedule[].cron=\"$RANDOM_MINUTE $RANDOM_HOUR * * MON-FRI\" | .on.schedule[].cron line_comment=\"Every weekday at $(printf "%02d:%02d" $RANDOM_HOUR $RANDOM_MINUTE) UTC\"" .github/workflows/$file
 done
