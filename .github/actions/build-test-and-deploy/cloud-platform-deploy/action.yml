@@ -54,6 +54,10 @@ inputs:
   helm_allowlist_version:
     description: setting for version of allowlist file
     required: false
+  autogenerate_scheduled_downtime_cron:
+    description: "Whether to set the deterministic scheduled downtime cron values"
+    required: false
+    default: true
 
 outputs:
   deployment_changelog:
@@ -110,6 +114,22 @@ runs:
         brew install helm
         yq -i ".appVersion = \"${{ inputs.version }}\"" "${{ inputs.helm_dir }}/${{ inputs.helm_chart_name }}/Chart.yaml"
         helm dependency update "${{ inputs.helm_dir }}/${{ inputs.helm_chart_name }}"
+
+        # Split additional args into an array
+        read -r -a helm_args <<< "${{ inputs.helm_additional_args }}"
+
+        # For services that have the startup/shutdown script enabled.
+        # Autogenerate schedule downtime cron. This is a pseudo-random, deterministic number used in the cron start/shutdown minute.
+        # This is to help ensure the startup/shutdown pods do not all run at the exact same time - which can cause cluster auto-scalling issues.
+        if [[ "${{ inputs.autogenerate_scheduled_downtime_cron }}" == "true" ]]; then
+          cron_minute=$(echo -n "${{ inputs.k8s_deployment_name }}" | md5sum | awk '{print $1}' | tr -dc '0-9' | head -c 3)
+          cron_minute=$((cron_minute % 60))
+          startup_cron="$cron_minute 6 * * 1-5"
+          shutdown_cron="$cron_minute 21 * * 1-5"
+          helm_args+=(--set "generic-service.scheduledDowntime.startup=${startup_cron}")
+          helm_args+=(--set "generic-service.scheduledDowntime.shutdown=${shutdown_cron}")
+        fi
+
         exec helm upgrade '${{ inputs.k8s_deployment_name }}' '${{ inputs.helm_dir }}/${{ inputs.helm_chart_name }}' \
           --atomic \
           --history-max 10 \
@@ -121,7 +141,7 @@ runs:
           --set 'global.environment=${{ inputs.environment }}' \
           --timeout ${{ inputs.helm_timeout }} \
           --values '${{ inputs.helm_dir }}/values-${{ inputs.environment }}.yaml' \
-          ${{ inputs.helm_additional_args }} \
+          "${helm_args[@]}" \
           ${{ steps.check-ip-allowlists.outputs.ALLOWLIST_GROUPS }} \
           ${{ steps.check-ip-allowlists-version.outputs.ALLOWLIST_VERSION }} \
           --wait

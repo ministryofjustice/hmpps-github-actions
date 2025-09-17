@@ -51,6 +51,16 @@ on:
         required: false
         default: ${{ github.event.repository.name }}
         type: string
+      autogenerate_scheduled_downtime_cron:
+        description: |
+          Whether to autogenerate scheduled downtime cron values.
+          For services that have enabled "scheduledDowntime".
+          This will override the "startup" and "shutdown" cron values and set them during Helm install/upgrade.
+          Ensures startups and shutdowns are randomly spaced out to avoid cluster scheduling issues.
+          Startup times are between 6am-7am. Shutdown times are between 9pm-10pm.
+        required: false
+        default: true
+        type: boolean
 
 permissions:
   contents: read
@@ -100,6 +110,7 @@ jobs:
           helm_chart_name: ${{ inputs.helm_chart_name }}
           helm_allowlist_groups: ${{ vars.HMPPS_IP_ALLOWLIST_GROUPS_YAML }}
           helm_allowlist_version: ${{ vars.HMPPS_IP_ALLOWLIST_GROUPS_VERSION }}
+          autogenerate_scheduled_downtime_cron: ${{inputs.autogenerate_scheduled_downtime_cron }}
 
       # Notification bit - always send prod releases to dps-releases - CVA3MKDTR
       - if: ${{ always() && ( inputs.environment == 'prod' || inputs.environment == 'production' ) }}
