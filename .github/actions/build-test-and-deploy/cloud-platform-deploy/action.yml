@@ -127,6 +127,9 @@ runs:
           shutdown_cron="$cron_minute 21 * * 1-5"
           helm_additional_args+=" --set generic-service.scheduledDowntime.startup='${startup_cron}' --set generic-service.scheduledDowntime.shutdown='${shutdown_cron}' "
         fi
+        
+        # Debug
+        echo "${helm_additional_args}"
 
         exec helm upgrade '${{ inputs.k8s_deployment_name }}' '${{ inputs.helm_dir }}/${{ inputs.helm_chart_name }}' \
           --atomic \
