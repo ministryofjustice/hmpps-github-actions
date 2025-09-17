@@ -131,6 +131,22 @@ runs:
         # Debug
         echo "${helm_additional_args}"
 
+        exec echo upgrade '${{ inputs.k8s_deployment_name }}' '${{ inputs.helm_dir }}/${{ inputs.helm_chart_name }}' \
+          --atomic \
+          --history-max 10 \
+          --force \
+          --install \
+          --reset-values \
+          --set 'generic-service.image.tag=${{ inputs.version }}' \
+          --set 'version=${{ inputs.version }}' \
+          --set 'global.environment=${{ inputs.environment }}' \
+          --timeout ${{ inputs.helm_timeout }} \
+          --values '${{ inputs.helm_dir }}/values-${{ inputs.environment }}.yaml' \
+          "${helm_additional_args}" \
+          ${{ steps.check-ip-allowlists.outputs.ALLOWLIST_GROUPS }} \
+          ${{ steps.check-ip-allowlists-version.outputs.ALLOWLIST_VERSION }} \
+          --wait
+
         exec helm upgrade '${{ inputs.k8s_deployment_name }}' '${{ inputs.helm_dir }}/${{ inputs.helm_chart_name }}' \
           --atomic \
           --history-max 10 \
