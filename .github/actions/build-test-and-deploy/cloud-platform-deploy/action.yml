@@ -142,7 +142,7 @@ runs:
           --set 'global.environment=${{ inputs.environment }}' \
           --timeout ${{ inputs.helm_timeout }} \
           --values '${{ inputs.helm_dir }}/values-${{ inputs.environment }}.yaml' \
-          "${helm_additional_args}" \
+          $helm_additional_args \
           ${{ steps.check-ip-allowlists.outputs.ALLOWLIST_GROUPS }} \
           ${{ steps.check-ip-allowlists-version.outputs.ALLOWLIST_VERSION }} \
           --wait
