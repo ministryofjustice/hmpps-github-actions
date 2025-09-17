@@ -57,7 +57,7 @@ inputs:
   scheduled_downtime_cron:
     description: "Whether to set the deterministic scheduled downtime cron values"
     required: false
-    default: "true"
+    default: true
 
 outputs:
   deployment_changelog:
