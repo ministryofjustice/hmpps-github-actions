@@ -129,10 +129,7 @@ runs:
           helm_args+=(--set "generic-service.scheduledDowntime.startup=${startup_cron}")
           helm_args+=(--set "generic-service.scheduledDowntime.shutdown=${shutdown_cron}")
         fi
-        
-        # Debug
-        echo "helm_args: ${helm_args[@]}"
-        set -x
+
         exec helm upgrade '${{ inputs.k8s_deployment_name }}' '${{ inputs.helm_dir }}/${{ inputs.helm_chart_name }}' \
           --atomic \
           --history-max 10 \
