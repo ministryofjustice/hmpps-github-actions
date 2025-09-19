@@ -106,7 +106,6 @@ migrate_kotlin_security_jobs() {
   yq -i 'del(.workflows.security) | del(.workflows.security-weekly) | del(.parameters.alerts-slack-channel)' .circleci/config.yml
   mkdir -p .github/workflows
 
-  gh api repos/ministryofjustice/hmpps-template-kotlin/contents/.github/workflows/security_codeql_actions_scan.yml -H "Accept: application/vnd.github.v3.raw" > .github/workflows/security_codeql_actions_scan.yml
   gh api repos/ministryofjustice/hmpps-template-kotlin/contents/.github/workflows/security_owasp.yml -H "Accept: application/vnd.github.v3.raw" > .github/workflows/security_owasp.yml
   gh api repos/ministryofjustice/hmpps-template-kotlin/contents/.github/workflows/security_trivy.yml -H "Accept: application/vnd.github.v3.raw" > .github/workflows/security_trivy.yml
   gh api repos/ministryofjustice/hmpps-template-kotlin/contents/.github/workflows/security_veracode_pipeline_scan.yml -H "Accept: application/vnd.github.v3.raw" > .github/workflows/security_veracode_pipeline_scan.yml
@@ -116,7 +115,7 @@ migrate_kotlin_security_jobs() {
   RANDOM_MINUTE=$((RANDOM%60))
   RANDOM_MINUTE2=$((RANDOM%60))
 
-  for file in security_owasp.yml security_trivy.yml security_veracode_pipeline_scan.yml security_codeql_actions_scan.yml; do
+  for file in security_owasp.yml security_trivy.yml security_veracode_pipeline_scan.yml; do
     yq -i ".on.schedule[].cron=\"$RANDOM_MINUTE $RANDOM_HOUR * * MON-FRI\" | .on.schedule[].cron line_comment=\"Every weekday at $(printf "%02d:%02d" $RANDOM_HOUR $RANDOM_MINUTE) UTC\"" .github/workflows/$file
   done
 
@@ -129,7 +128,6 @@ migrate_node_security_jobs() {
   yq -i 'del(.workflows.security) | del(.workflows.security-weekly) | del(.parameters.alerts-slack-channel)' .circleci/config.yml
   mkdir -p .github/workflows
 
-  gh api repos/ministryofjustice/hmpps-template-typescript/contents/.github/workflows/security_codeql_actions_scan.yml -H "Accept: application/vnd.github.v3.raw" > .github/workflows/security_codeql_actions_scan.yml
   gh api repos/ministryofjustice/hmpps-template-typescript/contents/.github/workflows/security_npm_dependency.yml -H "Accept: application/vnd.github.v3.raw" > .github/workflows/security_npm_dependency.yml
   gh api repos/ministryofjustice/hmpps-template-typescript/contents/.github/workflows/security_trivy.yml -H "Accept: application/vnd.github.v3.raw" > .github/workflows/security_trivy.yml
   gh api repos/ministryofjustice/hmpps-template-typescript/contents/.github/workflows/security_veracode_pipeline_scan.yml -H "Accept: application/vnd.github.v3.raw" > .github/workflows/security_veracode_pipeline_scan.yml
@@ -139,7 +137,7 @@ migrate_node_security_jobs() {
   RANDOM_MINUTE=$((RANDOM%60))
   RANDOM_MINUTE2=$((RANDOM%60))
 
-  for file in security_npm_dependency.yml security_trivy.yml security_veracode_pipeline_scan.yml security_codeql_actions_scan.yml; do
+  for file in security_npm_dependency.yml security_trivy.yml security_veracode_pipeline_scan.yml; do
     yq -i ".on.schedule[].cron=\"$RANDOM_MINUTE $RANDOM_HOUR * * MON-FRI\" | .on.schedule[].cron line_comment=\"Every weekday at $(printf "%02d:%02d" $RANDOM_HOUR $RANDOM_MINUTE) UTC\"" .github/workflows/$file
   done
 
