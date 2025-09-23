@@ -27,6 +27,12 @@ on:
       HMPPS_SRE_SLACK_BOT_TOKEN:
         description: 'Slack bot token'
         required: false
+      HMPPS_OSS_INDEX_USERNAME:
+        description: 'Username for OWASP OSS Index analysis'
+        required: false
+      HMPPS_OSS_INDEX_PASSWORD:
+        description: 'Password (API token) for OWASP OSS Index analysis'
+        required: false
 
 permissions:
   contents: read
@@ -51,7 +57,7 @@ jobs:
         distribution: 'temurin'
     - name: Run gradle OWASP Dependency Check Analyse
       id: owasp-analyse
-      run: ./gradlew ${{ inputs.subproject }}:dependencyCheckAnalyze -Pdatafeed.url='file:///opt/vulnz/cache' --info
+      run: ./gradlew ${{ inputs.subproject }}:dependencyCheckAnalyze -Pdatafeed.url='file:///opt/vulnz/cache' -PossIndex.username=${{ secrets.HMPPS_OSS_INDEX_USERNAME }} -PossIndex.password=${{ secrets.HMPPS_OSS_INDEX_PASSWORD }}
       continue-on-error: true
     # Upload Sarif file: this will attempt to upload the sarif file for private/internal repositories as well
     - name: OWASP upload sarif
