@@ -1,0 +1,43 @@
+name: Cancel all waiting workflows that have a more recent successfully completed release
+
+on:
+  workflow_call:
+    inputs:
+      pipeline:
+        description: 'The name of the pipeline to check - defaults to Pipeline [test -> build -> deploy]'
+        required: false
+        default: 'Pipeline [test -> build -> deploy]'
+        type: string
+      branch:
+        description: 'The name of the branch to check - defaults to main'
+        required: false
+        default: 'main'
+        type: string
+
+jobs:
+  cancel-waiting-workflows:
+    name: Cancel outdated waiting workflows
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: write
+    steps:
+      - name: Run cancel script
+        id: cancel-script
+        shell: bash
+        run: |
+          FOUND_FINISHED=false
+          OUTPUT=$(gh run list --repo "${{ github.repository }}" --workflow "${{ inputs.pipeline }}" --branch "${{ inputs.branch }}" --limit 100 --json status,conclusion,databaseId | jq -r '.[] | [ .databaseId, .status, .conclusion ] | join(" ")')
+          echo "$OUTPUT" | while read -r DATABASE_ID STATUS CONCLUSION;do
+            if [[ "$FOUND_FINISHED" == "false" && "$STATUS" == "completed" && "$CONCLUSION" == "success" ]]; then
+              FOUND_FINISHED=true
+              echo "Found completed job of $DATABASE_ID"
+            fi
+
+            if [[ "$FOUND_FINISHED" == "true" && "$STATUS" == "waiting" && "$CONCLUSION" == "" ]]; then
+              echo "Attempting to cancel waiting job of $DATABASE_ID"
+              gh run cancel --repo "${{ github.repository }}" "$DATABASE_ID"
+            fi
+          done
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
