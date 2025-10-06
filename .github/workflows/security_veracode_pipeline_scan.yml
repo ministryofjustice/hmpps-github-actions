@@ -21,6 +21,10 @@ on:
         type: string
         default: 'source.zip'
         description: "The name of the artifact within the package, Optional."
+      java_version:
+        type: string
+        required: false
+        default: '21'
     secrets:
       HMPPS_SRE_SLACK_BOT_TOKEN:
         description: Slack bot token
@@ -75,11 +79,11 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-    - name: Set up JDK 21
-      uses: actions/setup-java@v4
+    - name: Set up java
+      uses: actions/setup-java@v5
       with:
-        java-version: '21'
         distribution: 'temurin'
+        java-version: '${{ inputs.java_version }}'
     - name: prepare assets
       if: inputs.veracode_package_artifact_name == ''
       uses: ministryofjustice/hmpps-github-actions/.github/actions/security_veracode_prepare_artifacts@v2 # WORKFLOW_VERSION

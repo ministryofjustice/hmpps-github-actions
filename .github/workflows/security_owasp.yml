@@ -23,6 +23,10 @@ on:
         required: false
         default: '1'
         type: string
+      java_version:
+        type: string
+        required: false
+        default: '21'
     secrets:
       HMPPS_SRE_SLACK_BOT_TOKEN:
         description: 'Slack bot token'
@@ -50,11 +54,11 @@ jobs:
       actions: read
     steps:
     - uses: actions/checkout@v4
-    - name: Set up JDK 21
-      uses: actions/setup-java@v4
+    - name: Set up java
+      uses: actions/setup-java@v5
       with:
-        java-version: '21'
         distribution: 'temurin'
+        java-version: '${{ inputs.java_version }}'
     - name: Run gradle OWASP Dependency Check Analyse
       id: owasp-analyse
       run: ./gradlew ${{ inputs.subproject }}:dependencyCheckAnalyze -Pdatafeed.url='file:///opt/vulnz/cache' -PossIndex.username=${{ secrets.HMPPS_OSS_INDEX_USERNAME }} -PossIndex.password=${{ secrets.HMPPS_OSS_INDEX_PASSWORD }}
@@ -106,7 +110,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Set up JDK 21
-      uses: actions/setup-java@v4
+      uses: actions/setup-java@v5
       with:
         java-version: '21'
         distribution: 'temurin'

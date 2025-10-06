@@ -31,7 +31,7 @@ jobs:
             - gradle-{{ checksum "build.gradle.kts" }}
             - gradle-
         key: ${{ runner.os }}-gradle-${{ env.cache-name }}-${{ hashFiles('build.gradle.kts') }}
-    - uses: actions/setup-java@v4
+    - uses: actions/setup-java@v5
       with:
         distribution: 'temurin'
         java-version: '${{ inputs.java_version }}'
