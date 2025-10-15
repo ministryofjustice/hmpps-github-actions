@@ -12,6 +12,11 @@ on:
         required: false
         type: string
         default: ".nvmrc"
+      install_command:
+        description: "The command used to install npm dependencies"
+        required: false
+        type: string
+        default: "npm ci --no-audit"
       dependencies_to_check:
         required: false
         type: string
@@ -51,7 +56,7 @@ jobs:
         run: "node -v"
       - id: npm-ci
         name: run npm ci
-        run: "npm ci --no-audit"
+        run: "${{ inputs.install_command }}"
       - name: Audit for vulnerabilities
         id: npm
         run: npm outdated ${{ inputs.dependencies_to_check }} > npm-outdated-reports.txt
