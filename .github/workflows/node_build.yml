@@ -8,6 +8,11 @@ on:
         required: false
         type: string
         default: ".nvmrc"
+      install_command:
+        description: "The command used to install npm dependencies"
+        required: false
+        type: string
+        default: "npm ci --no-audit"
 
 permissions:
   contents: read
@@ -39,8 +44,7 @@ jobs:
     - name: install dependencies
       if: steps.restore-cache.outputs.cache-hit != 'true'
       shell: bash
-      run: |
-        npm ci --no-audit
+      run: "${{ inputs.install_command }}"
     - name: build npm
       shell: bash
       run: |
