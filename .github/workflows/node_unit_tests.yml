@@ -3,19 +3,43 @@ name: Build and test node
 on:
   workflow_call:
     inputs:
+      npm_script:
+        description: 'The main test script to execute with `npm run`'
+        required: false
+        type: string
+        default: 'test:ci'
+      test_results_artifact_name:
+        description: 'Name of uploaded test results artifact; must be unqiue across pipeline (eg. in matrix strategies for parallelised tests)'
+        required: false
+        type: string
+        default: 'npm_unit_test_artifacts'
       node_version_file:
         description: "Passed to setup-node action to specify where to source the version of node from"
         required: false
         type: string
         default: ".nvmrc"
+      redis_tag:
+        description: 'Optionally, start a redis service with this tag'
+        required: false
+        type: string
 
 permissions:
   contents: read
 
 jobs:
   node-unit-test:
-    name: Run the node unit tests
+    name: Run the node unit tests${{ inputs.npm_script == 'test:ci' && '' || format(' – {0}', inputs.npm_script) }}
     runs-on: ubuntu-latest
+    services:
+      redis:
+        image: ${{ inputs.redis_tag && format('redis:{0}', inputs.redis_tag) || '' }}
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - uses: actions/checkout@v4
       - name: Use Node.js ${{ inputs.node_version_file }}
@@ -40,20 +64,20 @@ jobs:
         id: unit-tests
         shell: bash
         run: |
-          sudo npm run test:ci
+          sudo npm run ${{ inputs.npm_script }}
         # continue-on-error: true
         # Replacing the above with if: always()
       - name: upload the artifacts
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
         with:
-          name: npm_unit_test_artifacts
+          name: ${{ inputs.test_results_artifact_name }}
           path: test_results
       - name: publish test report
         if: ${{ !cancelled() && github.event.repository.visibility == 'public' }}
         uses: dorny/test-reporter@v2
         with:
-          artifact: npm_unit_test_artifacts
+          artifact: ${{ inputs.test_results_artifact_name }}
           name: Test Report
           path: 'jest/**/*.xml'
           reporter: java-junit
