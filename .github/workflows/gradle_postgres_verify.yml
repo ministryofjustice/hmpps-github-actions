@@ -99,6 +99,7 @@ jobs:
           path: |
             ${{ inputs.build-dir }}/test-results
             ${{ inputs.build-dir }}/reports/tests
+            ${{ inputs.build-dir }}/reports/jacoco
       - name: Upload the build artifacts
         if: ${{ inputs.upload-build-artifacts && !cancelled() }}
         uses: actions/upload-artifact@v4
