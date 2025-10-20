@@ -24,7 +24,7 @@ jobs:
     - name: refresh cache
       id: initial-cache
       uses: actions/cache@v4
-      env: 
+      env:
         cache-name: kotlin-cache
       with:
         path: | 
@@ -47,8 +47,9 @@ jobs:
     - name: upload the artifacts
       if: always()
       uses: actions/upload-artifact@v4
-      with: 
+      with:
         name: upload kotlin validation results
         path: |
           build/test-results
           build/reports/tests
+          build/reports/jacoco
