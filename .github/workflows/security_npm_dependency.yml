@@ -196,7 +196,7 @@ jobs:
         channel_id: ${{ inputs.channel_id}}
         SLACK_BOT_TOKEN: ${{ secrets.HMPPS_SRE_SLACK_BOT_TOKEN }}
     - name: npm better audit slack output results 
-      uses: slackapi/slack-github-action@37ebaef184d7626c5f204ab8d3baff4262dd30f0 # v1.27.0
+      uses: slackapi/slack-github-action@fcfb566f8b0aab22203f066d80ca1d7e4b5d05b3 # v1.27.1
       if: inputs.channel_id != 'NO_SLACK' && steps.slack-message-result.outcome == 'success'
       with:
         channel-id: ${{ inputs.channel_id}}
