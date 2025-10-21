@@ -40,7 +40,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    - uses: azure/setup-helm@v4.2.0
+    - uses: azure/setup-helm@v4.3.1
       with:
         version: ${{ inputs.helm_version }} 
       id: install_helm
