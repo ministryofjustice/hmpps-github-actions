@@ -8,9 +8,7 @@
   ],
   "packageRules": [
     {
-      "matchPaths": [
-        "**/action.yml"
-      ],
+      "matchManagers": ["github-actions"],
       "enabled": true
     }
   ]
