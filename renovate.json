@@ -2,5 +2,16 @@
   "extends": [
     "config:base"
   ],
-  "labels": ["dependencies", "github-actions"]
+  "labels": [
+    "dependencies",
+    "github-actions"
+  ],
+  "packageRules": [
+    {
+      "matchPaths": [
+        "**/action.yml"
+      ],
+      "enabled": true
+    }
+  ]
 }
