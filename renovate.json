@@ -9,6 +9,11 @@
   "packageRules": [
     {
       "matchManagers": ["github-actions"],
+      "fileMatch": [
+        "^\\.github/workflows/.*\\.yml$",
+        "^\\.github/actions/.*/action\\.yml$",
+        "^\\.github/actions/.*/.*/action\\.yml$"
+      ],
       "enabled": true
     }
   ]
