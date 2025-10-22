@@ -267,7 +267,7 @@ migrate_deployment_jobs() {
     echo "  deploy_${each_env}:" >> ${pipeline_file}
     echo "    name: Deploy to the ${each_env} environment" >> ${pipeline_file}
 
-  # branches filter
+  # branches filter
     branch_filter=$(echo "$env_params" | yq .'hmpps/deploy_env.filters.branches.only[]')
     if [ -n "${branch_filter}" ]; then
       branch_filter_string="    if: "
@@ -345,7 +345,7 @@ migrate_deployment_jobs() {
   # Custom executor modifications
   # -----------------------------
 
-  # This checks for a number of custom executors that are used in CircleCI and, depending on the complexity of the job,
+  # This checks for a number of custom executors that are used in CircleCI and, depending on the complexity of the job,
   # either changes the pipeline to point at an existing shared workflow, or downloads a template workflow to be used by
   # the pipeline. The following executors are checked for:
   #
@@ -363,30 +363,15 @@ migrate_deployment_jobs() {
 
   if [ -n "$node_redis_executors" ]
     then for executor_job in $node_redis_executors; do
-      # integration_test - copy the workflow from github actions and and change the reference in the pipeline
+      # integration_test - enable redis service
       if [ ${executor_job} = "integration_test" ] ; then
-        # copy the workflow down
-        gh api repos/ministryofjustice/hmpps-github-actions/contents/.github/workflows/node_integration_tests.yml -H "Accept: application/vnd.github.v3.raw" > .github/workflows/node_integration_tests_redis.yml
-        # modify the workflow to include the service
-        yq eval '.jobs.integration_test |= {"runs-on": .runs-on, "services": {"redis": {"image": "redis:7.0", "ports": ["6379:6379"], "options": "--health-cmd=\"redis-cli ping\" --health-interval=10s --health-timeout=5s --health-retries=5"}}, "steps": .steps}' -i .github/workflows/node_integration_tests_redis.yml
-        # refer to the local workflow in the pipeline
-        yq eval '.jobs.node_integration_tests.uses = "./.github/workflows/node_integration_tests_redis.yml"' -i .github/workflows/pipeline.yml
-        echo
-        echo "INFO: template .github/workflows/node_integration_tests_redis.yml created for node/redis integration test"
-        echo "----  This will require manual modification to match the integration test within .circleci/config.yml"
-        echo
+        yq eval '.jobs.node_integration_tests.with.redis_tag= "7"' -i .github/workflows/pipeline.yml
+        echo "INFO: Enabled redis service in node_integration_tests"
 
-      # unit_test - copy the workflow from github actions and and change the reference in the pipeline
+      # unit_test - enable redis service
       elif [ ${executor_job} = "unit_test" ] ; then
-        # copy the workflow down
-        gh api repos/ministryofjustice/hmpps-github-actions/contents/.github/workflows/node_unit_tests.yml -H "Accept: application/vnd.github.v3.raw" > .github/workflows/node_unit_tests_redis.yml
-        # modify the workflow to include the service
-        yq eval '.jobs.node-unit-test |= {"runs-on": .runs-on, "services": {"redis": {"image": "redis:7.0", "ports": ["6379:6379"], "options": "--health-cmd=\"redis-cli ping\" --health-interval=10s --health-timeout=5s --health-retries=5"}}, "steps": .steps}' -i .github/workflows/node_unit_tests_redis.yml
-        # refer to the local workflow in the pipeline
-        yq eval '.jobs.node_unit_tests.uses = "./.github/workflows/node_unit_tests_redis.yml"' -i .github/workflows/pipeline.yml
-        # Remove the ''
-        echo "INFO: .github/workflows/node_unit_tests_redis.yml created for node unit tests including redis."
-        echo "----  This will require manual modification to match the unit test within .circleci/config.yml"
+        yq eval '.jobs.node_unit_tests.with.redis_tag= "7"' -i .github/workflows/pipeline.yml
+        echo "INFO: Enabled redis service in node_unit_tests"
 
       else
         # copy down node_unit_tests as a template since it's simplest
@@ -608,7 +593,7 @@ else
   exit 0
 fi
 
-# backup circleCC config
+# backup CircleCI config
 backup_file=".circleci/config.yml.bak.$(date +%Y%m%d_%H%M%S)"
 cp .circleci/config.yml ${backup_file}
 
