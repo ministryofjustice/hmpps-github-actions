@@ -28,7 +28,7 @@ permissions:
 
 jobs:
   node-unit-test:
-    name: Run the node unit tests${{ inputs.npm_script == 'test:ci' && '' || format(' – {0}', inputs.npm_script) }}
+    name: ${{ inputs.npm_script == 'test:ci' && 'Run the node unit tests' || format('Run the node unit tests – {0}', inputs.npm_script) }}
     runs-on: ubuntu-latest
     services:
       redis:
