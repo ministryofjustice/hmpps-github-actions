@@ -28,7 +28,7 @@ permissions:
 
 jobs:
   integration_test:
-    name: Run the integration tests${{ inputs.npm_script == 'int-test' && '' || format(' – {0}', inputs.npm_script) }}
+    name: ${{ inputs.npm_script == 'int-test' && 'Run the integration tests' || format('Run the integration tests – {0}', inputs.npm_script) }}
     runs-on: ubuntu-latest
     services:
       redis:
