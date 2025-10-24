@@ -33,3 +33,6 @@ This defaults to `.nvmrc`.
 
 There is a non-backwards compatible change included in this release which is the removal of the ability to specify a given node version using the `node_version` option. 
 
+## v2.1.0
+
+Add support for AWS ECR hosted container images in the `.github/workflow/docker_build.yml` workflow. 
