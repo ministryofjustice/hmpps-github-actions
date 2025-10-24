@@ -98,7 +98,7 @@ runs:
         TRIVY_JAVA_DB_REPOSITORY: public.ecr.aws/aquasecurity/trivy-java-db:1,ghcr.io/aquasecurity/trivy-java-db:1
 
     - name: Upload trivy artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       id: trivy-upload-artifact
       with:
         name: trivy-check-${{ inputs.subproject == '' && github.event.repository.name || inputs.subproject }}

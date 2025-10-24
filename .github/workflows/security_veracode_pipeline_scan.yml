@@ -91,7 +91,7 @@ jobs:
         docker_image_app_dir: ${{ inputs.docker_image_app_dir }}
     - name: download assets artifact
       if: inputs.veracode_package_artifact_name != ''
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v6
       with:
         name: ${{ inputs.veracode_package_artifact_name }}
     - name: "Download/Extract pipeline scanner"
@@ -157,7 +157,7 @@ jobs:
         VERACODE_API_KEY_2: ${{ secrets.HMPPS_VERACODE_API_KEY_2 }}
         VERACODE_API_KEY_3: ${{ secrets.HMPPS_VERACODE_API_KEY_3 }}
         VERACODE_API_KEY_4: ${{ secrets.HMPPS_VERACODE_API_KEY_4 }}
-    - uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@v5
       id: veracode-artifact-upload
       if: success() 
       continue-on-error: true
