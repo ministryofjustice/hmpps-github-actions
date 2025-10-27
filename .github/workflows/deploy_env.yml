@@ -74,7 +74,7 @@ jobs:
       fail-fast: false
     environment: ${{ inputs.environment }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
       - uses: azure/setup-kubectl@v4

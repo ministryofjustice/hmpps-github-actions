@@ -78,7 +78,7 @@ jobs:
           - 5432:5432
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Setup Java
         uses: actions/setup-java@v5
         with:
