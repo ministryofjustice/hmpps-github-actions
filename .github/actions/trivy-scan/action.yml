@@ -107,7 +107,7 @@ runs:
     - name: Trivy upload sarif
       continue-on-error: true # currently fs scan sarif files aren't valid for Github Advanced security.
       id: trivy-upload
-      uses: github/codeql-action/upload-sarif@v3
+      uses: github/codeql-action/upload-sarif@v4
       with:
         sarif_file: 'trivy-results.sarif'
         category: trivy-dependency-check
