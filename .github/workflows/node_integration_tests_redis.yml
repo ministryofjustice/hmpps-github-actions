@@ -22,7 +22,7 @@ jobs:
       - name: Deprecation warning
         run: |
           echo "::warning title=node_integration_tests_redis.yml is deprecated::You can now use ministryofjustice/hmpps-github-actions/.github/workflows/node_integration_tests.yml with a redis service"
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Use Node.js ${{ inputs.node_version_file }}
         uses: actions/setup-node@v4
         with:
