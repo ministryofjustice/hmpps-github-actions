@@ -19,49 +19,33 @@ runs:
       id: slack_message_result 
       with:
         input_file: ${{ inputs.input_file }}
-    - uses: slackapi/slack-github-action@91efab103c0de0a537f72a35f6b8cda0ee76bf0a # v2.1.1
+    - name: Slack - Send failure message
+      uses: slackapi/slack-github-action@91efab103c0de0a537f72a35f6b8cda0ee76bf0a # v2.1.1
       with:
-        channel-id: ${{ inputs.channel_id}}
+        method: chat.postMessage
+        token: ${{ inputs.SLACK_BOT_TOKEN }}
         payload: |
-          {
-          "blocks": [
-            {
-              "type": "context",
-              "elements": [
-                {
-                  "type": "mrkdwn",
-                  "text": ":stop: Github Actions ${{ github.workflow }} - ${{ github.event.workflow_run.conclusion }}"
-                }
-              ]
-            },
-            {
-              "type": "section",
-              "text": {
-                "type": "mrkdwn",
-                "text": "*${{ github.repository }}* ${{ github.workflow }} failed"
-              },
-              "accessory": {
-                  "type": "button",
-                "text": {
-                  "type": "plain_text",
-                  "text": "View job"
-                },
-                "url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-              }
-            },
-            {
-              "type": "context",
-              "elements": [
-                {
-                  "type": "mrkdwn",
-                  "text": "Output: ```${{ steps.slack_message_result.outputs.SLACK_TXT }}```"
-                }
-              ]
-            },
-            {
-              "type": "divider"
-            }
-          ]
-          }
-      env:
-        SLACK_BOT_TOKEN: ${{ inputs.SLACK_BOT_TOKEN }}
+          channel: ${{ inputs.channel_id }}
+          blocks:
+            - type: context
+              elements:
+                - type: mrkdwn
+                  text: ":stop: Github Actions ${{ github.workflow }} - ${{ github.event.workflow_run.conclusion }}"
+            - type: section
+              text:
+                type: mrkdwn
+                text: "*${{ github.repository }}* ${{ github.workflow }} failed"
+              accessory:
+                type: button
+                text:
+                  type: plain_text
+                  text: View job
+                url: "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+            - type: context
+              elements:
+                - type: mrkdwn
+                  text: |
+                    Output: ```
+                    ${{ steps.slack_message_result.outputs.SLACK_TXT }}
+                    ```
+            - type: divider

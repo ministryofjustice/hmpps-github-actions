@@ -126,8 +126,6 @@ runs:
     uses: slackapi/slack-github-action@91efab103c0de0a537f72a35f6b8cda0ee76bf0a # v2.1.1
     if: steps.translate.outputs.results == 'YES'  && inputs.channel_id != ''
     with:
-      channel-id: ${{ inputs.channel_id}}
-      payload-file-path: "./npm-outdated-reports.json"
-    env:
-      SLACK_BOT_TOKEN: ${{ inputs.SLACK_BOT_TOKEN }}
-    
+      method: chat.postMessage
+      token: ${{ inputs.SLACK_BOT_TOKEN }}
+      payload-file-path: ./npm-outdated-reports.json

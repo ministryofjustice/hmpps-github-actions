@@ -69,39 +69,23 @@ jobs:
       - uses: slackapi/slack-github-action@91efab103c0de0a537f72a35f6b8cda0ee76bf0a # v2.1.1
         if: steps.npm.conclusion == 'failure' && inputs.channel_id != 'NO_SLACK'
         with:
-          channel-id: ${{ inputs.channel_id}}
+          method: chat.postMessage
+          token: ${{ secrets.HMPPS_SRE_SLACK_BOT_TOKEN }}
           payload: |
-            { "text": "Github actions *npm outdated check* failed",
-              "blocks": [
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": ":no_entry: Failed GitHub Action:"
-                  }
-                },
-                {
-                  "type": "section",
-                  "fields": [
-                    {
-                      "type": "mrkdwn",
-                      "text": "*Workflow:*\n<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|${{ github.workflow }}>"
-                    },
-                    {
-                      "type": "mrkdwn",
-                      "text": "*Job:*\n${{ github.job }}"
-                    },
-                    {
-                      "type": "mrkdwn",
-                      "text": "*Repo:*\n${{ github.repository }}"
-                    },
-                    {
-                      "type": "mrkdwn",
-                      "text": "*Project:*\n${{ github.event.repository.name }}"
-                    }
-                  ]
-                }
-              ]
-            }
-        env:
-          SLACK_BOT_TOKEN: ${{ secrets.HMPPS_SRE_SLACK_BOT_TOKEN }}
+            channel: ${{ inputs.channel_id }}
+            text: "GitHub Actions *npm outdated check* failed"
+            blocks:
+              - type: section
+                text:
+                  type: mrkdwn
+                  text: ":no_entry: Failed GitHub Action:"
+              - type: section
+                fields:
+                  - type: mrkdwn
+                    text: "*Workflow:*\n<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|${{ github.workflow }}>"
+                  - type: mrkdwn
+                    text: "*Job:*\n${{ github.job }}"
+                  - type: mrkdwn
+                    text: "*Repo:*\n${{ github.repository }}"
+                  - type: mrkdwn
+                    text: "*Project:*\n${{ github.event.repository.name }}"
