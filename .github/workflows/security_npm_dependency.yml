@@ -199,11 +199,11 @@ jobs:
       uses: slackapi/slack-github-action@91efab103c0de0a537f72a35f6b8cda0ee76bf0a # v2.1.1
       if: inputs.channel_id != 'NO_SLACK' && steps.slack-message-result.outcome == 'success'
       with:
+        method: chat.postMessage
+        token: ${{ secrets.HMPPS_SRE_SLACK_BOT_TOKEN }}
         payload: |
           channel: ${{ inputs.channel_id}}
           { 
             "type": "mrkdwn",
             "text": "Output: ```${{ steps.slack-message-result.outputs.SLACK_TXT }}```"
           }
-      env:
-        SLACK_BOT_TOKEN: ${{ secrets.HMPPS_SRE_SLACK_BOT_TOKEN }}
