@@ -204,9 +204,10 @@ jobs:
         token: ${{ secrets.HMPPS_SRE_SLACK_BOT_TOKEN }}        
         payload: |
           channel: ${{ inputs.channel_id }}
+          mrkdwn: true
           text: |
             Output: ```
             ${{ steps.slack-message-result.outputs.SLACK_TXT }}
             ```
-          mrkdwn: true
+
 
