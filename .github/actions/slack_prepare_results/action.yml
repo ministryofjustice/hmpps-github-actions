@@ -22,11 +22,10 @@ runs:
 
           # Escape Slack-sensitive characters but preserve newlines
           SLACK_TXT=$(sed -e 's/&/\&amp;/g' -e 's/</\&lt;/g' -e 's/>/\&gt;/g' "${{ inputs.input_file }}")
-
           # Output multiline value using heredoc
-          echo "${{ inputs.env_var }}<<EOF" >> $GITHUB_OUTPUT
+          echo "SLACK_TXT=<<EOF" >> $GITHUB_OUTPUT
           echo "$SLACK_TXT" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
         else
-          echo "${{ inputs.env_var }}=no results file (${{ inputs.input_file }}) created" >> $GITHUB_OUTPUT
+          echo "SLACK_TXT=no results file (${{ inputs.input_file }}) created" >> $GITHUB_OUTPUT
         fi
