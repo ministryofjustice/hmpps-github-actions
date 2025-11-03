@@ -12,21 +12,21 @@ outputs:
 runs:
   using: "composite"
   steps:
-  - name: Slack - Process Results Text
-    id: process-results
-    shell: bash
-    run: |
-      if [[ -f ${{ inputs.input_file }} ]]; then
-        echo "Processing file: ${{ inputs.input_file }}"
-        echo "Exporting to env var: ${{ inputs.env_var }}"
-        SLACK_TXT=$(cat "${{ inputs.input_file }}" | \
-          sed 's/&/\&amp;/g; s/</\&lt;/g; s/>/\&gt;/g;' | \
-          jq -Rs . | \
-          sed -E 's/("$)|(^")//g')
-        echo "SLACK_TXT=${SLACK_TXT}" 
-        echo "SLACK_TXT=${SLACK_TXT}" >> "$GITHUB_OUTPUT"
-      else
-        echo "SLACK_TXT=no results file (${{ inputs.input_file }}) created"
-        echo "SLACK_TXT=no results file (${{ inputs.input_file }}) created" >> "$GITHUB_OUTPUT"
-      fi
+    - name: Slack - Process Results Text
+      id: process-results
+      shell: bash
+      run: |
+        if [[ -f "${{ inputs.input_file }}" ]]; then
+          echo "Processing file: ${{ inputs.input_file }}"
+          echo "Exporting to env var: ${{ inputs.env_var }}"
 
+          # Escape Slack-sensitive characters but preserve newlines
+          SLACK_TXT=$(sed -e 's/&/\&amp;/g' -e 's/</\&lt;/g' -e 's/>/\&gt;/g' "${{ inputs.input_file }}")
+
+          # Output multiline value using heredoc
+          echo "${{ inputs.env_var }}<<EOF" >> $GITHUB_OUTPUT
+          echo "$SLACK_TXT" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+        else
+          echo "${{ inputs.env_var }}=no results file (${{ inputs.input_file }}) created" >> $GITHUB_OUTPUT
+        fi

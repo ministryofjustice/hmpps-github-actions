@@ -184,7 +184,8 @@ jobs:
     - name: Process slack message results from npm better audit # returns SLACK_TXT
       id: slack-message-result
       if: steps.npm-better.outcome == 'failure' && inputs.channel_id != 'NO_SLACK'
-      uses: ministryofjustice/hmpps-github-actions/.github/actions/slack_prepare_results@v2 # WORKFLOW_VERSION
+      uses: ministryofjustice/hmpps-github-actions/.github/actions/slack_prepare_results@renovate/slackapi-slack-github-action-2.x # WORKFLOW_VERSION
+      # uses: ministryofjustice/hmpps-github-actions/.github/actions/slack_prepare_results@v2 # WORKFLOW_VERSION
       with:
         input_file: npm-security-check-reports.txt
     - name: npm audit slack notification
