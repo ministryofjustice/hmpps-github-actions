@@ -68,7 +68,7 @@ runs:
     - uses: actions/checkout@v5
     - name: Download build artifacts needed for docker build
       if: inputs.download_build_artifacts == 'true'
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v6
       with:
         name: build-results
     - uses: docker/setup-qemu-action@v3
@@ -148,7 +148,7 @@ runs:
     - name: Upload image to artifacts
       if: ${{ inputs.upload_image_artifact ==  'true' }}
       id: upload_image_artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
         name: build_image
         path: ${{ runner.temp }}/build_image.tar
