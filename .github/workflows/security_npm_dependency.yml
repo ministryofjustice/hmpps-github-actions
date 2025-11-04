@@ -191,7 +191,7 @@ jobs:
         input_file: npm-security-check-reports.txt
       # Slack notification if there either of the two audits fail
     - name: npm audit slack notification
-      uses: ministryofjustice/hmpps-github-actions/.github/actions/slack_codescan_notification@renovate/slackapi-slack-github-action-2.x # WORKFLOW_VERSION
+      uses: ministryofjustice/hmpps-github-actions/.github/actions/slack_codescan_notification@v2 # WORKFLOW_VERSION
       if: (failure() || steps.npm.outcome == 'failure' || steps.npm-better.outcome == 'failure') && inputs.channel_id != 'NO_SLACK'
       with:
         title: "npm dependency scan"
