@@ -15,7 +15,7 @@ runs:
       name: npm-security-check-${{ github.event.repository.name }}
       path: npm-outdated-reports.txt
   - name: run translator
-    shell: python {0} npm-outdated-reports.txt >> "$GITHUB_OUTPUT"
+    shell: python {0} npm-outdated-reports.txt >> $GITHUB_OUTPUT
     id: translate
     run: |
       import sys
@@ -124,7 +124,7 @@ runs:
 
   - id: send-slack 
     uses: slackapi/slack-github-action@91efab103c0de0a537f72a35f6b8cda0ee76bf0a # v2.1.1
-    if: steps.translate.outputs.results == 'YES'  # && inputs.channel_id != ''
+    if: steps.translate.outputs.results == 'YES' && inputs.channel_id != ''
     with:
       method: chat.postMessage
       token: ${{ inputs.SLACK_BOT_TOKEN }}
