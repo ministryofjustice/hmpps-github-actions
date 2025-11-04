@@ -45,7 +45,9 @@ runs:
         workflow=os.getenv('workflow')
         job=os.getenv('job')
         repository_name=os.getenv('repository_name')
+        channel_id=os.getenv('channel_id','')
         slack_template = { 
+          "channel": f"{channel_id}"
           "text": "npm outdated scan identified issues",
           "blocks": [
             {
@@ -126,6 +128,7 @@ runs:
       workflow: ${{ github.workflow }}
       job: ${{ github.job }}
       repository_name: ${{ github.event.repository.name }}
+      channel_id: ${{ inputs.channel_id }}
 
 
   - name: Debug contexts
