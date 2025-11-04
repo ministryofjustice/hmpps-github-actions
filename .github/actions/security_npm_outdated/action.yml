@@ -47,7 +47,7 @@ runs:
         repository_name=os.getenv('repository_name')
         channel_id=os.getenv('channel_id','')
         slack_template = { 
-          "channel": f"{channel_id}"
+          "channel": f"{channel_id}",
           "text": "npm outdated scan identified issues",
           "blocks": [
             {
