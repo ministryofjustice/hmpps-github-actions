@@ -15,7 +15,7 @@ runs:
       name: npm-security-check-${{ github.event.repository.name }}
       path: npm-outdated-reports.txt
   - name: run translator
-    shell: python {0} npm-outdated-reports.txt >> $GITHUB_OUTPUT
+    shell: python {0} npm-outdated-reports.txt >> "$GITHUB_OUTPUT"
     id: translate
     run: |
       import sys
@@ -105,12 +105,17 @@ runs:
           with open(output_file,'w') as f:
             json.dump(slack_template, f)
           f.close()
-          # return an output to decide whether to send a slack message or not
-          eprint("results checked - results=YES")
-          print("results=YES")
+          value='YES'
         else:
-          eprint("results checked - results=NO")
-          print("results=NO")
+          value='NO'
+        gh_out = os.environ.get("GITHUB_OUTPUT")
+        if gh_out:
+            with open(gh_out, "a") as fh:
+                fh.write(f"results={value}\n")
+            eprint(f"Wrote to $GITHUB_OUTPUT: results={value}")
+        else:
+            eprint("GITHUB_OUTPUT env var not found")
+
       if __name__ == '__main__':
         main()
 
