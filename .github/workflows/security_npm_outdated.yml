@@ -61,8 +61,7 @@ jobs:
         id: npm
         run: npm outdated ${{ inputs.dependencies_to_check }} > npm-outdated-reports.txt
         continue-on-error: true
-      # - uses: ministryofjustice/hmpps-github-actions/.github/actions/security_npm_outdated@v2 # WORKFLOW_VERSION
-      - uses: ministryofjustice/hmpps-github-actions/.github/actions/security_npm_outdated@renovate/slackapi-slack-github-action-2.x # WORKFLOW_VERSION
+      - uses: ministryofjustice/hmpps-github-actions/.github/actions/security_npm_outdated@v2 # WORKFLOW_VERSION
         name: run the security_npm_outdated action to send a slack message
         if: steps.npm.outcome == 'failure'
         with:

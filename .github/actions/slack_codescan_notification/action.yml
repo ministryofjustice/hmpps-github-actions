@@ -24,42 +24,52 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: build the slack summary
-      id: slack-summary-block
-      shell: bash
-      run: |
-        echo "summary_block<<EOF" >> $GITHUB_OUTPUT
-        echo "- type: section" >> $GITHUB_OUTPUT
-        echo "  text:" >> $GITHUB_OUTPUT
-        echo "    type: mrkdwn" >> $GITHUB_OUTPUT
-        echo "    text: \"*Summary*\n\`\`\`\n${{ inputs.summary }}\n\`\`\`\"" >> $GITHUB_OUTPUT
-        echo "EOF" >> $GITHUB_OUTPUT
-      if: ${{ inputs.summary != '' }}
-    - name: send slack message
-      uses: slackapi/slack-github-action@91efab103c0de0a537f72a35f6b8cda0ee76bf0a # v2.1.1
+    - uses: slackapi/slack-github-action@fcfb566f8b0aab22203f066d80ca1d7e4b5d05b3 # v1.27.1  
+      env:
+        summary_block: "${{ inputs.summary != '' && format(',{{\"type\": \"section\",\"text\":{{\"type\":\"mrkdwn\",\"text\":\"*Summary*```\\n{0}\\n```\"}}}}', inputs.summary) || '' }}"
       with:
         method: chat.postMessage
-        token: ${{ inputs.SLACK_BOT_TOKEN }}
-        payload: |
-          channel: ${{ inputs.channel_id }}
-          text: "*${{ inputs.title }}* ${{ inputs.warningOnly == 'true' && 'issues identified' || 'failed' }}"
-          blocks:
-            - type: section
-              text:
-                type: mrkdwn
-                text: "${{ inputs.warningOnly == 'true' && ':warning:' || ':no_entry:' }} Github Workflow ${{ github.workflow }} ${{ inputs.warningOnly == 'true' && 'ran and identified issues' || 'failed' }}"
-            - type: section
-              fields:
-                - type: mrkdwn
-                  text: "*Code scanning:*\n<${{ github.server_url }}/${{ github.repository }}/security/code-scanning>"
-            - type: section
-              fields:
-                - type: mrkdwn
-                  text: "*Workflow:*\n<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|${{ github.workflow }}>"
-                - type: mrkdwn
-                  text: "*Job:*\n${{ github.job }}"
-                - type: mrkdwn
-                  text: "*Repo:*\n${{ github.repository }}"
-                - type: mrkdwn
-                  text: "*Project:*\n${{ inputs.subproject == '' && github.event.repository.name || inputs.subproject }}"
-            ${{ steps.slack-summary-block.outputs.summary_block }}
+        token: ${{ secrets.HMPPS_SRE_SLACK_BOT_TOKEN }}  
+        payload: >
+          { "channel" : ${{ inputs.channel_id }},
+            "text": "*${{ inputs.title }}* ${{ inputs.warningOnly == 'true' && 'issues identified' || 'failed' }}",
+            "blocks": [
+              {
+                "type": "section",
+                "text": {
+                  "type": "mrkdwn",
+                  "text": "${{ inputs.warningOnly == 'true' && ':warning:' || ':no_entry:' }} Github Workflow ${{ github.workflow }} ${{ inputs.warningOnly == 'true' && 'ran and identified issues' || 'failed' }}"
+                }
+              },
+              {
+                "type": "section",
+                "fields": [
+                  {
+                    "type": "mrkdwn",
+                    "text": "*Code scanning:*\n<${{ github.server_url }}/${{ github.repository }}/security/code-scanning>"
+                  }
+                ]
+              },
+              {
+                "type": "section",
+                "fields": [
+                  {
+                    "type": "mrkdwn",
+                    "text": "*Workflow:*\n<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|${{ github.workflow }}>"
+                  },
+                  {
+                    "type": "mrkdwn",
+                    "text": "*Job:*\n${{ github.job }}"
+                  },
+                  {
+                    "type": "mrkdwn",
+                    "text": "*Repo:*\n${{ github.repository }}"
+                  },
+                  {
+                    "type": "mrkdwn",
+                    "text": "*Project:*\n${{ inputs.subproject == '' && github.event.repository.name || inputs.subproject }}"
+                  }
+                ]
+              }${{ env.summary_block }}
+            ]
+          }
