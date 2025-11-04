@@ -29,7 +29,7 @@ runs:
         summary_block: "${{ inputs.summary != '' && format(',{{\"type\": \"section\",\"text\":{{\"type\":\"mrkdwn\",\"text\":\"*Summary*```\\n{0}\\n```\"}}}}', inputs.summary) || '' }}"
       with:
         method: chat.postMessage
-        token: ${{ inputs.HMPPS_SRE_SLACK_BOT_TOKEN }}  
+        token: ${{ inputs.SLACK_BOT_TOKEN }}  
         payload: >
           { "channel" : ${{ inputs.channel_id }},
             "text": "*${{ inputs.title }}* ${{ inputs.warningOnly == 'true' && 'issues identified' || 'failed' }}",
