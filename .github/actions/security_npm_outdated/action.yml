@@ -45,7 +45,9 @@ runs:
         workflow=os.getenv('workflow')
         job=os.getenv('job')
         repository_name=os.getenv('repository_name')
+        channel_id=os.getenv('channel_id','')
         slack_template = { 
+          "channel": f"{channel_id}",
           "text": "npm outdated scan identified issues",
           "blocks": [
             {
@@ -105,12 +107,17 @@ runs:
           with open(output_file,'w') as f:
             json.dump(slack_template, f)
           f.close()
-          # return an output to decide whether to send a slack message or not
-          eprint("results checked - results=YES")
-          print("results=YES")
+          value='YES'
         else:
-          eprint("results checked - results=NO")
-          print("results=NO")
+          value='NO'
+        gh_out = os.environ.get("GITHUB_OUTPUT")
+        if gh_out:
+            with open(gh_out, "a") as fh:
+                fh.write(f"results={value}\n")
+            eprint(f"Wrote to $GITHUB_OUTPUT: results={value}")
+        else:
+            eprint("GITHUB_OUTPUT env var not found")
+
       if __name__ == '__main__':
         main()
 
@@ -121,13 +128,12 @@ runs:
       workflow: ${{ github.workflow }}
       job: ${{ github.job }}
       repository_name: ${{ github.event.repository.name }}
+      channel_id: ${{ inputs.channel_id }}
 
   - id: send-slack 
-    uses: slackapi/slack-github-action@fcfb566f8b0aab22203f066d80ca1d7e4b5d05b3 # v1.27.1
-    if: steps.translate.outputs.results == 'YES'  && inputs.channel_id != ''
+    uses: slackapi/slack-github-action@91efab103c0de0a537f72a35f6b8cda0ee76bf0a # v2.1.1
+    if: steps.translate.outputs.results == 'YES' && inputs.channel_id != ''
     with:
-      channel-id: ${{ inputs.channel_id}}
-      payload-file-path: "./npm-outdated-reports.json"
-    env:
-      SLACK_BOT_TOKEN: ${{ inputs.SLACK_BOT_TOKEN }}
-    
+      method: chat.postMessage
+      token: ${{ inputs.SLACK_BOT_TOKEN }}
+      payload-file-path: ./npm-outdated-reports.json

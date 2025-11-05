@@ -19,11 +19,14 @@ runs:
       id: slack_message_result 
       with:
         input_file: ${{ inputs.input_file }}
-    - uses: slackapi/slack-github-action@fcfb566f8b0aab22203f066d80ca1d7e4b5d05b3 # v1.27.1
+    - uses: slackapi/slack-github-action@91efab103c0de0a537f72a35f6b8cda0ee76bf0a # v2.1.1
       with:
-        channel-id: ${{ inputs.channel_id}}
-        payload: |
+        method: chat.postMessage
+        token: ${{ inputs.slack_bot_token }}
+        payload: >
           {
+          "channel": ${{ inputs.channel_id }},
+          "text": ":stop: Github Actions ${{ github.workflow }} - ${{ github.event.workflow_run.conclusion }}",
           "blocks": [
             {
               "type": "context",
@@ -63,5 +66,3 @@ runs:
             }
           ]
           }
-      env:
-        SLACK_BOT_TOKEN: ${{ inputs.SLACK_BOT_TOKEN }}

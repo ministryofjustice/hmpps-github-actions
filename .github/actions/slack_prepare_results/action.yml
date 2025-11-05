@@ -29,4 +29,3 @@ runs:
         echo "SLACK_TXT=no results file (${{ inputs.input_file }}) created"
         echo "SLACK_TXT=no results file (${{ inputs.input_file }}) created" >> "$GITHUB_OUTPUT"
       fi
-
