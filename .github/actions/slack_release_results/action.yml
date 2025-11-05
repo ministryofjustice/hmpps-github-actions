@@ -55,7 +55,7 @@ runs:
       with:
         method: chat.postMessage
         token: ${{ inputs.slack_bot_token }}
-        payload: >
+        payload: |
           channel: ${{ inputs.channel_id }}
           text:
             type: mrkdwn
