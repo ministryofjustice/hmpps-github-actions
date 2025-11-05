@@ -130,14 +130,6 @@ runs:
       repository_name: ${{ github.event.repository.name }}
       channel_id: ${{ inputs.channel_id }}
 
-
-  - name: Debug contexts
-    shell: bash
-    run: |
-      echo "steps.translate.outputs.results='${{ steps.translate.outputs.results }}'"
-      echo "inputs.channel_id='${{ inputs.channel_id }}'"
-
-
   - id: send-slack 
     uses: slackapi/slack-github-action@91efab103c0de0a537f72a35f6b8cda0ee76bf0a # v2.1.1
     if: steps.translate.outputs.results == 'YES' && inputs.channel_id != ''
