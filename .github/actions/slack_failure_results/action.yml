@@ -24,7 +24,8 @@ runs:
         SLACK_BOT_TOKEN: ${{ inputs.SLACK_BOT_TOKEN }}
         payload: >
           {
-          "channel": ${{ inputs.channel_id }}
+          "channel": ${{ inputs.channel_id }},
+          "text": ":stop: Github Actions ${{ github.workflow }} - ${{ github.event.workflow_run.conclusion }}",
           "blocks": [
             {
               "type": "context",
