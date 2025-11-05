@@ -55,26 +55,37 @@ runs:
       with:
         method: chat.postMessage
         token: ${{ inputs.slack_bot_token }}
-        payload: |
-          channel: ${{ inputs.channel_id }}
-          text:
-            type: mrkdwn
-            text: "*${{ inputs.k8s_deployment_name }}* version `${{ inputs.app_version }}` deploy to *${{ inputs.environment }}*"
-          blocks:
-            - type: section
-              text:
-                type: mrkdwn
-                text: "*${{ inputs.k8s_deployment_name }}* version `${{ inputs.app_version }}` deploy to *${{ inputs.environment }}*"
-              accessory:
-                type: button
-                text:
-                  type: plain_text
-                  text: View job
-                url: "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-            - type: context
-              elements:
-                - type: mrkdwn
-                  text: ":github-${{ inputs.deploy_outcome }}: *Deploy status:* ${{ inputs.deploy_outcome }} - ${{ github.ref_name }} (${{ env.commit_message_first_line }})"
-                - type: plain_text
-                  text: |
-                    ${{ inputs.deployment_changelog }}
+        payload: >
+          {
+            channel: ${{ inputs.channel_id }}
+            "blocks": [
+              {
+                "type": "section",
+                "text": {
+                  "type": "mrkdwn",
+                  "text": "*${{ inputs.k8s_deployment_name }}* version `${{ inputs.app_version }}` deploy to *${{ inputs.environment }}*"
+                },
+                "accessory": {
+                  "type": "button",
+                  "text": {
+                    "type": "plain_text",
+                    "text": "View job"
+                  },
+                  "url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+                }
+              },
+              {
+                "type": "context",
+                "elements": [
+                  {
+                    "type": "mrkdwn",
+                    "text": ":github-${{ inputs.deploy_outcome }}: *Deploy status:* ${{ inputs.deploy_outcome }} - ${{ github.ref_name }} (${{ env.commit_message_first_line }})"
+                  },
+                  {
+                    "type": "plain_text",
+                    "text": "\n${{ inputs.deployment_changelog }}"
+                  }
+                ]
+              }
+            ]
+          }
