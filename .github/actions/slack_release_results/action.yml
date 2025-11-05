@@ -58,6 +58,7 @@ runs:
         payload: >
           {
             channel: ${{ inputs.channel_id }},
+            "text": "*${{ inputs.k8s_deployment_name }}* version `${{ inputs.app_version }}` deploy to *${{ inputs.environment }}*",
             "blocks": [
               {
                 "type": "section",
