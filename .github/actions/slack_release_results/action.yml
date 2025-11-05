@@ -57,7 +57,7 @@ runs:
         token: ${{ inputs.slack_bot_token }}
         payload: >
           {
-            channel: ${{ inputs.channel_id }}
+            channel: ${{ inputs.channel_id }},
             "blocks": [
               {
                 "type": "section",
