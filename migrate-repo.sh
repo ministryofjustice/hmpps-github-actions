@@ -398,9 +398,8 @@ migrate_deployment_jobs() {
 
   if [ -n "$java_postgres_executors" ]; then
     for executor_job in $java_postgres_executors; do
-      # validate - point the kotlin_validate job to the kotlin_postgres_validate.yml shared workflow and add configurations
+      # validate - enable postgres service and add configurations
       if [ ${executor_job} = "validate" ] ; then
-        yq eval '.jobs.kotlin_validate.uses = "ministryofjustice/hmpps-github-actions/.github/workflows/gradle_postgres_verify.yml@v2" # WORKFLOW_VERSION' -i .github/workflows/pipeline.yml
         # loop through for the 'with' parameters
         # Define the keys to extract
         keys=("jdk_tag" "postgres_tag" "postgres_db" "postgres_username" "postgres_password")
@@ -438,9 +437,8 @@ migrate_deployment_jobs() {
 
   if [ -n "$java_localstack_postgres_executors" ]; then
     for executor_job in $java_localstack_postgres_executors; do
-      # if it's validate we can replace kotlin_validate with this workflow
+      # validate - enable localstack and postgres services and add configurations
       if [ ${executor_job} = "validate" ] ; then
-        yq eval '.jobs.kotlin_validate.uses = "ministryofjustice/hmpps-github-actions/.github/workflows/gradle_localstack_postgres_verify.yml@v2" # WORKFLOW_VERSION' -i .github/workflows/pipeline.yml
         # import the parameters (if they exist)
         keys=("services" "localstack_tag" "postgres_tag" "postgres_db" "postgres_username" "postgres_password")
 
@@ -477,9 +475,8 @@ migrate_deployment_jobs() {
 
   if [ -n "$localstack" ]; then
     for executor_job in $localstack; do
-      # if it's validate we can replace kotlin_validate with this workflow
+      # validate - enable localstack service and add configurations
       if [ ${executor_job} = "validate" ] ; then
-        yq eval '.jobs.kotlin_validate.uses = "ministryofjustice/hmpps-github-actions/.github/workflows/gradle_localstack_verify.yml@v2" # WORKFLOW_VERSION' -i .github/workflows/pipeline.yml
         # import the parameters (if they exist)
         # localstack_tag: "3"
         # services: "sqs,sns"

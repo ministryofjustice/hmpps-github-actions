@@ -1,3 +1,5 @@
+# NB: deprecated in favour of gradle_verify.yml with optional services
+
 name: Run gradle checks with a postgres instance
 on:
   workflow_call:
@@ -77,6 +79,9 @@ jobs:
         ports:
           - 5432:5432
     steps:
+      - name: Deprecation warning
+        run: |
+          echo "::warning title=gradle_postgres_verify.yml is deprecated::You can now use ministryofjustice/hmpps-github-actions/.github/workflows/gradle_verify.yml with a postgres service"
       - name: Checkout sources
         uses: actions/checkout@v5
       - name: Setup Java
