@@ -20,16 +20,13 @@ This contains a library of Github actions for use by other projects. These inclu
 ### Test workflows
 
 #### Gradle
-- `gradle_localstack_postgres_verify`: runs a Gradle check with additional Localstack & Postgres services
-- `gradle_localstack_verify`: runs a Gradle check with additional Localstack service
-- `gradle_postgres_verify`: runs a Gradle check with additional Postgres service
+- `gradle_verify`: runs a Gradle check with optional Localstack & Postgres services
 - `kotlin_validate`: runs a Gradle check
 
 #### Node
 - `node_build`: runs a node build
-- `node_integration_tests_redis`: runs integration tests against a node installation with a REdis interface
-- `node_integration_tests`: runs integration tests against a node installation
-- `node_unit_tests`: runs unit tests against a node installation
+- `node_integration_tests`: runs integration tests against a node installation with optional Redis service
+- `node_unit_tests`: runs unit tests against a node installation with optional Redis service
 
 #### Helm
 - `test_helm_lint`: validates Helm configurations
