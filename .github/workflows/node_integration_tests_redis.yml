@@ -1,3 +1,5 @@
+# NB: deprecated in favour of node_integration_tests.yml with optional services
+
 name: Integration tests
 on:
   workflow_call:
