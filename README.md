@@ -89,6 +89,53 @@ git tag -f v2.1.5 && git push -f origin v2.1.5
 
 This requires maintenance permissions (or greater) on this repository.
 
+#### Testing Renovate Upgrade PRs for hmpps-github-actions
+
+When Renovate creates a PR to upgrade dependencies or actions in hmpps-github-actions, you need to verify the changes before merging. Since hmpps-github-actions is a central library, its workflows are consumed by other repositories. Follow these steps to test the changes:
+
+1. Identify the Changed Workflow
+
+Review the Renovate PR in hmpps-github-actions (example: https://github.com/ministryofjustice/hmpps-github-actions/pull/159).
+Check which workflow/action file was modified (e.g., .github/workflows/security_codeql.yml, .github/actions/trivy-scan/action.yml etc.).
+
+
+2. Find a Repository that uses these  workflow
+
+Search for a repository that references the changed workflow from hmpps-github-actions.
+Look in .github/workflows/*.yml files for lines like:
+
+YAMLuses: ministryofjustice/hmpps-github-actions/.github/workflows/<workflow>.yml@<version>Show more lines
+
+3. Create a Test Branch in Target Repository
+
+In the identified repository:
+
+Create a new branch (e.g., test-renovate-upgrade).
+Update the workflow reference to point to the branch from the Renovate PR instead of the current version:
+
+YAMLuses: ministryofjustice/hmpps-github-actions/.github/workflows/<workflow>.yml@<renovate-branch-name>Show more lines
+Example:
+YAMLuses: ministryofjustice/hmpps-github-actions/.github/workflows/codeql.yml@renovate/github-codeql-action-3.xShow more lines
+
+4. Ensure the New Version is Used in Setup Job
+
+In the workflow steps, confirm that the setup job or action version matches the updated version from the Renovate PR.
+For example, if Renovate upgraded github/codeql-action to v4, verify that the workflow uses v4.
+
+
+5. Trigger the Workflow
+
+Push the branch and trigger the workflow (manually or via a commit).
+Monitor the run in Actions tab to ensure:
+
+The workflow executes successfully.
+The updated action works as expected.
+
+6. Report Back
+
+If the test passes: Approve and merge the Renovate PR in hmpps-github-actions.
+If it fails: Investigate and fix issues before merging.
+
 ### TODO
 
 - Update the discovery tool to scan the version of Github Actions Workflows
