@@ -89,6 +89,67 @@ git tag -f v2.1.5 && git push -f origin v2.1.5
 
 This requires maintenance permissions (or greater) on this repository.
 
+## Testing Renovate Upgrade PRs for hmpps-github-actions
+
+When Renovate creates a PR to upgrade dependencies or actions in hmpps-github-actions, you need to verify the changes before merging. Since hmpps-github-actions is a central library, its workflows are consumed by other repositories. 
+
+Follow these steps to test the changes:
+
+##### 1. Identify the Changed Workflow
+
+Review the Renovate PR in hmpps-github-actions (example: https://github.com/ministryofjustice/hmpps-github-actions/pull/159).
+Check which workflow/action file was modified (e.g.: .github/workflows/security_codeql.yml, .github/actions/trivy-scan/action.yml etc.).
+
+
+##### 2. Find a Repository that uses these  workflow
+
+Search for a repository that references the changed workflow from hmpps-github-actions.
+Look in .github/workflows/*.yml files for lines like:
+```
+ministryofjustice/hmpps-github-actions/.github/workflows/<workflow>.yml@<version>
+```
+It may be that the update is within an action file rather than a parent workflow. To validate this, the parent workflow within hmpps-github-actions will also need to be modified to point to the patched action, eg in workflows/deploy_env.yaml, and then a repository that uses the workflow can be modified appropriately.
+
+eg (in shared Github Workflow)
+uses: ministryofjustice/hmpps-github-actions/.github/actions/slack_release_results@<branch_name>
+
+Obviously, don't forget to put this back to the appropriate tag when the PR is raised.
+
+##### 3. Create a Test Branch in Target Repository
+
+In the identified repository:
+
+Create a new branch (e.g., test-renovate-upgrade).
+Update the workflow reference to point to the branch from the Renovate PR instead of the current version:
+```
+ministryofjustice/hmpps-github-actions/.github/workflows/<workflow>.yml@<renovate-branch-name>
+```
+Example:
+```
+ministryofjustice/hmpps-github-actions/.github/workflows/codeql.yml@renovate/github-codeql-action-3.x
+```
+
+##### 4. Ensure the New Version is Used in Setup Job
+
+In the workflow steps, confirm that the setup job or action version matches the updated version from the Renovate PR.
+For example, if Renovate upgraded github/codeql-action to v4, verify that the workflow uses v4.
+
+##### 5. Trigger the Workflow
+
+Push the branch and trigger the workflow (manually or via a commit).
+Monitor the run in Actions tab to ensure:
+
+The workflow executes successfully.
+The updated action works as expected.
+
+##### 6. Report Back
+
+`If the test passes:` Approve and merge the Renovate PR in hmpps-github-actions.
+
+**Note:** Once the PR has been merged, it is recommended to combine a number of updates together under a new patch tag, rather than tagging each individually. 
+
+`If it fails:` Investigate and fix issues before merging.
+
 ### TODO
 
 - Update the discovery tool to scan the version of Github Actions Workflows
