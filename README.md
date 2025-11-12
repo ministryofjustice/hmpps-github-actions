@@ -108,6 +108,12 @@ Look in .github/workflows/*.yml files for lines like:
 ```
 YAMLuses: ministryofjustice/hmpps-github-actions/.github/workflows/<workflow>.yml@<version>
 ```
+It may be that the update is within an action file rather than a parent workflow. To validate this, the parent workflow within hmpps-github-actions will also need to be modified to point to the patched action, eg in workflows/deploy_env.yaml, and then a repository that uses the workflow can be modified appropriately.
+
+eg (in shared Github Workflow)
+uses: ministryofjustice/hmpps-github-actions/.github/actions/slack_release_results@<branch_name>
+
+Obviously, don't forget to put this back to the appropriate tag when the PR is raised.
 
 ##### 3. Create a Test Branch in Target Repository
 
