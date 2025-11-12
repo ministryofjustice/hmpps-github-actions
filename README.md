@@ -146,6 +146,7 @@ The updated action works as expected.
 
 `If the test passes:` Approve and merge the Renovate PR in hmpps-github-actions.
 
+**Note:** Once the PR has been merged, it is recommended to combine a number of updates together under a new patch tag, rather than tagging each individually. 
 `If it fails:` Investigate and fix issues before merging.
 
 ### TODO
