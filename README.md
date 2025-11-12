@@ -106,7 +106,7 @@ Check which workflow/action file was modified (e.g.: .github/workflows/security_
 Search for a repository that references the changed workflow from hmpps-github-actions.
 Look in .github/workflows/*.yml files for lines like:
 ```
-YAMLuses: ministryofjustice/hmpps-github-actions/.github/workflows/<workflow>.yml@<version>
+ministryofjustice/hmpps-github-actions/.github/workflows/<workflow>.yml@<version>
 ```
 It may be that the update is within an action file rather than a parent workflow. To validate this, the parent workflow within hmpps-github-actions will also need to be modified to point to the patched action, eg in workflows/deploy_env.yaml, and then a repository that uses the workflow can be modified appropriately.
 
@@ -122,11 +122,11 @@ In the identified repository:
 Create a new branch (e.g., test-renovate-upgrade).
 Update the workflow reference to point to the branch from the Renovate PR instead of the current version:
 ```
-YAMLuses: ministryofjustice/hmpps-github-actions/.github/workflows/<workflow>.yml@<renovate-branch-name>
+ministryofjustice/hmpps-github-actions/.github/workflows/<workflow>.yml@<renovate-branch-name>
 ```
 Example:
 ```
-YAMLuses: ministryofjustice/hmpps-github-actions/.github/workflows/codeql.yml@renovate/github-codeql-action-3.x
+ministryofjustice/hmpps-github-actions/.github/workflows/codeql.yml@renovate/github-codeql-action-3.x
 ```
 
 ##### 4. Ensure the New Version is Used in Setup Job
