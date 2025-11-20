@@ -65,7 +65,7 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v6
     - name: Download build artifacts needed for docker build
       if: inputs.download_build_artifacts == 'true'
       uses: actions/download-artifact@v6

@@ -67,7 +67,7 @@ jobs:
       contents: read
       actions: read
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v6
     
     - name: Run Trivy Security Scan
       id: trivy-scan

@@ -83,7 +83,7 @@ jobs:
         run: |
           echo "::warning title=gradle_postgres_verify.yml is deprecated::You can now use ministryofjustice/hmpps-github-actions/.github/workflows/gradle_verify.yml with a postgres service"
       - name: Checkout sources
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - name: Setup Java
         uses: actions/setup-java@v5
         with:
