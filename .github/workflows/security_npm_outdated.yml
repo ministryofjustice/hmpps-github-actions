@@ -44,7 +44,7 @@ jobs:
     env:
       parent_directory: ${{ github.event.repository.name == '' && '.' || github.event.repository.name}}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: actions/setup-node@v6
         with:
           node-version-file: ${{ inputs.node_version_file }}
