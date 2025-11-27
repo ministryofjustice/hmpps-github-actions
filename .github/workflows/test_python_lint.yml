@@ -24,7 +24,7 @@ jobs:
 
       - name: Download .ruff.toml configuration file
         run: |
-          curl -o .ruff.toml https://raw.githubusercontent.com/ministryofjustice/hmpps-sre-python-lib/feat/HEAT-864-2/.ruff.toml
+          curl -o .ruff.toml https://raw.githubusercontent.com/ministryofjustice/hmpps-sre-python-lib/main/.ruff.toml
   
       - name: Install Ruff
         run: |
