@@ -31,17 +31,17 @@ jobs:
         id: ruff_check
         run: |
           # Run Ruff in diff mode to suggest changes
-          ruff check . --diff > ruff_diff.txt
+          ruff check . --diff 
 
-      - name: Save Ruff Output as Artifact
-        if: failure()
-        uses: actions/upload-artifact@v3
-        with:
-          name: ruff-diff
-          path: ruff_diff.txt
+      # - name: Save Ruff Output as Artifact
+      #   if: failure()
+      #   uses: actions/upload-artifact@v5
+      #   with:
+      #     name: ruff-diff
+      #     path: ruff_diff.txt
 
-      - name: Display Ruff Output
-        if: failure()
-        run: |
-          echo "Suggested changes:"
-          cat ruff_diff.txt
+      # - name: Display Ruff Output
+      #   if: failure()
+      #   run: |
+      #     echo "Suggested changes:"
+      #     cat ruff_diff.txt
