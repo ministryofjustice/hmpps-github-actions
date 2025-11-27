@@ -31,4 +31,4 @@ jobs:
         id: ruff_check
         run: |
           # Run Ruff in diff mode to suggest changes
-          ruff check . --diff 
+          ruff check .
