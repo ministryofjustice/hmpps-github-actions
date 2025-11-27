@@ -1,0 +1,47 @@
+name: Python Formatter Check
+
+on:
+  workflow_call:
+
+permissions:
+  contents: write
+
+jobs:
+  fmt-check:
+    name: Check Python Formatting
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.x'
+
+      - name: Install Ruff
+        run: |
+          python -m pip install --upgrade pip
+          pip install ruff
+
+      - name: Check Python Formatting
+        id: ruff_check
+        run: |
+          # Run Ruff in diff mode to suggest changes
+          ruff check . --diff > ruff_diff.txt
+
+      - name: Save Ruff Output as Artifact
+        if: failure()
+        uses: actions/upload-artifact@v3
+        with:
+          name: ruff-diff
+          path: ruff_diff.txt
+
+      - name: Display Ruff Output
+        if: failure()
+        run: |
+          echo "Suggested changes:"
+          cat ruff_diff.txt
