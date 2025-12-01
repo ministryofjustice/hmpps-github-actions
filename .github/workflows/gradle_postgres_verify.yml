@@ -28,6 +28,11 @@ on:
         type: string
         default: 'postgres'
         required: false
+      postgres-port:
+        description: The port mapping for postgres
+        type: string
+        default: '5432:5432'
+        required: false
       gradle-command:
         description: The gradle command to execute
         type: string
@@ -77,7 +82,7 @@ jobs:
           --health-timeout 5s
           --health-retries 5
         ports:
-          - 5432:5432
+          - ${{ inputs.postgres-port }}
     steps:
       - name: Deprecation warning
         run: |
