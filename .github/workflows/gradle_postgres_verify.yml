@@ -28,7 +28,7 @@ on:
         type: string
         default: 'postgres'
         required: false
-      postgres-port-mapping:
+      postgres-port:
         description: The port mapping for postgres
         type: string
         default: '5432:5432'
@@ -82,7 +82,7 @@ jobs:
           --health-timeout 5s
           --health-retries 5
         ports:
-          - ${{ inputs.postgres-port-mapping }}
+          - ${{ inputs.postgres-port }}
     steps:
       - name: Deprecation warning
         run: |
