@@ -30,7 +30,7 @@ jobs:
     - name: update npm
       shell: bash
       run: |
-        sudo npm install -g npm@latest
+        npm install -g npm@latest
     - name: restore cache
       id: restore-cache
       uses: actions/cache/restore@v4
