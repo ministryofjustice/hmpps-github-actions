@@ -22,6 +22,11 @@ on:
         description: 'Optionally, start a redis service with this tag'
         required: false
         type: string
+      wiremock_port:
+        description: 'The port number to run wiremock on'
+        required: false
+        type: number
+        default: 9091
 
 permissions:
   contents: read
@@ -70,7 +75,7 @@ jobs:
         id: integration-tests
         shell: bash
         run: |
-          nohup java -jar wiremock.jar --port 9091 &
+          nohup java -jar wiremock.jar --port ${{ inputs.wiremock_port }} &
           nohup npm run start-feature &
           sleep 5
           npm run ${{ inputs.npm_script }}
