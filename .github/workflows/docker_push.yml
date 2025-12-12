@@ -38,7 +38,7 @@ jobs:
       IMAGE_NAME: ${{ inputs.docker_registry }}/${{ inputs.registry_org }}/${{ github.event.repository.name }}
     steps:
       - name: Download docker image
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v7
         with:
           name: build_image
           path: ${{ runner.temp }}

@@ -103,7 +103,7 @@ jobs:
           ${{ inputs.gradle-command }}
       - name: Upload the test artifacts
         if: ${{ inputs.upload-test-artifacts && !cancelled() }}
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: ${{ inputs.artifact-name }}
           path: |
@@ -112,7 +112,7 @@ jobs:
             ${{ inputs.build-dir }}/reports/jacoco
       - name: Upload the build artifacts
         if: ${{ inputs.upload-build-artifacts && !cancelled() }}
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: ${{ inputs.build-artifact-name }}
           path: |
