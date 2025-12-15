@@ -60,7 +60,7 @@ runs:
 
     - name: Trivy Image Vulnerability Scanner - image
       id: trivy-analyse-image
-      uses: aquasecurity/trivy-action@915b19bbe73b92a6cf82a1bc12b087c9a19a5fe2 # v0.28.0
+      uses: aquasecurity/trivy-action@b6643a29fecd7f34b3597bc6acb0a98b03d33ff8 # v0.33.1
       if: inputs.scan_type == 'image'
       with:
         image-ref: "${{ steps.check-package-repo.outputs.repo }}/${{ inputs.subproject == '' && github.event.repository.name || inputs.subproject}}:latest"
@@ -81,7 +81,7 @@ runs:
 
     - name: Trivy Image Vulnerability Scanner - filesystem
       id: trivy-analyse-fs
-      uses: aquasecurity/trivy-action@915b19bbe73b92a6cf82a1bc12b087c9a19a5fe2 # v0.28.0
+      uses: aquasecurity/trivy-action@b6643a29fecd7f34b3597bc6acb0a98b03d33ff8 # v0.33.1
       if: inputs.scan_type == 'fs'
       with:
         severity: ${{ inputs.severity }}
@@ -98,15 +98,16 @@ runs:
         TRIVY_JAVA_DB_REPOSITORY: public.ecr.aws/aquasecurity/trivy-java-db:1,ghcr.io/aquasecurity/trivy-java-db:1
 
     - name: Upload trivy artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       id: trivy-upload-artifact
       with:
         name: trivy-check-${{ inputs.subproject == '' && github.event.repository.name || inputs.subproject }}
         path: trivy-results.sarif
 
     - name: Trivy upload sarif
+      continue-on-error: true # currently fs scan sarif files aren't valid for Github Advanced security.
       id: trivy-upload
-      uses: github/codeql-action/upload-sarif@v3
+      uses: github/codeql-action/upload-sarif@v4
       with:
         sarif_file: 'trivy-results.sarif'
         category: trivy-dependency-check

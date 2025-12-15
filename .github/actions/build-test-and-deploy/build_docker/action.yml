@@ -51,14 +51,24 @@ inputs:
     description: Whether to download the build artifacts prior to running the docker build
     required: false
     default: 'false'
+  ECR_REGION:
+    description: The AWS region that the ECR repository was created in
+    required: false
+    default: 'eu-west-2'
+  ECR_ROLE_TO_ASSUME:
+    description: The AWS role to assume to authenticate to ECR
+    required: false
+  ECR_REGISTRY_URL:
+    description: The URL of the ECR registry
+    required: false
 
 runs:
   using: "composite"
   steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     - name: Download build artifacts needed for docker build
       if: inputs.download_build_artifacts == 'true'
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v6
       with:
         name: build-results
     - uses: docker/setup-qemu-action@v3
@@ -79,32 +89,37 @@ runs:
         username: ${{ github.actor }}
         password: ${{ github.token }}
 
-      # - name: Configure AWS credentials
-      #   if: ${{ inputs.docker_registry  == 'ecr' }}
-      #   uses: aws-actions/configure-aws-credentials@v2
-      #   with:
-      #     aws-access-key-id: ${{ secrets.AWS_MGMT_ECR_ID }}
-      #     aws-secret-access-key: ${{ secrets.AWS_MGMT_ECR_KEY }}
-      #     aws-region: eu-west-2
+    - name: Configure AWS credentials
+      if: ${{ inputs.docker_registry == 'ecr' }}
+      uses: aws-actions/configure-aws-credentials@v5
+      with:
+        role-to-assume: ${{ inputs.ECR_ROLE_TO_ASSUME }}
+        aws-region: ${{ inputs.ECR_REGION }}
 
-      # - name: Login to Amazon ECR
-      #   if: ${{ inputs.docker_registry  == 'ecr' }}
-      #   uses: aws-actions/amazon-ecr-login@v1
+    - name: Login to Amazon ECR
+      if: ${{ inputs.docker_registry == 'ecr' }}
+      uses: aws-actions/amazon-ecr-login@v2
 
     - name: Set Docker Tags
       id: set_tags
       shell: bash
       run: |
-        TAGS="${{ inputs.docker_registry }}/${{ inputs.registry_org }}/${{ inputs.image_name }}:${{ inputs.app_version }}"
-        
+        BASE_TAG="${{ inputs.docker_registry }}/${{ inputs.registry_org }}/${{ inputs.image_name }}"
+
+        if [[ "${{ inputs.docker_registry }}" == "ecr" ]]; then
+          BASE_TAG="${{ inputs.ECR_REGISTRY_URL }}/${{ inputs.image_name }}"
+        fi
+
+        TAGS="${BASE_TAG}:${{ inputs.app_version }}"
+
         if [[ "${{ inputs.tag_latest }}" == "true" ]]; then
-          TAGS="${TAGS},${{ inputs.docker_registry }}/${{ inputs.registry_org }}/${{ inputs.image_name }}:latest"
+          TAGS="${TAGS},${BASE_TAG}:latest"
         fi
-        
+
         if [[ -n "${{ inputs.additional_docker_tag }}" ]]; then
-          TAGS="${TAGS},${{ inputs.docker_registry }}/${{ inputs.registry_org }}/${{ inputs.image_name }}:${{ inputs.additional_docker_tag }}"
+          TAGS="${TAGS},${BASE_TAG}:${{ inputs.additional_docker_tag }}"
         fi
-        
+
         echo "tags=$TAGS" >> "$GITHUB_OUTPUT"
 
     - name: Build Docker Image
@@ -133,7 +148,7 @@ runs:
     - name: Upload image to artifacts
       if: ${{ inputs.upload_image_artifact ==  'true' }}
       id: upload_image_artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
         name: build_image
         path: ${{ runner.temp }}/build_image.tar

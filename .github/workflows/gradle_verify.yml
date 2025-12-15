@@ -16,6 +16,30 @@ on:
         type: string
         default: './gradlew check'
         required: false
+      localstack-tag:
+        description: Optionally, start a localstack service with this tag
+        type: string
+        required: false
+      localstack-services:
+        type: string
+        default: 'sqs,sns'
+        required: false
+      postgres-tag:
+        description: Optionally, start a postgres service with this tag
+        type: string
+        required: false
+      postgres-db:
+        type: string
+        default: 'postgres'
+        required: false
+      postgres-username:
+        type: string
+        default: 'root'
+        required: false
+      postgres-password:
+        type: string
+        default: 'dev'
+        required: false
       artifact-name:
         description: Unique name (across the pipeline) for the uploaded artifact
         type: string
@@ -47,16 +71,47 @@ jobs:
   gradle-verify:
     name: Verify the gradle app
     runs-on: ubuntu-latest
+    services:
+      localstack:
+        image: ${{ inputs.localstack-tag && format('localstack/localstack:{0}', inputs.localstack-tag) || '' }}
+        env:
+          ES_PORT_EXTERNAL: 4571
+          DOCKER_HOST: 'unix:///var/run/docker.sock'
+          AWS_EXECUTION_ENV: True
+          PERSISTENCE: 1
+          SERVICES: "${{ inputs.localstack-services }}"
+        options: >-
+          --name localstack
+          --health-cmd "curl -sS 127.0.0.1:4566 || exit 1"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 4566:4566
+          - 4571:4571
+      postgres:
+        image: ${{ inputs.postgres-tag && format('postgres:{0}', inputs.postgres-tag) || '' }}
+        env:
+          POSTGRES_USER: ${{ inputs.postgres-username }}
+          POSTGRES_PASSWORD: ${{ inputs.postgres-password }}
+          POSTGRES_DB: ${{ inputs.postgres-db }}
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Setup Java
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: 'temurin'
           java-version: '${{ inputs.java-version }}'
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@v5
       - name: Run checks with gradle
         shell: bash
         run: |
@@ -64,15 +119,16 @@ jobs:
           ${{ inputs.gradle-command }}
       - name: Upload the test artifacts
         if: ${{ inputs.upload-test-artifacts && !cancelled() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: ${{ inputs.artifact-name }}
           path: |
             ${{ inputs.build-dir }}/test-results
             ${{ inputs.build-dir }}/reports/tests
+            ${{ inputs.build-dir }}/reports/jacoco
       - name: Upload the build artifacts
         if: ${{ inputs.upload-build-artifacts && !cancelled() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: ${{ inputs.build-artifact-name }}
           path: |

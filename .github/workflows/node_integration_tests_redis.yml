@@ -1,3 +1,5 @@
+# NB: deprecated in favour of node_integration_tests.yml with optional services
+
 name: Integration tests
 on:
   workflow_call:
@@ -19,13 +21,16 @@ jobs:
           - 6379:6379
         options: --health-cmd="redis-cli ping" --health-interval=10s --health-timeout=5s --health-retries=5
     steps:
-      - uses: actions/checkout@v4
+      - name: Deprecation warning
+        run: |
+          echo "::warning title=node_integration_tests_redis.yml is deprecated::You can now use ministryofjustice/hmpps-github-actions/.github/workflows/node_integration_tests.yml with a redis service"
+      - uses: actions/checkout@v6
       - name: Use Node.js ${{ inputs.node_version_file }}
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version-file: ${{ inputs.node_version_file }}
       - name: download artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v6
         with:
           name: npm_build_artifacts
       - name: restore cache
@@ -37,7 +42,7 @@ jobs:
           path: |
             ./node_modules
             ~/.cache/Cypress
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json', '!**/node_modules/**') }}
       - name: Get wiremock
         shell: bash
         run: |
@@ -54,7 +59,7 @@ jobs:
         # replacing the above with if: always()
       - name: upload results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: npm_integration_test_artifacts
           path: |
@@ -65,7 +70,7 @@ jobs:
             ctrf/
       - name: fail the action if the tests failed
         if: ${{ steps.integration-tests.outcome == 'failure' }}
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             core.setFailed('Integration tests failed')

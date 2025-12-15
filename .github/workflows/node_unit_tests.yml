@@ -3,23 +3,47 @@ name: Build and test node
 on:
   workflow_call:
     inputs:
+      npm_script:
+        description: 'The main test script to execute with `npm run`'
+        required: false
+        type: string
+        default: 'test:ci'
+      test_results_artifact_name:
+        description: 'Name of uploaded test results artifact; must be unqiue across pipeline (eg. in matrix strategies for parallelised tests)'
+        required: false
+        type: string
+        default: 'npm_unit_test_artifacts'
       node_version_file:
         description: "Passed to setup-node action to specify where to source the version of node from"
         required: false
         type: string
         default: ".nvmrc"
+      redis_tag:
+        description: 'Optionally, start a redis service with this tag'
+        required: false
+        type: string
 
 permissions:
   contents: read
 
 jobs:
   node-unit-test:
-    name: Run the node unit tests
+    name: ${{ inputs.npm_script == 'test:ci' && 'Run the node unit tests' || format('Run the node unit tests – {0}', inputs.npm_script) }}
     runs-on: ubuntu-latest
+    services:
+      redis:
+        image: ${{ inputs.redis_tag && format('redis:{0}', inputs.redis_tag) || '' }}
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Use Node.js ${{ inputs.node_version_file }}
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version-file: ${{ inputs.node_version_file }}
       - name: restore cache
@@ -31,29 +55,29 @@ jobs:
           path: |
             ./node_modules
             ~/.cache/Cypress
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json', '!**/node_modules/**') }}
       - name: download the artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v6
         with:
           name: npm_build_artifacts
       - name: unit tests
         id: unit-tests
         shell: bash
         run: |
-          sudo npm run test:ci
+          npm run ${{ inputs.npm_script }}
         # continue-on-error: true
         # Replacing the above with if: always()
       - name: upload the artifacts
         if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
-          name: npm_unit_test_artifacts
+          name: ${{ inputs.test_results_artifact_name }}
           path: test_results
       - name: publish test report
         if: ${{ !cancelled() && github.event.repository.visibility == 'public' }}
         uses: dorny/test-reporter@v2
         with:
-          artifact: npm_unit_test_artifacts
+          artifact: ${{ inputs.test_results_artifact_name }}
           name: Test Report
           path: 'jest/**/*.xml'
           reporter: java-junit
@@ -63,7 +87,7 @@ jobs:
           list-tests: 'failed'
       - name: fail the action if the tests failed
         if: ${{ steps.unit-tests.outcome == 'failure' }}
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             core.setFailed('Unit tests failed')

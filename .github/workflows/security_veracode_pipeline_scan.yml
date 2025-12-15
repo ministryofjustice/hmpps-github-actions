@@ -21,6 +21,10 @@ on:
         type: string
         default: 'source.zip'
         description: "The name of the artifact within the package, Optional."
+      java_version:
+        type: string
+        required: false
+        default: '21'
     secrets:
       HMPPS_SRE_SLACK_BOT_TOKEN:
         description: Slack bot token
@@ -74,12 +78,12 @@ jobs:
       java_options: "-Xmx1024m -XX:ParallelGCThreads=2 -XX:ConcGCThreads=2 -Djava.util.concurrent.ForkJoinPool.common.parallelism=2 -Dorg.gradle.daemon=false -Dkotlin.compiler.execution.strategy=in-process"
 
     steps:
-    - uses: actions/checkout@v4
-    - name: Set up JDK 21
-      uses: actions/setup-java@v4
+    - uses: actions/checkout@v6
+    - name: Set up java
+      uses: actions/setup-java@v5
       with:
-        java-version: '21'
         distribution: 'temurin'
+        java-version: '${{ inputs.java_version }}'
     - name: prepare assets
       if: inputs.veracode_package_artifact_name == ''
       uses: ministryofjustice/hmpps-github-actions/.github/actions/security_veracode_prepare_artifacts@v2 # WORKFLOW_VERSION
@@ -87,7 +91,7 @@ jobs:
         docker_image_app_dir: ${{ inputs.docker_image_app_dir }}
     - name: download assets artifact
       if: inputs.veracode_package_artifact_name != ''
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v6
       with:
         name: ${{ inputs.veracode_package_artifact_name }}
     - name: "Download/Extract pipeline scanner"
@@ -153,7 +157,7 @@ jobs:
         VERACODE_API_KEY_2: ${{ secrets.HMPPS_VERACODE_API_KEY_2 }}
         VERACODE_API_KEY_3: ${{ secrets.HMPPS_VERACODE_API_KEY_3 }}
         VERACODE_API_KEY_4: ${{ secrets.HMPPS_VERACODE_API_KEY_4 }}
-    - uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@v5
       id: veracode-artifact-upload
       if: success() 
       continue-on-error: true
@@ -168,42 +172,26 @@ jobs:
         channel_id: ${{ inputs.channel_id }}
         input_file: results.txt
 
-    - uses: slackapi/slack-github-action@37ebaef184d7626c5f204ab8d3baff4262dd30f0 # v1.27.0
+    - uses: slackapi/slack-github-action@91efab103c0de0a537f72a35f6b8cda0ee76bf0a # v2.1.1
       if: steps.veracode-artifact-upload.conclusion == 'failure' && inputs.channel_id != 'NO_SLACK'
       with:
-        channel-id: ${{ inputs.channel_id}}
+        method: chat.postMessage
+        token: ${{ secrets.HMPPS_SRE_SLACK_BOT_TOKEN }}
         payload: |
-          { "text": "Veracode pipeline scan failed",
-            "blocks": [
-              {
-                "type": "section",
-                "text": {
-                  "type": "mrkdwn",
-                  "text": ":no_entry: Failed GitHub Action:"
-                }
-              },
-              {
-                "type": "section",
-                "fields": [
-                  {
-                    "type": "mrkdwn",
-                    "text": "*Workflow:*\n<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|${{ github.workflow }}>"
-                  },
-                  {
-                    "type": "mrkdwn",
-                    "text": "*Job:*\n${{ github.job }}"
-                  },
-                  {
-                    "type": "mrkdwn",
-                    "text": "*Repo:*\n${{ github.repository }}"
-                  },
-                  {
-                    "type": "mrkdwn",
-                    "text": "*Project:*\n${{ github.event.repository.name }}"
-                  }
-                ]
-              }
-            ]
-          }
-      env:
-        SLACK_BOT_TOKEN: ${{ secrets.HMPPS_SRE_SLACK_BOT_TOKEN }}
+          channel: ${{ inputs.channel_id }}
+          text: "Veracode pipeline scan failed"
+          blocks:
+            - type: section
+              text:
+                type: mrkdwn
+                text: ":no_entry: Failed GitHub Action:"
+            - type: section
+              fields:
+                - type: mrkdwn
+                  text: "*Workflow:*\n<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|${{ github.workflow }}>"
+                - type: mrkdwn
+                  text: "*Job:*\n${{ github.job }}"
+                - type: mrkdwn
+                  text: "*Repo:*\n${{ github.repository }}"
+                - type: mrkdwn
+                  text: "*Project:*\n${{ github.event.repository.name }}"

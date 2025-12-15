@@ -3,27 +3,56 @@ name: Integration tests
 on:
   workflow_call:
     inputs:
+      npm_script:
+        description: 'The main test script to execute with `npm run`'
+        required: false
+        type: string
+        default: 'int-test'
+      test_results_artifact_name:
+        description: 'Name of uploaded test results artifact; must be unqiue across pipeline (eg. in matrix strategies for parallelised tests)'
+        required: false
+        type: string
+        default: 'npm_integration_test_artifacts'
       node_version_file:
         description: "Passed to setup-node action to specify where to source the version of node from"
         required: false
         type: string
         default: ".nvmrc"
+      redis_tag:
+        description: 'Optionally, start a redis service with this tag'
+        required: false
+        type: string
+      wiremock_port:
+        description: 'The port number to run wiremock on'
+        required: false
+        type: number
+        default: 9091
 
 permissions:
   contents: read
 
 jobs:
   integration_test:
-    name: Run the integration tests
+    name: ${{ inputs.npm_script == 'int-test' && 'Run the integration tests' || format('Run the integration tests – {0}', inputs.npm_script) }}
     runs-on: ubuntu-latest
+    services:
+      redis:
+        image: ${{ inputs.redis_tag && format('redis:{0}', inputs.redis_tag) || '' }}
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Use Node.js ${{ inputs.node_version_file }}
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version-file: ${{ inputs.node_version_file }}
       - name: download artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v6
         with:
           name: npm_build_artifacts
       - name: restore cache
@@ -35,7 +64,7 @@ jobs:
           path: |
             ./node_modules
             ~/.cache/Cypress
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json', '!**/node_modules/**') }}
       - name: Init testing framework if necessary
         run: npm run int-test-init:ci --if-present
       - name: Get wiremock
@@ -46,15 +75,15 @@ jobs:
         id: integration-tests
         shell: bash
         run: |
-          nohup java -jar wiremock.jar --port 9091 &
+          nohup java -jar wiremock.jar --port ${{ inputs.wiremock_port }} &
           nohup npm run start-feature &
           sleep 5
-          npm run int-test
+          npm run ${{ inputs.npm_script }}
       - name: upload results
         if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
-          name: npm_integration_test_artifacts
+          name: ${{ inputs.test_results_artifact_name }}
           path: |
             integration_tests/videos/
             integration_tests/screenshots/
@@ -65,7 +94,7 @@ jobs:
         if: ${{ !cancelled() && github.event.repository.visibility == 'public' }}
         uses: dorny/test-reporter@v2
         with:
-          artifact: npm_integration_test_artifacts
+          artifact: ${{ inputs.test_results_artifact_name }}
           name: Test Report
           path: 'test_results/**/*.xml'
           reporter: java-junit
@@ -75,7 +104,7 @@ jobs:
           list-tests: 'failed'
       - name: fail the action if the tests failed
         if: ${{ steps.integration-tests.outcome == 'failure' }}
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             core.setFailed('Integration tests failed')

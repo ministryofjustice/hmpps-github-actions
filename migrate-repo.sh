@@ -106,7 +106,6 @@ migrate_kotlin_security_jobs() {
   yq -i 'del(.workflows.security) | del(.workflows.security-weekly) | del(.parameters.alerts-slack-channel)' .circleci/config.yml
   mkdir -p .github/workflows
 
-  gh api repos/ministryofjustice/hmpps-template-kotlin/contents/.github/workflows/security_codeql_actions_scan.yml -H "Accept: application/vnd.github.v3.raw" > .github/workflows/security_codeql_actions_scan.yml
   gh api repos/ministryofjustice/hmpps-template-kotlin/contents/.github/workflows/security_owasp.yml -H "Accept: application/vnd.github.v3.raw" > .github/workflows/security_owasp.yml
   gh api repos/ministryofjustice/hmpps-template-kotlin/contents/.github/workflows/security_trivy.yml -H "Accept: application/vnd.github.v3.raw" > .github/workflows/security_trivy.yml
   gh api repos/ministryofjustice/hmpps-template-kotlin/contents/.github/workflows/security_veracode_pipeline_scan.yml -H "Accept: application/vnd.github.v3.raw" > .github/workflows/security_veracode_pipeline_scan.yml
@@ -116,7 +115,7 @@ migrate_kotlin_security_jobs() {
   RANDOM_MINUTE=$((RANDOM%60))
   RANDOM_MINUTE2=$((RANDOM%60))
 
-  for file in security_owasp.yml security_trivy.yml security_veracode_pipeline_scan.yml security_codeql_actions_scan.yml; do
+  for file in security_owasp.yml security_trivy.yml security_veracode_pipeline_scan.yml; do
     yq -i ".on.schedule[].cron=\"$RANDOM_MINUTE $RANDOM_HOUR * * MON-FRI\" | .on.schedule[].cron line_comment=\"Every weekday at $(printf "%02d:%02d" $RANDOM_HOUR $RANDOM_MINUTE) UTC\"" .github/workflows/$file
   done
 
@@ -129,7 +128,6 @@ migrate_node_security_jobs() {
   yq -i 'del(.workflows.security) | del(.workflows.security-weekly) | del(.parameters.alerts-slack-channel)' .circleci/config.yml
   mkdir -p .github/workflows
 
-  gh api repos/ministryofjustice/hmpps-template-typescript/contents/.github/workflows/security_codeql_actions_scan.yml -H "Accept: application/vnd.github.v3.raw" > .github/workflows/security_codeql_actions_scan.yml
   gh api repos/ministryofjustice/hmpps-template-typescript/contents/.github/workflows/security_npm_dependency.yml -H "Accept: application/vnd.github.v3.raw" > .github/workflows/security_npm_dependency.yml
   gh api repos/ministryofjustice/hmpps-template-typescript/contents/.github/workflows/security_trivy.yml -H "Accept: application/vnd.github.v3.raw" > .github/workflows/security_trivy.yml
   gh api repos/ministryofjustice/hmpps-template-typescript/contents/.github/workflows/security_veracode_pipeline_scan.yml -H "Accept: application/vnd.github.v3.raw" > .github/workflows/security_veracode_pipeline_scan.yml
@@ -139,7 +137,7 @@ migrate_node_security_jobs() {
   RANDOM_MINUTE=$((RANDOM%60))
   RANDOM_MINUTE2=$((RANDOM%60))
 
-  for file in security_npm_dependency.yml security_trivy.yml security_veracode_pipeline_scan.yml security_codeql_actions_scan.yml; do
+  for file in security_npm_dependency.yml security_trivy.yml security_veracode_pipeline_scan.yml; do
     yq -i ".on.schedule[].cron=\"$RANDOM_MINUTE $RANDOM_HOUR * * MON-FRI\" | .on.schedule[].cron line_comment=\"Every weekday at $(printf "%02d:%02d" $RANDOM_HOUR $RANDOM_MINUTE) UTC\"" .github/workflows/$file
   done
 
@@ -269,7 +267,7 @@ migrate_deployment_jobs() {
     echo "  deploy_${each_env}:" >> ${pipeline_file}
     echo "    name: Deploy to the ${each_env} environment" >> ${pipeline_file}
 
-  # branches filter
+  # branches filter
     branch_filter=$(echo "$env_params" | yq .'hmpps/deploy_env.filters.branches.only[]')
     if [ -n "${branch_filter}" ]; then
       branch_filter_string="    if: "
@@ -347,7 +345,7 @@ migrate_deployment_jobs() {
   # Custom executor modifications
   # -----------------------------
 
-  # This checks for a number of custom executors that are used in CircleCI and, depending on the complexity of the job,
+  # This checks for a number of custom executors that are used in CircleCI and, depending on the complexity of the job,
   # either changes the pipeline to point at an existing shared workflow, or downloads a template workflow to be used by
   # the pipeline. The following executors are checked for:
   #
@@ -365,30 +363,15 @@ migrate_deployment_jobs() {
 
   if [ -n "$node_redis_executors" ]
     then for executor_job in $node_redis_executors; do
-      # integration_test - copy the workflow from github actions and and change the reference in the pipeline
+      # integration_test - enable redis service
       if [ ${executor_job} = "integration_test" ] ; then
-        # copy the workflow down
-        gh api repos/ministryofjustice/hmpps-github-actions/contents/.github/workflows/node_integration_tests.yml -H "Accept: application/vnd.github.v3.raw" > .github/workflows/node_integration_tests_redis.yml
-        # modify the workflow to include the service
-        yq eval '.jobs.integration_test |= {"runs-on": .runs-on, "services": {"redis": {"image": "redis:7.0", "ports": ["6379:6379"], "options": "--health-cmd=\"redis-cli ping\" --health-interval=10s --health-timeout=5s --health-retries=5"}}, "steps": .steps}' -i .github/workflows/node_integration_tests_redis.yml
-        # refer to the local workflow in the pipeline
-        yq eval '.jobs.node_integration_tests.uses = "./.github/workflows/node_integration_tests_redis.yml"' -i .github/workflows/pipeline.yml
-        echo
-        echo "INFO: template .github/workflows/node_integration_tests_redis.yml created for node/redis integration test"
-        echo "----  This will require manual modification to match the integration test within .circleci/config.yml"
-        echo
+        yq eval '.jobs.node_integration_tests.with.redis_tag= "7"' -i .github/workflows/pipeline.yml
+        echo "INFO: Enabled redis service in node_integration_tests"
 
-      # unit_test - copy the workflow from github actions and and change the reference in the pipeline
+      # unit_test - enable redis service
       elif [ ${executor_job} = "unit_test" ] ; then
-        # copy the workflow down
-        gh api repos/ministryofjustice/hmpps-github-actions/contents/.github/workflows/node_unit_tests.yml -H "Accept: application/vnd.github.v3.raw" > .github/workflows/node_unit_tests_redis.yml
-        # modify the workflow to include the service
-        yq eval '.jobs.node-unit-test |= {"runs-on": .runs-on, "services": {"redis": {"image": "redis:7.0", "ports": ["6379:6379"], "options": "--health-cmd=\"redis-cli ping\" --health-interval=10s --health-timeout=5s --health-retries=5"}}, "steps": .steps}' -i .github/workflows/node_unit_tests_redis.yml
-        # refer to the local workflow in the pipeline
-        yq eval '.jobs.node_unit_tests.uses = "./.github/workflows/node_unit_tests_redis.yml"' -i .github/workflows/pipeline.yml
-        # Remove the ''
-        echo "INFO: .github/workflows/node_unit_tests_redis.yml created for node unit tests including redis."
-        echo "----  This will require manual modification to match the unit test within .circleci/config.yml"
+        yq eval '.jobs.node_unit_tests.with.redis_tag= "7"' -i .github/workflows/pipeline.yml
+        echo "INFO: Enabled redis service in node_unit_tests"
 
       else
         # copy down node_unit_tests as a template since it's simplest
@@ -415,9 +398,8 @@ migrate_deployment_jobs() {
 
   if [ -n "$java_postgres_executors" ]; then
     for executor_job in $java_postgres_executors; do
-      # validate - point the kotlin_validate job to the kotlin_postgres_validate.yml shared workflow and add configurations
+      # validate - enable postgres service and add configurations
       if [ ${executor_job} = "validate" ] ; then
-        yq eval '.jobs.kotlin_validate.uses = "ministryofjustice/hmpps-github-actions/.github/workflows/gradle_postgres_verify.yml@v2" # WORKFLOW_VERSION' -i .github/workflows/pipeline.yml
         # loop through for the 'with' parameters
         # Define the keys to extract
         keys=("jdk_tag" "postgres_tag" "postgres_db" "postgres_username" "postgres_password")
@@ -455,9 +437,8 @@ migrate_deployment_jobs() {
 
   if [ -n "$java_localstack_postgres_executors" ]; then
     for executor_job in $java_localstack_postgres_executors; do
-      # if it's validate we can replace kotlin_validate with this workflow
+      # validate - enable localstack and postgres services and add configurations
       if [ ${executor_job} = "validate" ] ; then
-        yq eval '.jobs.kotlin_validate.uses = "ministryofjustice/hmpps-github-actions/.github/workflows/gradle_localstack_postgres_verify.yml@v2" # WORKFLOW_VERSION' -i .github/workflows/pipeline.yml
         # import the parameters (if they exist)
         keys=("services" "localstack_tag" "postgres_tag" "postgres_db" "postgres_username" "postgres_password")
 
@@ -494,9 +475,8 @@ migrate_deployment_jobs() {
 
   if [ -n "$localstack" ]; then
     for executor_job in $localstack; do
-      # if it's validate we can replace kotlin_validate with this workflow
+      # validate - enable localstack service and add configurations
       if [ ${executor_job} = "validate" ] ; then
-        yq eval '.jobs.kotlin_validate.uses = "ministryofjustice/hmpps-github-actions/.github/workflows/gradle_localstack_verify.yml@v2" # WORKFLOW_VERSION' -i .github/workflows/pipeline.yml
         # import the parameters (if they exist)
         # localstack_tag: "3"
         # services: "sqs,sns"
@@ -610,7 +590,7 @@ else
   exit 0
 fi
 
-# backup circleCC config
+# backup CircleCI config
 backup_file=".circleci/config.yml.bak.$(date +%Y%m%d_%H%M%S)"
 cp .circleci/config.yml ${backup_file}
 

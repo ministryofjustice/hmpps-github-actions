@@ -2,5 +2,19 @@
   "extends": [
     "config:base"
   ],
-  "labels": ["dependencies", "github-actions"]
+  "labels": [
+    "dependencies",
+    "github-actions"
+  ],
+  "packageRules": [
+    {
+      "matchManagers": ["github-actions"],
+      "fileMatch": [
+        "^\\.github/workflows/.*\\.yml$",
+        "^\\.github/actions/.*/action\\.yml$",
+        "^\\.github/actions/.*/.*/action\\.yml$"
+      ],
+      "enabled": true
+    }
+  ]
 }

@@ -24,14 +24,15 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - uses: slackapi/slack-github-action@37ebaef184d7626c5f204ab8d3baff4262dd30f0 # v1.27.0  
+    - uses: slackapi/slack-github-action@91efab103c0de0a537f72a35f6b8cda0ee76bf0a # v2.1.1
       env:
         summary_block: "${{ inputs.summary != '' && format(',{{\"type\": \"section\",\"text\":{{\"type\":\"mrkdwn\",\"text\":\"*Summary*```\\n{0}\\n```\"}}}}', inputs.summary) || '' }}"
-        SLACK_BOT_TOKEN: ${{ inputs.SLACK_BOT_TOKEN }}
       with:
-        channel-id: ${{ inputs.channel_id}}
-        payload: |
-          { "text": "*${{ inputs.title }}* ${{ inputs.warningOnly == 'true' && 'issues identified' || 'failed' }}",
+        method: chat.postMessage
+        token: ${{ inputs.SLACK_BOT_TOKEN }}  
+        payload: >
+          { "channel" : ${{ inputs.channel_id }},
+            "text": "*${{ inputs.title }}* ${{ inputs.warningOnly == 'true' && 'issues identified' || 'failed' }}",
             "blocks": [
               {
                 "type": "section",
