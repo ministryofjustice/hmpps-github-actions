@@ -72,7 +72,7 @@ jobs:
         category: gradle-owasp-dependency-check
       # don't stop the job even if Github Advanced Security isn't enabled
       continue-on-error: true
-    - uses: actions/upload-artifact@v5
+    - uses: actions/upload-artifact@v6
       id: owasp-upload-artifact
       with:
         name: gradle-owasp-dependency-check-${{ inputs.subproject == '' && github.event.repository.name || inputs.subproject }}
@@ -127,7 +127,7 @@ jobs:
         category: gradle-owasp-dependency-check
       # don't stop the job even if Github Advanced Security isn't enabled
       continue-on-error: true
-    - uses: actions/upload-artifact@v5
+    - uses: actions/upload-artifact@v6
       id: owasp-upload-artifact
       with:
         name: gradle-owasp-dependency-check-${{ inputs.subproject == '' && github.event.repository.name || inputs.subproject }}
