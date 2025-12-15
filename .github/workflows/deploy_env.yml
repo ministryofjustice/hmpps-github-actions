@@ -60,6 +60,10 @@ on:
         required: false
         default: ${{ github.event.repository.name }}
         type: string
+      helm_values_file_b64:
+        description: Base64-encoded values file content to use for deployment
+        required: false
+        type: string
       autogenerate_scheduled_downtime_cron:
         description: |
           Whether to autogenerate scheduled downtime cron values.
@@ -120,6 +124,7 @@ jobs:
           helm_timeout: ${{ inputs.helm_timeout }}
           helm_dir: ${{ inputs.helm_dir }}
           helm_chart_name: ${{ inputs.helm_chart_name }}
+          helm_values_file_b64: ${{ inputs.helm_values_file_b64 }}
           helm_allowlist_groups: ${{ vars.HMPPS_IP_ALLOWLIST_GROUPS_YAML }}
           helm_allowlist_version: ${{ vars.HMPPS_IP_ALLOWLIST_GROUPS_VERSION }}
           autogenerate_scheduled_downtime_cron: ${{inputs.autogenerate_scheduled_downtime_cron }}

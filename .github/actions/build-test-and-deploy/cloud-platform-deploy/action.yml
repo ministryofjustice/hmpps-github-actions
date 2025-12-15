@@ -61,6 +61,9 @@ inputs:
     description: "Whether to set the deterministic scheduled downtime cron values"
     required: false
     default: true
+  helm_values_file_b64:
+    description: "Base64-encoded values file content to use for deployment"
+    required: false
 
 outputs:
   deployment_changelog:
@@ -110,6 +113,17 @@ runs:
           echo "ALLOWLIST_VERSION=--set generic-service.allowlist_version=${{ inputs.helm_allowlist_version }}" >> $GITHUB_OUTPUT
         fi
 
+    - name: Decode base64 values file
+      shell: bash
+      id: decode-values-file
+      run: |
+        if [[ -n "${{ inputs.helm_values_file_b64 }}" ]]; then
+          echo "${{ inputs.helm_values_file_b64 }}" | base64 --decode > ./helm-values-decoded.yaml
+          echo "VALUES_FILE=--values ./helm-values-decoded.yaml" >> $GITHUB_OUTPUT
+          echo "Decoded values file:"
+          cat ./helm-values-decoded.yaml
+        fi
+
     - name: Get latest Helm v4 version
       shell: bash
       id: helm-version
@@ -139,16 +153,19 @@ runs:
         yq -i ".appVersion = \"${{ inputs.version }}\"" "${{ inputs.helm_dir }}/${{ inputs.helm_chart_name }}/Chart.yaml"
         helm dependency update "${{ inputs.helm_dir }}/${{ inputs.helm_chart_name }}"
 
+        # Split additional args into an array
+        read -r -a helm_args <<< "${{ inputs.helm_additional_args }}"
+
         # For services that have the startup/shutdown script enabled.
         # Autogenerate schedule downtime cron. This is a pseudo-random, deterministic number used in the cron start/shutdown minute.
         # This is to help ensure the startup/shutdown pods do not all run at the exact same time - which can cause cluster auto-scalling issues.
-        cron_args=""
         if [[ "${{ inputs.autogenerate_scheduled_downtime_cron }}" == "true" ]]; then
           cron_minute=$(echo -n "${{ inputs.k8s_deployment_name }}" | md5sum | awk '{print $1}' | tr -dc '0-9' | head -c 3)
           cron_minute=$((cron_minute % 60))
           startup_cron="$cron_minute 6 * * 1-5"
           shutdown_cron="$cron_minute 21 * * 1-5"
-          cron_args="--set generic-service.scheduledDowntime.startup=${startup_cron} --set generic-service.scheduledDowntime.shutdown=${shutdown_cron}"
+          helm_args+=(--set "generic-service.scheduledDowntime.startup=${startup_cron}")
+          helm_args+=(--set "generic-service.scheduledDowntime.shutdown=${shutdown_cron}")
         fi
 
         exec helm upgrade \
@@ -163,8 +180,8 @@ runs:
           --set 'global.environment=${{ inputs.environment }}' \
           --timeout ${{ inputs.helm_timeout }} \
           --values '${{ inputs.helm_dir }}/values-${{ inputs.environment }}.yaml' \
-          ${{ inputs.helm_additional_args }} \
-          ${cron_args} \
+          "${helm_args[@]}" \
           ${{ steps.check-ip-allowlists.outputs.ALLOWLIST_GROUPS }} \
           ${{ steps.check-ip-allowlists-version.outputs.ALLOWLIST_VERSION }} \
+          ${{ steps.decode-values-file.outputs.VALUES_FILE }} \
           --wait
