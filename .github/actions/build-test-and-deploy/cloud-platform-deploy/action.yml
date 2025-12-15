@@ -107,11 +107,22 @@ runs:
           echo "ALLOWLIST_VERSION=--set generic-service.allowlist_version=${{ inputs.helm_allowlist_version }}" >> $GITHUB_OUTPUT
         fi
 
+    - name: Get latest Helm v4 version
+      shell: bash
+      id: helm-version
+      run: |
+        LATEST_V4=$(curl -s https://api.github.com/repos/helm/helm/releases | \
+          jq -r '[.[] | select(.tag_name | startswith("v4.")) | select(.prerelease == false) | .tag_name] | first')
+        echo "version=${LATEST_V4}" >> $GITHUB_OUTPUT
+        echo "Latest Helm v4 version: ${LATEST_V4}"
+
+    - uses: azure/setup-helm@v4
+      with:
+        version: ${{ steps.helm-version.outputs.version }}
+
     - name: Deploy
       shell: bash
       run: |
-        eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
-        brew install helm
         yq -i ".appVersion = \"${{ inputs.version }}\"" "${{ inputs.helm_dir }}/${{ inputs.helm_chart_name }}/Chart.yaml"
         helm dependency update "${{ inputs.helm_dir }}/${{ inputs.helm_chart_name }}"
 
@@ -131,9 +142,8 @@ runs:
         fi
 
         exec helm upgrade '${{ inputs.k8s_deployment_name }}' '${{ inputs.helm_dir }}/${{ inputs.helm_chart_name }}' \
-          --atomic \
+          --rollback-on-failure \
           --history-max 10 \
-          --force \
           --install \
           --reset-values \
           --set 'generic-service.image.tag=${{ inputs.version }}' \
