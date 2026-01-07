@@ -11,7 +11,7 @@ def eprint(*args, **kwargs):
 
 def main():
   if len(sys.argv) < 2:
-    eprint('Usage: python3 auditjson_to_sarif.py <<input.json>> [-o output.json]')
+    eprint('Usage: python3 auditjson_to_sarif.py <<input.json>> [-o output.sarif]')
     sys.exit(1)
   # Default for output file if required
   args = sys.argv
