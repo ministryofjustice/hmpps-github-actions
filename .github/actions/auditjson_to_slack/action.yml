@@ -1,0 +1,19 @@
+name: 'Convert NPM Audit to a table suitable for Slack'
+description: 'Converts npm audit-ci json output to a presentable table'
+inputs:
+  input_file:
+    description: 'Input JSON file path'
+    required: true
+    default: 'npm-security-check-reports.json'
+outputs:
+  SLACK_TXT:
+    description: "The formatted slack message"
+    value: ${{ steps.audit-script.outputs.SLACK_TXT }}
+runs:
+  using: "composite"
+  steps:
+    - shell: bash
+      id: audit-script
+      run: |
+        pip install prettytable
+        python3 ${{ github.action_path }}/auditjson_to_slack.py ${{ inputs.input_file }}

@@ -50,158 +50,41 @@ jobs:
         name: npm-security-check-${{ github.event.repository.name }}
         path: npm-security-check-reports.json
     - name: Run translator to convert to sarif format
-      if: ${{ github.event.repository.visibility != 'private' && github.event.repository.visibility != 'internal' }}
-      run: |
-        import sys
-        import json
-        sev_lookup={
-          'high':'error',
-          'moderate':'warning',
-          'low':'note'
-        }
-        def eprint(*args, **kwargs):
-          print(*args, file=sys.stderr, **kwargs)
-        def main():
-          if len(sys.argv)<2:
-            eprint('Usage: python3 auditjson_to_sarif.py <<input.json>> [-o output.json]')
-            sys.exit(1)
-          # Default for output file if required
-          args=sys.argv
-          input_file=args[1]
-          output_file=f"{args[1].split('.')[0]}.sarif"
-          for each_arg in args:
-            if each_arg=='-o' and len(args)>(args.index('-o')+1):
-              output_file=args[args.index('-o')+1]
-          # Build the file framework
-          output_dict={ 
-            "version": "2.1.0",
-            "$schema": "https://schemastore.azurewebsites.net/schemas/json/sarif-2.1.0-rtm.4.json",
-            "runs": [
-              {
-                "tool": {
-                    "driver": {
-                      "fullName": "NPM Audit",
-                      "name": "npx audit-ci",
-                      "rules": [],
-                      "version": "0.0.13"
-                  }
-                },
-                "results": [],
-                "artifacts": []
-              }
-            ]
-          } 
-          # Populate the results
-          rules_list=[]
-          result_list=[]
-          result_dict={}
-          try:
-            with open(input_file) as f:
-              results=json.load(f)
-            f.close()
-            if 'advisories' not in results:
-              eprint("No advisories in this json file - assuming it's OK") 
-            else:
-              results_dict=results['advisories']
-          except:
-            eprint("Encountered an error - please check the json file")
-            sys.exit(1)
-          rule_index=0
-          for each_result_key in results_dict.keys():        
-            this_result=results_dict[each_result_key]
-            # lookup result severity level
-            if this_result['severity'] in sev_lookup:
-              level=sev_lookup[this_result['severity']]
-            else:
-              level='none'
-            message=''
-            for each_element in this_result.keys():
-              message+=f'{each_element}: {this_result[each_element]}\n'           
-            via=this_result['via'][0]
-            if not isinstance(via, str): # some vulnerabilities come via others - no sarif for them
-              rules_dict={
-                "id": via['cwe'][0],
-                "name": "LanguageSpecificPackageVulnerability",
-                "shortDescription": {
-                          "text": via['title']
-                        },
-                "defaultConfiguration": {
-                "level": level
-                },
-                "helpUri": via['url'],
-                "properties": {
-                  "precision": "very-high",
-                  "security-severity": str(via['cvss']['score']),
-                  "tags": [
-                    "vulnerability",
-                    "security",
-                    this_result['severity'].upper(),
-                    via['name']
-                  ]
-                }
-              }  
-              rules_list.append(rules_dict)        
-              result_dict={
-                'ruleId': via['cwe'][0],
-                'ruleIndex': rule_index,
-                'level': level,
-                'message': {'text': message},
-                'locations': [ {
-                  'physicalLocation': {
-                    'artifactLocation': {
-                      'uri': this_result['name']
-                      }
-                    }
-                } ]
-              }
-              result_list.append(result_dict)
-              rule_index+=1
-          output_dict['runs'][0]['tool']['driver']['rules']=rules_list
-          output_dict['runs'][0]['results']=result_list
-          with open(output_file,'w') as f:
-            json.dump(output_dict, f)
-          f.close()
-        if __name__ == '__main__':
-          main()
-      shell: python {0} npm-security-check-reports.json
+      id: sarif-format
+      # While we're paying for advanced security, we can scan all repos...
+      # if: ${{ github.event.repository.visibility != 'private' && github.event.repository.visibility != 'internal' }}
+      uses: ministryofjustice/hmpps-github-actions/.github/actions/auditjson_to_sarif@v2
+      with:
+        input-file: 'npm-security-check-reports.json'
     # Upload Sarif file: this will attempt to upload the sarif file for private/internal repositories as well
     - name: npm upload sarif
       uses: github/codeql-action/upload-sarif@v4
       id: npm-upload-sarif
-      if: ${{ github.event.repository.visibility != 'private' && github.event.repository.visibility != 'internal' }}
+      # if: ${{ github.event.repository.visibility != 'private' && github.event.repository.visibility != 'internal' }}
       with:
         sarif_file: 'npm-security-check-reports.sarif'
         category: npm-dependency-check
       # don't stop the job even if Github Advanced Security isn't enabled
       continue-on-error: true
-    - name: Audit for vulnerabilities - better
-      id: npm-better
-      if: steps.npm.outcome == 'failure'
-      run: npx better-npm-audit audit --level low --include-columns ID,Module,Paths,Severity,URL > npm-security-check-reports.txt
-      continue-on-error: true
-      env:
-        NO_COLOR: TRUE
-      # Process the slack message result - preparing SLACK_TXT
-      # in JSON compatible format
-    - name: Process slack message results from npm better audit # returns SLACK_TXT
-      id: slack-message-result
-      if: steps.npm-better.outcome == 'failure' && inputs.channel_id != 'NO_SLACK'
-      uses: ministryofjustice/hmpps-github-actions/.github/actions/slack_prepare_results@v2 # WORKFLOW_VERSION
+    - name:  Run translator to convert to a Slack-compatible table # returns SLACK_TXT
+      id: slack-format
+      if: steps.npm.outcome == 'failure' && inputs.channel_id != 'NO_SLACK'
+      uses: ministryofjustice/hmpps-github-actions/.github/actions/auditjson_to_slack@v2 # WORKFLOW_VERSION
       with:
-        input_file: npm-security-check-reports.txt
+        input_file: 'npm-security-check-reports.json'
       # Slack notification if there either of the two audits fail
     - name: npm audit slack notification
       uses: ministryofjustice/hmpps-github-actions/.github/actions/slack_codescan_notification@v2 # WORKFLOW_VERSION
-      if: (failure() || steps.npm.outcome == 'failure' || steps.npm-better.outcome == 'failure') && inputs.channel_id != 'NO_SLACK'
+      if: (failure() || steps.npm.outcome == 'failure' || steps.npm.outcome == 'failure') && inputs.channel_id != 'NO_SLACK'
       with:
         title: "npm dependency scan"
-        warningOnly: ${{ steps.npm-upload-sarif.outcome == 'success' && steps.slack-message-result.outcome == 'success' }}
+        warningOnly: ${{ steps.npm-upload-sarif.outcome == 'success' && steps.slack-format.outcome == 'success' }}
         channel_id: ${{ inputs.channel_id}}
         SLACK_BOT_TOKEN: ${{ secrets.HMPPS_SRE_SLACK_BOT_TOKEN }}
 
-    - name: npm better audit slack output results 
+    - name: npm slack output results 
       uses: slackapi/slack-github-action@91efab103c0de0a537f72a35f6b8cda0ee76bf0a # v2.1.1
-      if: inputs.channel_id != 'NO_SLACK' && steps.slack-message-result.outcome == 'success'
+      if: inputs.channel_id != 'NO_SLACK' && steps.slack-format.outcome == 'success'
       with:
         method: chat.postMessage
         token: ${{ secrets.HMPPS_SRE_SLACK_BOT_TOKEN }}        
@@ -209,6 +92,6 @@ jobs:
           {
             "channel": "${{ inputs.channel_id }}",
             "mrkdwn": true,
-            "text": "Output: ```\n${{ steps.slack-message-result.outputs.SLACK_TXT }}\n```"
+            "text": "Output: ```\n${{ steps.slack-format.outputs.SLACK_TXT }}\n```"
           }
 
