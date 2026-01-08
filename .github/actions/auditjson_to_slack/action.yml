@@ -11,4 +11,4 @@ runs:
     - shell: bash
       run: |
         pip install prettytable
-        python3 ${{ github.action_path }}/auditjson_to_slack.py ${{ inputs.input-file }} ${{ inputs.output-file != '' && format('-o {0}', inputs.output-file) || '' }}
+        python3 ${{ github.action_path }}/auditjson_to_slack.py ${{ inputs.input_file }}

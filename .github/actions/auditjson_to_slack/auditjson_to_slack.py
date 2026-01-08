@@ -37,8 +37,8 @@ def generate_table(data):
 
 
 def main():
-  if len(sys.argv) < 2:
-    eprint('Usage: python3 auditjson_to_slack.py <<input.json>> [-o output.txt]')
+  if len(sys.argv) < 1:
+    eprint('Usage: python3 auditjson_to_slack.py <<input.json>>')
     sys.exit(1)
   # Default for output file if required
   args = sys.argv
