@@ -78,6 +78,8 @@ def main():
         eprint(f'Failed to parse results for {key} - {e}')
 
   slack_table = generate_table(result_list)
+  # Escape the output for use in JSON strings
+  slack_table = json.dumps(slack_table)[1:-1]
 
   if 'GITHUB_OUTPUT' in os.environ:
     with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
