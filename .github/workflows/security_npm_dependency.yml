@@ -66,7 +66,7 @@ jobs:
         category: npm-dependency-check
       # don't stop the job even if Github Advanced Security isn't enabled
       continue-on-error: true
-    - name: Process slack message results from npm audit # returns SLACK_TXT
+    - name:  Run translator to convert to a Slack-compatible table # returns SLACK_TXT
       id: slack-format
       if: steps.npm.outcome == 'failure' && inputs.channel_id != 'NO_SLACK'
       uses: ministryofjustice/hmpps-github-actions/.github/actions/auditjson_to_slack@feat/HEAT-1072_npm_formatting # WORKFLOW_VERSION
