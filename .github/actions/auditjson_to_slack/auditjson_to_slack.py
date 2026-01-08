@@ -78,7 +78,14 @@ def main():
         eprint(f'Failed to parse results for {key} - {e}')
 
   slack_table = generate_table(result_list)
-  print(f'SLACK_TXT={slack_table}')
+
+  if 'GITHUB_OUTPUT' in os.environ:
+    with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+      print(f'SLACK_TXT<<EOF', file=f)
+      print(slack_table, file=f)
+      print('EOF', file=f)
+  else:
+    print(f'SLACK_TXT={slack_table}')
 
 
 if __name__ == '__main__':
