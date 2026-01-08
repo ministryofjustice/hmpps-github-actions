@@ -43,10 +43,6 @@ def main():
   # Default for output file if required
   args = sys.argv
   input_file = args[1]
-  output_file = f'{args[1].split(".")[0]}.txt'
-  for each_arg in args:
-    if each_arg == '-o' and len(args) > (args.index('-o') + 1):
-      output_file = args[args.index('-o') + 1]
 
   # Populate the results
   result_list = []

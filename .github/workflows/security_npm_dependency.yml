@@ -50,6 +50,7 @@ jobs:
         name: npm-security-check-${{ github.event.repository.name }}
         path: npm-security-check-reports.json
     - name: Run translator to convert to sarif format
+      id: sarif-format
       # While we're paying for advanced security, we can scan all repos...
       # if: ${{ github.event.repository.visibility != 'private' && github.event.repository.visibility != 'internal' }}
       uses: ministryofjustice/hmpps-github-actions/.github/actions/auditjson_to_sarif@feat/HEAT-1072_npm_formatting
@@ -65,25 +66,25 @@ jobs:
         category: npm-dependency-check
       # don't stop the job even if Github Advanced Security isn't enabled
       continue-on-error: true
-    - name: Process slack message results from npm better audit # returns SLACK_TXT
-      id: slack-message-result
-      if: steps.npm-better.outcome == 'failure' && inputs.channel_id != 'NO_SLACK'
+    - name: Process slack message results from npm audit # returns SLACK_TXT
+      id: slack-format
+      if: steps.npm.outcome == 'failure' && inputs.channel_id != 'NO_SLACK'
       uses: ministryofjustice/hmpps-github-actions/.github/actions/auditjson_to_slack@feat/HEAT-1072_npm_formatting # WORKFLOW_VERSION
       with:
         input_file: 'npm-security-check-reports.json'
       # Slack notification if there either of the two audits fail
     - name: npm audit slack notification
       uses: ministryofjustice/hmpps-github-actions/.github/actions/slack_codescan_notification@v2 # WORKFLOW_VERSION
-      if: (failure() || steps.npm.outcome == 'failure' || steps.npm-better.outcome == 'failure') && inputs.channel_id != 'NO_SLACK'
+      if: (failure() || steps.npm.outcome == 'failure' || steps.npm.outcome == 'failure') && inputs.channel_id != 'NO_SLACK'
       with:
         title: "npm dependency scan"
-        warningOnly: ${{ steps.npm-upload-sarif.outcome == 'success' && steps.slack-message-result.outcome == 'success' }}
+        warningOnly: ${{ steps.npm-upload-sarif.outcome == 'success' && steps.slack-format.outcome == 'success' }}
         channel_id: ${{ inputs.channel_id}}
         SLACK_BOT_TOKEN: ${{ secrets.HMPPS_SRE_SLACK_BOT_TOKEN }}
 
     - name: npm better audit slack output results 
       uses: slackapi/slack-github-action@91efab103c0de0a537f72a35f6b8cda0ee76bf0a # v2.1.1
-      if: inputs.channel_id != 'NO_SLACK' && steps.slack-message-result.outcome == 'success'
+      if: inputs.channel_id != 'NO_SLACK' && steps.slack-format.outcome == 'success'
       with:
         method: chat.postMessage
         token: ${{ secrets.HMPPS_SRE_SLACK_BOT_TOKEN }}        

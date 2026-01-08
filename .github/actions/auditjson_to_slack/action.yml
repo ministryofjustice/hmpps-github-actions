@@ -1,13 +1,10 @@
 name: 'Convert NPM Audit to a table suitable for Slack'
 description: 'Converts npm audit-ci json output to a presentable table'
 inputs:
-  input-file:
+  input_file:
     description: 'Input JSON file path'
     required: true
     default: 'npm-security-check-reports.json'
-  output-file:
-    description: 'Output text file path'
-    required: false
 runs:
   using: "composite"
   steps:
