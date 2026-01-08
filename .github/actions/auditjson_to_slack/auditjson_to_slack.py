@@ -71,7 +71,7 @@ def main():
             'paths': paths,
             'severity_value': source.get('cvss').get('score'),
             'severity': source.get('severity'),
-            'URL': source.get('URL'),
+            'url': source.get('URL'),
           }
         )
       except Exception as e:
