@@ -122,9 +122,9 @@ runs:
         
         if [ "$results_count" -gt 0 ]; then
           formatted_output=$(jq -r '.runs[0].results[] | 
-            "\(.ruleId) - \(.message.text | gsub("\\\\"; "\\\\\\\\") | gsub("\""; "\\\"") | gsub("Package: "; "(") | gsub("Severity: "; "") | gsub("\n"; "\\n"))"' trivy-results.sarif)
+            "\(.ruleId) - \(.message.text | gsub("\\\\"; "\\\\\\\\") | gsub("\""; "\\\"") | gsub("Package: "; "(") | gsub("Severity: "; "") | gsub("\n"; "\\n"))"' trivy-results.sarif | sed -e ':a' -e 'N' -e '$!ba' -e 's/\n/\\n/g')
           echo "${formatted_output}"
-          slack_summary="$(echo "${formatted_output}" | awk '{if (NR>1) s=s "\\n"; s=s $0} END {if (length(s) >= 3000) print substr(s, 1, 2997) "..."; else print s}')"
+          slack_summary="$(echo "${formatted_output}" | awk '{if (length($0) >= 3000) print substr($0, 1, 2997) "..."; else print $0}')"
         else
           echo "No vulnerabilities found"
           slack_summary="No vulnerabilities found"
