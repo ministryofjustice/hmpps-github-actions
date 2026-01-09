@@ -126,7 +126,7 @@ runs:
             gsub("\""; "\\\"") | gsub("\n"; "@@") |
             gsub("Package: "; "") | gsub("Severity: "; "") | gsub("Installed Version: ";"Installed: ") |
             gsub("Fixed Version: ";"Fixed: "))"' trivy-results.sarif )
-          formatted_output=$(echo "${jq_output}" | awk -F@@ '{print $1": "$5" - "$2" ("$3" - "$6")"}' |  sed -e ':a' -e 'N' -e '$!ba' -e 's/\n/\\n/g')
+          formatted_output=$(echo "${jq_output}" | awk -F@@ '{print $1": "$5" - "$2"\n                ("$3" - "$6")"}' |  sed -e ':a' -e 'N' -e '$!ba' -e 's/\n/\\n/g')
           slack_summary="$(echo "${formatted_output}" | awk '{if (length($0) >= 3000) print substr($0, 1, 2997) "..."; else print $0}')"
         else
           echo "No vulnerabilities found"
