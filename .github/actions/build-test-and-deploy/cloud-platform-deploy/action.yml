@@ -111,8 +111,7 @@ runs:
       shell: bash
       id: helm-version
       run: |
-        LATEST_V4=$(curl -s https://api.github.com/repos/helm/helm/releases | \
-          jq -r '[.[] | select(.tag_name | startswith("v4.")) | select(.prerelease == false) | .tag_name] | first')
+        LATEST_V4=$(gh api repos/helm/helm/releases --jq '[.[] | select(.tag_name | startswith("v4.")) | select(.prerelease == false) | .tag_name] | first')
         echo "version=${LATEST_V4}" >> $GITHUB_OUTPUT
         echo "Latest Helm v4 version: ${LATEST_V4}"
 
