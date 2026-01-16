@@ -101,7 +101,7 @@ jobs:
         docker_image_app_dir: ${{ inputs.docker_image_app_dir }}
     - name: download assets artifact
       if: inputs.veracode_package_artifact_name != ''
-      uses: actions/download-artifact@v6
+      uses: actions/download-artifact@v7
       with:
         name: ${{ inputs.veracode_package_artifact_name }}
     - name: "Download/Extract veracode agent"
@@ -139,7 +139,7 @@ jobs:
         VERACODE_API_KEY_2: ${{ secrets.HMPPS_VERACODE_API_KEY_2 }}
         VERACODE_API_KEY_3: ${{ secrets.HMPPS_VERACODE_API_KEY_3 }}
         VERACODE_API_KEY_4: ${{ secrets.HMPPS_VERACODE_API_KEY_4 }}
-    - uses: actions/upload-artifact@v5
+    - uses: actions/upload-artifact@v6
       if: success() 
       with:
         name: veracode-policy-check-${{ inputs.application_name || github.event.repository.name }}
