@@ -110,6 +110,8 @@ runs:
     - name: Get latest Helm v4 version
       shell: bash
       id: helm-version
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         LATEST_V4=$(gh api repos/helm/helm/releases --jq '[.[] | select(.tag_name | startswith("v4.")) | select(.prerelease == false) | .tag_name] | first')
         echo "version=${LATEST_V4}" >> $GITHUB_OUTPUT
