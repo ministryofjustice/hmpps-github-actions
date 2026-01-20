@@ -56,20 +56,20 @@ jobs:
       uses: ministryofjustice/hmpps-github-actions/.github/actions/auditjson_to_sarif@v2
       with:
         input-file: 'npm-security-check-reports.json'
-    # Upload Sarif file: this will attempt to upload the sarif file for private/internal repositories as well
-    - name: npm upload sarif
-      uses: github/codeql-action/upload-sarif@v4
-      id: npm-upload-sarif
-      # if: ${{ github.event.repository.visibility != 'private' && github.event.repository.visibility != 'internal' }}
-      with:
-        sarif_file: 'npm-security-check-reports.sarif'
-        category: npm-dependency-check
-      # don't stop the job even if Github Advanced Security isn't enabled
+    # # Upload Sarif file: this will attempt to upload the sarif file for private/internal repositories as well
+    # - name: npm upload sarif
+    #   uses: github/codeql-action/upload-sarif@v4
+    #   id: npm-upload-sarif
+    #   # if: ${{ github.event.repository.visibility != 'private' && github.event.repository.visibility != 'internal' }}
+    #   with:
+    #     sarif_file: 'npm-security-check-reports.sarif'
+    #     category: npm-dependency-check
+    #   # don't stop the job even if Github Advanced Security isn't enabled
       continue-on-error: true
     - uses: actions/upload-artifact@v5
       with:
         name: npm-security-check-${{ github.event.repository.name }}
-        path: npm-security-check-reports-check.sarif
+        path: npm-security-check-reports.sarif
       # don't stop the job even if Github Advanced Security isn't enabled
       continue-on-error: true
     - name:  Run translator to convert to a Slack-compatible table # returns SLACK_TXT
