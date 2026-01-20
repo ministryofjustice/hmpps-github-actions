@@ -69,7 +69,7 @@ jobs:
     - uses: actions/upload-artifact@v5
       with:
         name: npm-security-check-${{ github.event.repository.name }}
-        path: npm-security-check-reports.sarif
+        path: npm-security-check-reports-check.sarif
       # don't stop the job even if Github Advanced Security isn't enabled
       continue-on-error: true
     - name:  Run translator to convert to a Slack-compatible table # returns SLACK_TXT
