@@ -4,7 +4,7 @@ on:
   workflow_call:
     inputs:
       helm_substitutions:
-        description: "Multi-line key-value pairs"
+        description: "Multi-line key-value pairs for env var overrides"
         required: false
         type: string
 
@@ -23,22 +23,33 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v4
 
-      - name: Parse Helm Substitutions
+      - name: Apply substitutions
         run: |
-          sudo apt-get update && sudo apt-get install -y gettext
-          echo "${{ inputs.helm_substitutions }}" | while IFS='=' read -r key value; do
-            if [ -n "$key" ]; then
-              echo "$key=$value" >> $GITHUB_ENV
-            fi
-          done
-          envsubst < helm_deploy/values-pr.yaml > helm_deploy/values-pr-processed.yaml
+          # Substitute PR_NUMBER and RELEASE_NAME using yq
+          yq -i "(.generic-service.nameOverride | select(. == \"\$RELEASE_NAME\")) = \"$RELEASE_NAME\"" helm_deploy/values-pr.yaml
+          yq -i "(.generic-service.ingress.host | select(contains(\"\$PR_NUMBER\"))) |= sub(\"\\\$PR_NUMBER\", \"$PR_NUMBER\")" helm_deploy/values-pr.yaml
+          yq -i "(.generic-service.env.INGRESS_URL | select(contains(\"\$PR_NUMBER\"))) |= sub(\"\\\$PR_NUMBER\", \"$PR_NUMBER\")" helm_deploy/values-pr.yaml
+          yq -i "(.generic-service.env.DEPLOYMENT_NAME | select(contains(\"\$PR_NUMBER\"))) |= sub(\"\\\$PR_NUMBER\", \"$PR_NUMBER\")" helm_deploy/values-pr.yaml
+          yq -i "(.generic-prometheus-alerts.targetApplication | select(. == \"\$RELEASE_NAME\")) = \"$RELEASE_NAME\"" helm_deploy/values-pr.yaml
+
+          # Apply any env var overrides from helm_substitutions
+          if [ -n "${{ inputs.helm_substitutions }}" ]; then
+            echo "${{ inputs.helm_substitutions }}" | while IFS='=' read -r key value; do
+              if [ -n "$key" ] && [ -n "$value" ]; then
+                echo "Overriding $key with $value"
+                yq -i ".generic-service.env.$key = \"$value\"" helm_deploy/values-pr.yaml
+              fi
+            done
+          fi
+
+          cat helm_deploy/values-pr.yaml
 
       - name: Set Outputs
         id: set-outputs
         run: |
-          echo "ingress_host=$(yq '.generic-service.ingress.host' helm_deploy/values-pr-processed.yaml)" >> $GITHUB_OUTPUT
+          echo "ingress_host=$(yq '.generic-service.ingress.host' helm_deploy/values-pr.yaml)" >> $GITHUB_OUTPUT
           echo "release_name=$RELEASE_NAME" >> $GITHUB_OUTPUT
-          echo "processed_yaml_b64=$(base64 -w 0 < helm_deploy/values-pr-processed.yaml)" >> $GITHUB_OUTPUT
+          echo "processed_yaml_b64=$(base64 -w 0 < helm_deploy/values-pr.yaml)" >> $GITHUB_OUTPUT
 
   build_docker:
     name: Build docker image

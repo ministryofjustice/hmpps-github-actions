@@ -120,8 +120,6 @@ runs:
         if [[ -n "${{ inputs.helm_values_file_b64 }}" ]]; then
           echo "${{ inputs.helm_values_file_b64 }}" | base64 --decode > ./helm-values-decoded.yaml
           echo "VALUES_FILE=--values ./helm-values-decoded.yaml" >> $GITHUB_OUTPUT
-          echo "Decoded values file:"
-          cat ./helm-values-decoded.yaml
         fi
 
     - name: Get latest Helm v4 version
