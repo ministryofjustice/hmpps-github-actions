@@ -2,6 +2,11 @@ name: Cleanup ephemeral deployment
 
 on:
   workflow_call:
+    inputs:
+      pr_number:
+        description: "PR number (optional, falls back to github.event.pull_request.number)"
+        required: false
+        type: string
 
 jobs:
   cleanup_ephemeral:
@@ -17,4 +22,4 @@ jobs:
           cluster: ${{ secrets.KUBE_CLUSTER }}
           namespace: ${{ secrets.KUBE_NAMESPACE }}
           token: ${{ secrets.KUBE_TOKEN }}
-          release_name: '${{ github.event.repository.name }}-pr-${{ github.event.pull_request.number }}'
+          release_name: '${{ github.event.repository.name }}-pr-${{ inputs.pr_number || github.event.pull_request.number }}'

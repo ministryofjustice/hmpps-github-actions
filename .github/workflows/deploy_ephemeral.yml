@@ -3,6 +3,10 @@ name: Create ephemeral deployment (reusable)
 on:
   workflow_call:
     inputs:
+      pr_number:
+        description: "PR number (required for issue_comment events where github.event.pull_request is unavailable)"
+        required: false
+        type: string
       helm_substitutions:
         description: "Multi-line key-value pairs for env var overrides"
         required: false
@@ -13,8 +17,8 @@ jobs:
     name: Prepare deployment context/variables
     runs-on: ubuntu-latest
     env:
-      PR_NUMBER: ${{ github.event.pull_request.number }}
-      RELEASE_NAME: ${{ github.event.repository.name }}-pr-${{ github.event.pull_request.number }}
+      PR_NUMBER: ${{ inputs.pr_number || github.event.pull_request.number }}
+      RELEASE_NAME: ${{ github.event.repository.name }}-pr-${{ inputs.pr_number || github.event.pull_request.number }}
     outputs:
       release_name: ${{ steps.set-outputs.outputs.release_name }}
       ingress_host: ${{ steps.set-outputs.outputs.ingress_host }}
