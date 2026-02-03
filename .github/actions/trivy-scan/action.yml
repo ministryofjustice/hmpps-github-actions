@@ -35,14 +35,14 @@ inputs:
     required: false
     default: ''
   ECR_REGION:
-    description: The AWS region that the ECR repository was created in
+    description: 'The AWS region that the ECR repository was created in'
     required: false
     default: 'eu-west-2'
   ECR_ROLE_TO_ASSUME:
-    description: The AWS role to assume to authenticate to ECR
+    description: 'The AWS role to assume to authenticate to ECR'
     required: false
   ECR_REGISTRY_URL:
-    description: The URL of the ECR registry
+    description: 'The URL of the ECR registry'
     required: false
 
 outputs:
