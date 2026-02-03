@@ -32,6 +32,11 @@ on:
         type: string
         default: 'postgres'
         required: false
+      postgres-port:
+        description: The port mapping for postgres
+        type: string
+        default: '5432:5432'
+        required: false
       postgres-username:
         type: string
         default: 'root'
@@ -101,7 +106,7 @@ jobs:
           --health-timeout 5s
           --health-retries 5
         ports:
-          - 5432:5432
+          - ${{ inputs.postgres-port }}
     steps:
       - name: Checkout sources
         uses: actions/checkout@v6
