@@ -91,7 +91,7 @@ runs:
 
     - name: Configure AWS credentials
       if: ${{ inputs.docker_registry == 'ecr' }}
-      uses: aws-actions/configure-aws-credentials@v5
+      uses: aws-actions/configure-aws-credentials@v6
       with:
         role-to-assume: ${{ inputs.ECR_ROLE_TO_ASSUME }}
         aws-region: ${{ inputs.ECR_REGION }}
