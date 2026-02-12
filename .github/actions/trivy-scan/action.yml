@@ -63,14 +63,14 @@ runs:
         echo "repo=${repo_info}" >> $GITHUB_OUTPUT
 
     - name: Configure AWS credentials
-      if: secrets.ECR_ROLE_TO_ASSUME != '' && inputs.scan_type == 'image'
+      if: ${{ secrets.ECR_ROLE_TO_ASSUME != '' && inputs.scan_type == 'image' }}
       uses: aws-actions/configure-aws-credentials@v5
       with:
         role-to-assume: ${{ secrets.ECR_ROLE_TO_ASSUME }}
         aws-region: ${{ inputs.ECR_REGION }}
 
     - name: Login to Amazon ECR
-      if: inputs.ECR_ROLE_TO_ASSUME != '' && inputs.scan_type == 'image'
+      if: ${{ inputs.ECR_ROLE_TO_ASSUME != '' && inputs.scan_type == 'image' }}
       uses: aws-actions/amazon-ecr-login@v2
 
     - name: Trivy Image Vulnerability Scanner - image
