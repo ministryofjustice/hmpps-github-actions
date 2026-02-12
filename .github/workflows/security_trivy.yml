@@ -72,7 +72,8 @@ jobs:
     
     - name: Run Trivy Security Scan
       id: trivy-scan
-      uses: ./.github/actions/trivy-scan # WORKFLOW_VERSION
+      uses: ministryofjustice/hmpps-github-actions/.github/actions/trivy-scan@ACR-515_Trivy-Scan-ECR-Updates # WORKFLOW_VERSION
+
       with:
         subproject: ${{ inputs.subproject }}
         severity: ${{ inputs.severity }}
