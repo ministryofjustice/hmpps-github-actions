@@ -130,7 +130,7 @@ jobs:
 
   docker_build_platform:
     name: Build ${{ matrix.platform }}
-    if: ${{ inputs.docker_multiplatform && inputs.push }}
+    if: ${{ inputs.docker_multiplatform }}
     needs: [create_version]
     strategy:
       fail-fast: true
@@ -152,22 +152,6 @@ jobs:
 
       - uses: docker/setup-buildx-action@v3
 
-      - name: Docker login to ghcr.io
-        if: ${{ inputs.docker_registry == 'ghcr.io' }}
-        uses: docker/login-action@v3
-        with:
-          registry: ${{ inputs.docker_registry }}
-          username: ${{ github.actor }}
-          password: ${{ github.token }}
-
-      - name: Docker login to quay.io
-        if: ${{ inputs.docker_registry == 'quay.io' }}
-        uses: docker/login-action@v3
-        with:
-          registry: ${{ inputs.docker_registry }}
-          username: ${{ secrets.HMPPS_QUAYIO_USER }}
-          password: ${{ secrets.HMPPS_QUAYIO_TOKEN }}
-
       - name: Prepare platform pair
         id: prepare
         shell: bash
@@ -176,8 +160,7 @@ jobs:
         env:
           platform: ${{ matrix.platform }}
 
-      - name: Build and push by digest
-        id: build
+      - name: Build OCI tarball
         uses: docker/build-push-action@v6
         with:
           context: .
@@ -188,38 +171,30 @@ jobs:
             "GIT_REF=${{ github.sha }}"
             "GIT_BRANCH=${{ github.ref_name }}"
             "${{ inputs.additional_docker_build_args }}"
-          outputs: type=image,name=${{ inputs.docker_registry }}/${{ inputs.registry_org }}/${{ inputs.image_name || github.event.repository.name }},push-by-digest=true,name-canonical=true,push=true
+          outputs: type=oci,dest=${{ runner.temp }}/image.tar
           cache-from: type=gha,scope=build-${{ steps.prepare.outputs.platform_pair }}
           cache-to: type=gha,scope=build-${{ steps.prepare.outputs.platform_pair }},mode=max
           provenance: false
 
-      - name: Export digest
-        shell: bash
-        run: |
-          mkdir -p "$RUNNER_TEMP/digests"
-          digest="${{ steps.build.outputs.digest }}"
-          touch "$RUNNER_TEMP/digests/${digest#sha256:}"
-
-      - name: Upload digest
+      - name: Upload image tarball
         uses: actions/upload-artifact@v6
         with:
-          name: digests-${{ steps.prepare.outputs.platform_pair }}
-          path: ${{ runner.temp }}/digests/*
+          name: image-${{ steps.prepare.outputs.platform_pair }}
+          path: ${{ runner.temp }}/image.tar
           if-no-files-found: error
           retention-days: 1
 
   docker_build_merge:
-    name: Merge multi-platform manifests
+    name: Push and merge multi-platform manifests
     if: ${{ inputs.docker_multiplatform && inputs.push }}
     needs: [create_version, docker_build_platform]
     runs-on: ubuntu-latest
     steps:
-      - name: Download digests
+      - name: Download image tarballs
         uses: actions/download-artifact@v7
         with:
-          path: ${{ runner.temp }}/digests
-          pattern: digests-*
-          merge-multiple: true
+          path: ${{ runner.temp }}/images
+          pattern: image-*
 
       - uses: docker/setup-buildx-action@v3
 
@@ -238,6 +213,20 @@ jobs:
           registry: ${{ inputs.docker_registry }}
           username: ${{ secrets.HMPPS_QUAYIO_USER }}
           password: ${{ secrets.HMPPS_QUAYIO_TOKEN }}
+
+      - name: Push platform images and capture digests
+        shell: bash
+        run: |
+          IMAGE="${{ inputs.docker_registry }}/${{ inputs.registry_org }}/${{ inputs.image_name || github.event.repository.name }}"
+          VERSION="${{ needs.create_version.outputs.version }}"
+
+          skopeo copy --digestfile "$RUNNER_TEMP/digest-amd64" \
+            oci-archive:"$RUNNER_TEMP/images/image-linux-amd64/image.tar" \
+            "docker://${IMAGE}:${VERSION}-amd64"
+
+          skopeo copy --digestfile "$RUNNER_TEMP/digest-arm64" \
+            oci-archive:"$RUNNER_TEMP/images/image-linux-arm64/image.tar" \
+            "docker://${IMAGE}:${VERSION}-arm64"
 
       - name: Set Docker Tags
         id: set_tags
@@ -259,8 +248,8 @@ jobs:
 
       - name: Create multi-platform manifest
         shell: bash
-        working-directory: ${{ runner.temp }}/digests
         run: |
           IMAGE="${{ inputs.docker_registry }}/${{ inputs.registry_org }}/${{ inputs.image_name || github.event.repository.name }}"
           docker buildx imagetools create ${{ steps.set_tags.outputs.tags }} \
-            $(printf "${IMAGE}@sha256:%s " *)
+            "${IMAGE}@$(cat "$RUNNER_TEMP/digest-amd64")" \
+            "${IMAGE}@$(cat "$RUNNER_TEMP/digest-arm64")"
