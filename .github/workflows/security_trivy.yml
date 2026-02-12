@@ -90,8 +90,6 @@ jobs:
         ignore_unfixed: ${{ inputs.ignore_unfixed }}
         limit_severities_for_sarif: ${{ inputs.limit_severities_for_sarif }}
         github_token: ${{ secrets.GITHUB_TOKEN }}
-        ECR_ROLE_TO_ASSUME: ${{ inputs.ecr_role_to_resume }}
-        ECR_REGISTRY_URL: ${{ inputs.ecr_registry_url }}
     - name: Trivy slack notification
       uses: ministryofjustice/hmpps-github-actions/.github/actions/slack_codescan_notification@v2  # WORKFLOW_VERSION
       if: (failure() || steps.trivy-scan.outcome == 'failure' || steps.trivy-scan.outputs.results_count > 0) && inputs.channel_id != 'NO_SLACK'
