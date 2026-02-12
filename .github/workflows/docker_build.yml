@@ -88,7 +88,7 @@ jobs:
         uses: ministryofjustice/hmpps-github-actions/.github/actions/build-test-and-deploy/create_app_version@v2 # WORKFLOW_VERSION
 
   docker_build:
-    name: Build docker image
+    name: Build linux/amd64 (single)
     if: ${{ ! inputs.docker_multiplatform }}
     needs: [create_version]
     runs-on: ubuntu-latest
@@ -129,7 +129,7 @@ jobs:
           download_build_artifacts: ${{ inputs.download_build_artifacts }}
 
   docker_build_platform:
-    name: Build ${{ matrix.platform }}
+    name: Build ${{ matrix.platform }} (parallel)
     if: ${{ inputs.docker_multiplatform }}
     needs: [create_version]
     strategy:
@@ -185,7 +185,7 @@ jobs:
           retention-days: 1
 
   docker_build_merge:
-    name: Push and merge multi-platform manifests
+    name: Push multi-platform image
     if: ${{ inputs.docker_multiplatform && inputs.push }}
     needs: [create_version, docker_build_platform]
     runs-on: ubuntu-latest
@@ -195,8 +195,6 @@ jobs:
         with:
           path: ${{ runner.temp }}/images
           pattern: image-*
-
-      - uses: docker/setup-buildx-action@v3
 
       - name: Docker login to ghcr.io
         if: ${{ inputs.docker_registry == 'ghcr.io' }}
@@ -214,42 +212,51 @@ jobs:
           username: ${{ secrets.HMPPS_QUAYIO_USER }}
           password: ${{ secrets.HMPPS_QUAYIO_TOKEN }}
 
-      - name: Push platform images and capture digests
+      - name: Merge OCI layouts and push multi-arch image
         shell: bash
         run: |
           IMAGE="${{ inputs.docker_registry }}/${{ inputs.registry_org }}/${{ inputs.image_name || github.event.repository.name }}"
           VERSION="${{ needs.create_version.outputs.version }}"
 
-          skopeo copy --digestfile "$RUNNER_TEMP/digest-amd64" \
-            oci-archive:"$RUNNER_TEMP/images/image-linux-amd64/image.tar" \
-            "docker://${IMAGE}:${VERSION}-amd64"
+          # Extract both platform tarballs
+          mkdir -p "$RUNNER_TEMP/oci-amd64" "$RUNNER_TEMP/oci-arm64"
+          tar -xf "$RUNNER_TEMP/images/image-linux-amd64/image.tar" -C "$RUNNER_TEMP/oci-amd64"
+          tar -xf "$RUNNER_TEMP/images/image-linux-arm64/image.tar" -C "$RUNNER_TEMP/oci-arm64"
 
-          skopeo copy --digestfile "$RUNNER_TEMP/digest-arm64" \
-            oci-archive:"$RUNNER_TEMP/images/image-linux-arm64/image.tar" \
-            "docker://${IMAGE}:${VERSION}-arm64"
+          # Create combined OCI layout with blobs from both platforms
+          mkdir -p "$RUNNER_TEMP/oci/blobs/sha256"
+          echo '{"imageLayoutVersion":"1.0.0"}' > "$RUNNER_TEMP/oci/oci-layout"
+          mv "$RUNNER_TEMP"/oci-amd64/blobs/sha256/* "$RUNNER_TEMP/oci/blobs/sha256/"
+          mv "$RUNNER_TEMP"/oci-arm64/blobs/sha256/* "$RUNNER_TEMP/oci/blobs/sha256/"
 
-      - name: Set Docker Tags
-        id: set_tags
-        shell: bash
-        run: |
-          IMAGE="${{ inputs.docker_registry }}/${{ inputs.registry_org }}/${{ inputs.image_name || github.event.repository.name }}"
-          VERSION="${{ needs.create_version.outputs.version }}"
-          TAGS="-t ${IMAGE}:${VERSION}"
+          # Build OCI image index (manifest list) from both platform manifests
+          AMD64_MANIFEST=$(jq -c '.manifests[0] | del(.annotations) | .platform={"os":"linux","architecture":"amd64"}' "$RUNNER_TEMP/oci-amd64/index.json")
+          ARM64_MANIFEST=$(jq -c '.manifests[0] | del(.annotations) | .platform={"os":"linux","architecture":"arm64"}' "$RUNNER_TEMP/oci-arm64/index.json")
+          OCI_IMAGE_INDEX_PATH="$RUNNER_TEMP/oci/image-index.json"
+          OCI_SOURCE_REF="multiarch"
+          jq -n --argjson amd64 "$AMD64_MANIFEST" --argjson arm64 "$ARM64_MANIFEST" \
+            '{"schemaVersion":2,"mediaType":"application/vnd.oci.image.index.v1+json","manifests":[$amd64,$arm64]}' \
+            > "$OCI_IMAGE_INDEX_PATH"
+
+          OCI_IMAGE_INDEX_SHA=$(sha256sum "$OCI_IMAGE_INDEX_PATH" | awk '{print $1}')
+          OCI_IMAGE_INDEX_SIZE=$(wc -c < "$OCI_IMAGE_INDEX_PATH")
+          cp "$OCI_IMAGE_INDEX_PATH" "$RUNNER_TEMP/oci/blobs/sha256/$OCI_IMAGE_INDEX_SHA"
+
+          # Point the OCI layout index to the image index blob using a named reference.
+          jq -n \
+            --arg digest "sha256:${OCI_IMAGE_INDEX_SHA}" \
+            --argjson size "$OCI_IMAGE_INDEX_SIZE" \
+            --arg ref "$OCI_SOURCE_REF" \
+            '{"schemaVersion":2,"manifests":[{"mediaType":"application/vnd.oci.image.index.v1+json","digest":$digest,"size":$size,"annotations":{"org.opencontainers.image.ref.name":$ref}}]}' \
+            > "$RUNNER_TEMP/oci/index.json"
+
+          # Push combined multi-arch image
+          skopeo copy --all "oci:$RUNNER_TEMP/oci:$OCI_SOURCE_REF" "docker://${IMAGE}:${VERSION}"
 
           if [[ "${{ inputs.tag_latest }}" == "true" ]]; then
-            TAGS="${TAGS} -t ${IMAGE}:latest"
+            skopeo copy --all "oci:$RUNNER_TEMP/oci:$OCI_SOURCE_REF" "docker://${IMAGE}:latest"
           fi
 
           if [[ -n "${{ inputs.additional_docker_tag }}" ]]; then
-            TAGS="${TAGS} -t ${IMAGE}:${{ inputs.additional_docker_tag }}"
+            skopeo copy --all "oci:$RUNNER_TEMP/oci:$OCI_SOURCE_REF" "docker://${IMAGE}:${{ inputs.additional_docker_tag }}"
           fi
-
-          echo "tags=$TAGS" >> "$GITHUB_OUTPUT"
-
-      - name: Create multi-platform manifest
-        shell: bash
-        run: |
-          IMAGE="${{ inputs.docker_registry }}/${{ inputs.registry_org }}/${{ inputs.image_name || github.event.repository.name }}"
-          docker buildx imagetools create ${{ steps.set_tags.outputs.tags }} \
-            "${IMAGE}@$(cat "$RUNNER_TEMP/digest-amd64")" \
-            "${IMAGE}@$(cat "$RUNNER_TEMP/digest-arm64")"
