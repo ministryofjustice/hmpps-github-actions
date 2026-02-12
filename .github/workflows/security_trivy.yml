@@ -48,14 +48,6 @@ on:
         required: false
         default: '.'
         type: string
-      ecr_role_to_resume:
-        description: 'The AWS role to assume to authenticate to ECR if using ECR'
-        required: false
-        type: string
-      ecr_registry_url:
-        description: 'The URL of the ECR registry if using ECR'
-        required: false
-        type: string
     secrets:
       HMPPS_SRE_SLACK_BOT_TOKEN:
         description: 'Slack bot token'
