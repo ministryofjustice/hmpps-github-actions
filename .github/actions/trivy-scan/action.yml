@@ -38,6 +38,12 @@ inputs:
     description: 'The AWS region that the ECR repository was created in'
     required: false
     default: 'eu-west-2'
+  ECR_ROLE_TO_ASSUME:
+    description: The AWS role to assume to authenticate to ECR
+    required: false
+  ECR_REGISTRY_URL:
+    description: The URL of the ECR registry
+    required: false
 
 outputs:
   results_count:
@@ -62,20 +68,11 @@ runs:
         repo_info=$(grep -rh 'repository: ' --include="values.yaml" | grep ${{ inputs.subproject == '' && github.event.repository.name || inputs.subproject}} | head -n1 | awk -F'[:/ ]+' '{print $3"/"$4}')
         echo "repo=${repo_info}" >> $GITHUB_OUTPUT
 
-    - name: DEBUG - Check secrets
-      run: |
-        echo "ECR_ROLE_TO_ASSUME length: ${#ECR_ROLE_TO_ASSUME}"
-        echo "ECR_ROLE_TO_ASSUME value (masked by GitHub): $ECR_ROLE_TO_ASSUME"
-        echo "ECR_REGION: '${{ inputs.ECR_REGION }}'
-      env:
-        ECR_ROLE_TO_ASSUME: ${{ secrets.ECR_ROLE_TO_ASSUME }}
-      shell: bash
-
     - name: Configure AWS credentials
-      if: ${{ secrets.ECR_ROLE_TO_ASSUME != '' && inputs.scan_type == 'image' }}
+      if: ${{ inputs.ECR_ROLE_TO_ASSUME != '' && inputs.scan_type == 'image' }}
       uses: aws-actions/configure-aws-credentials@v5
       with:
-        role-to-assume: ${{ secrets.ECR_ROLE_TO_ASSUME }}
+        role-to-assume: ${{ inputs.ECR_ROLE_TO_ASSUME }}
         aws-region: ${{ inputs.ECR_REGION }}
 
     - name: Login to Amazon ECR
