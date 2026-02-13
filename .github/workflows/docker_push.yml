@@ -104,22 +104,29 @@ jobs:
           docker tag "${IMAGE_NAME}:${{ inputs.app_version }}" "${IMAGE_NAME}:${{ inputs.additional_docker_tag }}"
           docker push "${IMAGE_NAME}:${{ inputs.additional_docker_tag }}"
 
-      - name: Merge OCI layouts and push multi-arch image
+      - name: Ensure skopeo is available
         if: ${{ inputs.docker_multiplatform }}
         shell: bash
         run: |
-          VERSION="${{ inputs.app_version }}"
+          if ! command -v skopeo >/dev/null 2>&1; then
+            sudo apt-get update
+            sudo apt-get install -y skopeo
+          fi
 
-          # Extract both platform tarballs
+      - name: Merge image tarballs and push multi-arch image
+        if: ${{ inputs.docker_multiplatform }}
+        shell: bash
+        run: |
+          # Convert each docker-archive tarball to an OCI layout
           mkdir -p "$RUNNER_TEMP/oci-amd64" "$RUNNER_TEMP/oci-arm64"
-          tar -xf "$RUNNER_TEMP/images/image-linux-amd64/image.tar" -C "$RUNNER_TEMP/oci-amd64"
-          tar -xf "$RUNNER_TEMP/images/image-linux-arm64/image.tar" -C "$RUNNER_TEMP/oci-arm64"
+          skopeo copy "docker-archive:$RUNNER_TEMP/images/image-linux-amd64/image.tar" "oci:$RUNNER_TEMP/oci-amd64:amd64"
+          skopeo copy "docker-archive:$RUNNER_TEMP/images/image-linux-arm64/image.tar" "oci:$RUNNER_TEMP/oci-arm64:arm64"
 
           # Create combined OCI layout with blobs from both platforms
           mkdir -p "$RUNNER_TEMP/oci/blobs/sha256"
           echo '{"imageLayoutVersion":"1.0.0"}' > "$RUNNER_TEMP/oci/oci-layout"
-          mv "$RUNNER_TEMP"/oci-amd64/blobs/sha256/* "$RUNNER_TEMP/oci/blobs/sha256/"
-          mv "$RUNNER_TEMP"/oci-arm64/blobs/sha256/* "$RUNNER_TEMP/oci/blobs/sha256/"
+          cp --update=none "$RUNNER_TEMP"/oci-amd64/blobs/sha256/* "$RUNNER_TEMP/oci/blobs/sha256/"
+          cp --update=none "$RUNNER_TEMP"/oci-arm64/blobs/sha256/* "$RUNNER_TEMP/oci/blobs/sha256/"
 
           # Build OCI image index (manifest list) from both platform manifests
           AMD64_MANIFEST=$(jq -c '.manifests[0] | del(.annotations) | .platform={"os":"linux","architecture":"amd64"}' "$RUNNER_TEMP/oci-amd64/index.json")
@@ -143,7 +150,7 @@ jobs:
             > "$RUNNER_TEMP/oci/index.json"
 
           # Push combined multi-arch image
-          skopeo copy --all "oci:$RUNNER_TEMP/oci:$OCI_SOURCE_REF" "docker://${IMAGE_NAME}:${VERSION}"
+          skopeo copy --all "oci:$RUNNER_TEMP/oci:$OCI_SOURCE_REF" "docker://${IMAGE_NAME}:${{ inputs.app_version }}"
 
           if [[ "${{ inputs.tag_latest }}" == "true" ]]; then
             skopeo copy --all "oci:$RUNNER_TEMP/oci:$OCI_SOURCE_REF" "docker://${IMAGE_NAME}:latest"
