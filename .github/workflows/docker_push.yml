@@ -11,6 +11,10 @@ on:
         description: Docker registry organisation
         required: true
         type: string
+      image_name:
+        description: Name of the image
+        required: false
+        type: string
       app_version:
         description: App version
         required: true
@@ -19,6 +23,15 @@ on:
         description: Tag docker image as 'latest'
         required: true
         type: boolean
+      additional_docker_tag:
+        description: Additional docker tag that can be used to specify stable tags
+        required: false
+        type: string
+      docker_multiplatform:
+        description: Docker image is a multiplatform artifact
+        required: false
+        type: boolean
+        default: false
 
     secrets:
       HMPPS_QUAYIO_USER:
@@ -35,15 +48,24 @@ jobs:
     name: Push docker image
     runs-on: ubuntu-latest
     env:
-      IMAGE_NAME: ${{ inputs.docker_registry }}/${{ inputs.registry_org }}/${{ github.event.repository.name }}
+      IMAGE_NAME: ${{ inputs.docker_registry }}/${{ inputs.registry_org }}/${{ inputs.image_name || github.event.repository.name }}
     steps:
       - name: Download docker image
+        if: ${{ ! inputs.docker_multiplatform }}
         uses: actions/download-artifact@v7
         with:
           name: build_image
           path: ${{ runner.temp }}
 
+      - name: Download multi-platform image tarballs
+        if: ${{ inputs.docker_multiplatform }}
+        uses: actions/download-artifact@v7
+        with:
+          path: ${{ runner.temp }}/images
+          pattern: image-*
+
       - name: Load image
+        if: ${{ ! inputs.docker_multiplatform }}
         run: |
           docker load --input ${{ runner.temp }}/build_image.tar
 
@@ -64,12 +86,69 @@ jobs:
           password: ${{ github.token }}
 
       - name: Push image
+        if: ${{ ! inputs.docker_multiplatform }}
         shell: bash
         run: docker push "${IMAGE_NAME}:${{ inputs.app_version }}"
 
       - name: Push latest tag
-        if: ${{ inputs.tag_latest }}
+        if: ${{ ! inputs.docker_multiplatform && inputs.tag_latest }}
         shell: bash
         run: |
           docker tag "${IMAGE_NAME}:${{ inputs.app_version }}" "${IMAGE_NAME}:latest"
           docker push "${IMAGE_NAME}:latest"
+
+      - name: Push additional tag
+        if: ${{ ! inputs.docker_multiplatform && inputs.additional_docker_tag != '' }}
+        shell: bash
+        run: |
+          docker tag "${IMAGE_NAME}:${{ inputs.app_version }}" "${IMAGE_NAME}:${{ inputs.additional_docker_tag }}"
+          docker push "${IMAGE_NAME}:${{ inputs.additional_docker_tag }}"
+
+      - name: Merge OCI layouts and push multi-arch image
+        if: ${{ inputs.docker_multiplatform }}
+        shell: bash
+        run: |
+          VERSION="${{ inputs.app_version }}"
+
+          # Extract both platform tarballs
+          mkdir -p "$RUNNER_TEMP/oci-amd64" "$RUNNER_TEMP/oci-arm64"
+          tar -xf "$RUNNER_TEMP/images/image-linux-amd64/image.tar" -C "$RUNNER_TEMP/oci-amd64"
+          tar -xf "$RUNNER_TEMP/images/image-linux-arm64/image.tar" -C "$RUNNER_TEMP/oci-arm64"
+
+          # Create combined OCI layout with blobs from both platforms
+          mkdir -p "$RUNNER_TEMP/oci/blobs/sha256"
+          echo '{"imageLayoutVersion":"1.0.0"}' > "$RUNNER_TEMP/oci/oci-layout"
+          mv "$RUNNER_TEMP"/oci-amd64/blobs/sha256/* "$RUNNER_TEMP/oci/blobs/sha256/"
+          mv "$RUNNER_TEMP"/oci-arm64/blobs/sha256/* "$RUNNER_TEMP/oci/blobs/sha256/"
+
+          # Build OCI image index (manifest list) from both platform manifests
+          AMD64_MANIFEST=$(jq -c '.manifests[0] | del(.annotations) | .platform={"os":"linux","architecture":"amd64"}' "$RUNNER_TEMP/oci-amd64/index.json")
+          ARM64_MANIFEST=$(jq -c '.manifests[0] | del(.annotations) | .platform={"os":"linux","architecture":"arm64"}' "$RUNNER_TEMP/oci-arm64/index.json")
+          OCI_IMAGE_INDEX_PATH="$RUNNER_TEMP/oci/image-index.json"
+          OCI_SOURCE_REF="multiarch"
+          jq -n --argjson amd64 "$AMD64_MANIFEST" --argjson arm64 "$ARM64_MANIFEST" \
+            '{"schemaVersion":2,"mediaType":"application/vnd.oci.image.index.v1+json","manifests":[$amd64,$arm64]}' \
+            > "$OCI_IMAGE_INDEX_PATH"
+
+          OCI_IMAGE_INDEX_SHA=$(sha256sum "$OCI_IMAGE_INDEX_PATH" | awk '{print $1}')
+          OCI_IMAGE_INDEX_SIZE=$(wc -c < "$OCI_IMAGE_INDEX_PATH")
+          cp "$OCI_IMAGE_INDEX_PATH" "$RUNNER_TEMP/oci/blobs/sha256/$OCI_IMAGE_INDEX_SHA"
+
+          # Point the OCI layout index to the image index blob using a named reference.
+          jq -n \
+            --arg digest "sha256:${OCI_IMAGE_INDEX_SHA}" \
+            --argjson size "$OCI_IMAGE_INDEX_SIZE" \
+            --arg ref "$OCI_SOURCE_REF" \
+            '{"schemaVersion":2,"manifests":[{"mediaType":"application/vnd.oci.image.index.v1+json","digest":$digest,"size":$size,"annotations":{"org.opencontainers.image.ref.name":$ref}}]}' \
+            > "$RUNNER_TEMP/oci/index.json"
+
+          # Push combined multi-arch image
+          skopeo copy --all "oci:$RUNNER_TEMP/oci:$OCI_SOURCE_REF" "docker://${IMAGE_NAME}:${VERSION}"
+
+          if [[ "${{ inputs.tag_latest }}" == "true" ]]; then
+            skopeo copy --all "oci:$RUNNER_TEMP/oci:$OCI_SOURCE_REF" "docker://${IMAGE_NAME}:latest"
+          fi
+
+          if [[ -n "${{ inputs.additional_docker_tag }}" ]]; then
+            skopeo copy --all "oci:$RUNNER_TEMP/oci:$OCI_SOURCE_REF" "docker://${IMAGE_NAME}:${{ inputs.additional_docker_tag }}"
+          fi

@@ -177,12 +177,13 @@ jobs:
           provenance: false
 
       - name: Upload image tarball
+        if: ${{ inputs.push || inputs.upload_image_artifact }}
         uses: actions/upload-artifact@v6
         with:
           name: image-${{ steps.prepare.outputs.platform_pair }}
           path: ${{ runner.temp }}/image.tar
           if-no-files-found: error
-          retention-days: 1
+          retention-days: ${{ inputs.upload_image_artifact && inputs.image_artifact_retention_days || 1 }}
 
   docker_build_merge:
     name: Push multi-platform image
