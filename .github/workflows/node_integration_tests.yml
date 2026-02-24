@@ -27,6 +27,24 @@ on:
         required: false
         type: number
         default: 9091
+      report_test_suites:
+        description: |
+          Limits which test suites are listed in test report. Supported options:
+            - all
+            - failed
+            - none
+        required: false
+        type: string
+        default: "failed"
+      report_test_cases:
+        description: |
+          Limits which test cases are listed in test report. Supported options:
+            - all
+            - failed
+            - none
+        required: false
+        type: string
+        default: "failed"
 
 permissions:
   contents: read
@@ -100,8 +118,8 @@ jobs:
           reporter: java-junit
           fail-on-empty: false
           fail-on-error: false
-          list-suites: 'failed'
-          list-tests: 'failed'
+          list-suites: ${{ inputs.report_test_suites }}
+          list-tests: ${{ inputs.report_test_cases }}
       - name: fail the action if the tests failed
         if: ${{ steps.integration-tests.outcome == 'failure' }}
         uses: actions/github-script@v8
