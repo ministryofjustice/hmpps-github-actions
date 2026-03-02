@@ -52,14 +52,14 @@ jobs:
     steps:
       - name: Download docker image
         if: ${{ ! inputs.docker_multiplatform }}
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: build_image
           path: ${{ runner.temp }}
 
       - name: Download multi-platform image tarballs
         if: ${{ inputs.docker_multiplatform }}
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           path: ${{ runner.temp }}/images
           pattern: image-*
