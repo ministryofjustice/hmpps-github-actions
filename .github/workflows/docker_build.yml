@@ -146,7 +146,7 @@ jobs:
 
       - name: Download build artifacts needed for docker build
         if: ${{ inputs.download_build_artifacts }}
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: build-results
 
@@ -178,7 +178,7 @@ jobs:
 
       - name: Upload image tarball
         if: ${{ inputs.push || inputs.upload_image_artifact }}
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: image-${{ steps.prepare.outputs.platform_pair }}
           path: ${{ runner.temp }}/image.tar

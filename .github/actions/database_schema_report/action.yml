@@ -63,7 +63,7 @@ runs:
           -o /tmp/schemaspy
     
     - name: Upload schema report
-      uses: actions/upload-artifact@v6
+      uses: actions/upload-artifact@v7
       with:
         name: Database Schema Report
         path: /tmp/schemaspy
