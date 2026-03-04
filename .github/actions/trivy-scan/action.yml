@@ -81,7 +81,7 @@ runs:
 
     - name: Trivy Image Vulnerability Scanner - image
       id: trivy-analyse-image
-      uses: aquasecurity/trivy-action@97e0b3872f55f89b95b2f65b3dbab56962816478 # v0.33.1
+      uses: aquasecurity/trivy-action@57a97c7e7821a5776cebc9bb87c984fa69cba8f1 # v0.33.1
       if: inputs.scan_type == 'image'
       with:
         image-ref: "${{ steps.check-package-repo.outputs.repo }}/${{ inputs.subproject == '' && github.event.repository.name || inputs.subproject}}:latest"
@@ -102,7 +102,7 @@ runs:
 
     - name: Trivy Image Vulnerability Scanner - filesystem
       id: trivy-analyse-fs
-      uses: aquasecurity/trivy-action@97e0b3872f55f89b95b2f65b3dbab56962816478 # v0.33.1
+      uses: aquasecurity/trivy-action@57a97c7e7821a5776cebc9bb87c984fa69cba8f1 # v0.33.1
       if: inputs.scan_type == 'fs'
       with:
         severity: ${{ inputs.severity }}
