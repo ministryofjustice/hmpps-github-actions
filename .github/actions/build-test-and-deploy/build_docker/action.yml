@@ -123,7 +123,7 @@ runs:
         echo "tags=$TAGS" >> "$GITHUB_OUTPUT"
 
     - name: Build Docker Image
-      uses: docker/build-push-action@v6
+      uses: docker/build-push-action@v7
       with:
         cache-from: type=gha
         cache-to: type=gha,mode=max
