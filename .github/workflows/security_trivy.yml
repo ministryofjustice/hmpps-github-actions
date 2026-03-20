@@ -67,27 +67,6 @@ jobs:
       contents: read
       actions: read
     steps:
-    - uses: actions/checkout@v6
+      - name: Echo Trivy disabled
+        run: echo " Trivy has temporarily been disabled - see the Security Slack channel"
     
-    - name: Run Trivy Security Scan
-      id: trivy-scan
-      uses: ministryofjustice/hmpps-github-actions/.github/actions/trivy-scan@v2 # WORKFLOW_VERSION
-      with:
-        subproject: ${{ inputs.subproject }}
-        severity: ${{ inputs.severity }}
-        scan_type: ${{ inputs.scan_type }}
-        scanners: ${{ inputs.scanners }}
-        location: ${{ inputs.location }}
-        ignore_unfixed: ${{ inputs.ignore_unfixed }}
-        limit_severities_for_sarif: ${{ inputs.limit_severities_for_sarif }}
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-    - name: Trivy slack notification
-      uses: ministryofjustice/hmpps-github-actions/.github/actions/slack_codescan_notification@v2  # WORKFLOW_VERSION
-      if: (failure() || steps.trivy-scan.outcome == 'failure' || steps.trivy-scan.outputs.results_count > 0) && inputs.channel_id != 'NO_SLACK'
-      with:
-        title: "Trivy"
-        warningOnly: ${{ steps.trivy-scan.outputs.sarif_upload_outcome == 'success' }}
-        channel_id: ${{ inputs.channel_id}}
-        SLACK_BOT_TOKEN: ${{ secrets.HMPPS_SRE_SLACK_BOT_TOKEN }}
-        subproject: ${{ inputs.subproject }}
-        summary: ${{ inputs.slack_include_summary && steps.trivy-scan.outputs.summary || '' }}
