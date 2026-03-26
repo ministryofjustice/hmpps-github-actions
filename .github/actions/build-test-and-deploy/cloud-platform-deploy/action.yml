@@ -23,6 +23,9 @@ inputs:
   token:
     description: The KUBE_TOKEN
     required: true
+  github_token:
+    description: GitHub token for gh API calls
+    required: true
   k8s_deployment_name:
     description: "Kubernetes deployment name, also Helm release name"
     required: true
@@ -111,7 +114,7 @@ runs:
       shell: bash
       id: helm-version
       env:
-        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GH_TOKEN: ${{ inputs.github_token }}
       run: |
         LATEST_V4=$(gh api repos/helm/helm/releases --jq '[.[] | select(.tag_name | startswith("v4.")) | select(.prerelease == false) | .tag_name] | first')
         echo "version=${LATEST_V4}" >> $GITHUB_OUTPUT
