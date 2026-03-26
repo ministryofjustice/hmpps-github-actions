@@ -22,9 +22,9 @@ jobs:
     name: Run the node build 
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
     - name: Use Node.js ${{ inputs.node_version_file }}
-      uses: actions/setup-node@v6
+      uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
       with:
         node-version-file: ${{ inputs.node_version_file }}
     - name: update npm
@@ -33,7 +33,7 @@ jobs:
         npm install -g npm@latest
     - name: restore cache
       id: restore-cache
-      uses: actions/cache/restore@v5
+      uses: actions/cache/restore@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
       env: 
         cache-name: node-modules
       with:
@@ -54,7 +54,7 @@ jobs:
       run: | 
         npm run lint
     - name: upload the artifacts
-      uses: actions/upload-artifact@v7
+      uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
       with: 
         name: npm_build_artifacts
         path: |
@@ -63,7 +63,7 @@ jobs:
           assets/stylesheets/
     - name: save cache
       id: save-cache
-      uses: actions/cache/save@v5
+      uses: actions/cache/save@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
       env: 
         cache-name: node-modules
       with:

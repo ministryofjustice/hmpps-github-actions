@@ -31,8 +31,8 @@ jobs:
       contents: read
       actions: read
     steps:
-    - uses: actions/checkout@v6
-    - uses: actions/setup-node@v6
+    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+    - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
       with:
         node-version-file: ${{ inputs.node_version_file }}
     - name: Show npm version
@@ -45,7 +45,7 @@ jobs:
       id: npm
       run: npx audit-ci@^7 --config ./audit-ci.json -o json > npm-security-check-reports.json
       continue-on-error: true
-    - uses: actions/upload-artifact@v7
+    - uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
       with:
         name: npm-security-check-${{ github.event.repository.name }}
         path: npm-security-check-reports.json
@@ -58,7 +58,7 @@ jobs:
         input-file: 'npm-security-check-reports.json'
     # Upload Sarif file: this will attempt to upload the sarif file for private/internal repositories as well
     - name: npm upload sarif
-      uses: github/codeql-action/upload-sarif@v4
+      uses: github/codeql-action/upload-sarif@38697555549f1db7851b81482ff19f1fa5c4fedc # v4
       id: npm-upload-sarif
       # if: ${{ github.event.repository.visibility != 'private' && github.event.repository.visibility != 'internal' }}
       with:

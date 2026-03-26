@@ -41,14 +41,14 @@ jobs:
           --health-timeout 5s
           --health-retries 5
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - name: Use Node.js ${{ inputs.node_version_file }}
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
         with:
           node-version-file: ${{ inputs.node_version_file }}
       - name: restore cache
         id: restore-cache
-        uses: actions/cache/restore@v5
+        uses: actions/cache/restore@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
         env:
           cache-name: node-modules
         with:
@@ -57,7 +57,7 @@ jobs:
             ~/.cache/Cypress
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json', '!**/node_modules/**') }}
       - name: download the artifacts
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
         with:
           name: npm_build_artifacts
       - name: unit tests
@@ -69,13 +69,13 @@ jobs:
         # Replacing the above with if: always()
       - name: upload the artifacts
         if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: ${{ inputs.test_results_artifact_name }}
           path: test_results
       - name: publish test report
         if: ${{ !cancelled() && github.event.repository.visibility == 'public' }}
-        uses: dorny/test-reporter@v2
+        uses: dorny/test-reporter@df6247429542221bc30d46a036ee47af1102c451 # v2
         with:
           artifact: ${{ inputs.test_results_artifact_name }}
           name: Test Report
@@ -87,7 +87,7 @@ jobs:
           list-tests: 'failed'
       - name: fail the action if the tests failed
         if: ${{ steps.unit-tests.outcome == 'failure' }}
-        uses: actions/github-script@v8
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         with:
           script: |
             core.setFailed('Unit tests failed')
