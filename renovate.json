@@ -15,6 +15,11 @@
       ],
       "separateMinorPatch": true,
       "enabled": true
+    },
+    {
+      "matchManagers": ["github-actions"],
+      "excludePackagePrefixes": ["ministryofjustice/hmpps-github-actions"],
+      "pinDigests": true
     }
   ]
 }
