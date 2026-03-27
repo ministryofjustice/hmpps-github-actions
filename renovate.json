@@ -1,6 +1,6 @@
 {
   "extends": [
-    "config:base"
+    "config:recommended"
   ],
   "labels": [
     "dependencies",
@@ -18,40 +18,40 @@
     },
     {
       "matchManagers": ["github-actions"],
-      "excludePackagePrefixes": ["ministryofjustice/hmpps-github-actions"],
+      "matchPackageNames": ["!ministryofjustice/hmpps-github-actions{/,}**"],
       "pinDigests": true
     }
   ],
   "customManagers": [
     {
       "customType": "regex",
-      "fileMatch": ["^\\.github/(workflows|actions)/.*\\.ya?ml$"],
+      "managerFilePatterns": ["/^\\.github/(workflows|actions)/.*\\.ya?ml$/"],
       "matchStrings": [
-        "# renovate: datasource=github-releases depName=(?<depName>[^\\s]+)\\s+.*_VERSION:\\s*(?<currentValue>v?[\\d.]+)"
+        "# renovate: datasource=github-releases depName=(?<depName>.+?)\\s+[A-Z_]+_VERSION:\\s*(?<currentValue>v?[\\d.]+)"
       ],
       "datasourceTemplate": "github-releases"
     },
     {
       "customType": "regex",
-      "fileMatch": ["^\\.github/(workflows|actions)/.*\\.ya?ml$"],
+      "managerFilePatterns": ["/^\\.github/(workflows|actions)/.*\\.ya?ml$/"],
       "matchStrings": [
-        "# renovate: datasource=github-releases depName=(?<depName>[^\\s]+)\\s+\\w+:\\s+default:\\s*\"?(?<currentValue>[\\d.]+)\"?"
+        "# renovate: datasource=github-releases depName=(?<depName>.+?)\\s+default:\\s*[\"']?(?<currentValue>[\\d.]+)[\"']?"
       ],
       "datasourceTemplate": "github-releases"
     },
     {
       "customType": "regex",
-      "fileMatch": ["^\\.github/(workflows|actions)/.*\\.ya?ml$"],
+      "managerFilePatterns": ["/^\\.github/(workflows|actions)/.*\\.ya?ml$/"],
       "matchStrings": [
-        "# renovate: datasource=maven depName=(?<depName>[^\\s]+)\\s+.*_VERSION:\\s*(?<currentValue>[\\d.]+)"
+        "# renovate: datasource=maven depName=(?<depName>.+?)\\s+[A-Z_]+_VERSION:\\s*(?<currentValue>[\\d.]+)"
       ],
       "datasourceTemplate": "maven"
     },
     {
       "customType": "regex",
-      "fileMatch": ["^\\.github/(workflows|actions)/.*\\.ya?ml$"],
+      "managerFilePatterns": ["/^\\.github/(workflows|actions)/.*\\.ya?ml$/"],
       "matchStrings": [
-        "# renovate: datasource=maven depName=(?<depName>[^\\s]+)\\s+\\w+:\\s+default:\\s*\"?(?<currentValue>[\\d.]+)\"?"
+        "# renovate: datasource=maven depName=(?<depName>.+?)\\s+default:\\s*[\"']?(?<currentValue>[\\d.]+)[\"']?"
       ],
       "datasourceTemplate": "maven"
     }

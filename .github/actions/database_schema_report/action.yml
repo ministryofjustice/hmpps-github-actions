@@ -23,15 +23,15 @@ inputs:
   password:
     default: "dev"
     description: Database password
-  # renovate: datasource=github-releases depName=schemaspy/schemaspy
   schemaspy_version:
+    # renovate: datasource=github-releases depName=schemaspy/schemaspy
     default: "6.2.4"
     description: Schemaspy version
   schemaspy_sha256:
     default: "50abf42c6fbf746b36365f81adb9686e1da83344e89f2719a31e6c1209ebcaad"
     description: SHA256 checksum for SchemaSpy JAR (from GitHub releases)
-  # renovate: datasource=maven depName=org.postgresql:postgresql
   postgres_driver_version:
+    # renovate: datasource=maven depName=org.postgresql:postgresql
     default: "42.7.3"
     description: Postgres driver version
   postgres_driver_sha256:
