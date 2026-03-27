@@ -47,12 +47,12 @@ runs:
         java-version: ${{ inputs.jdk_tag }}
         distribution: 'temurin'
 
-    - uses: ministryofjustice/hmpps-github-actions/.github/actions/setup-schemaspy@v2 # WORKFLOW_VERSION
+    - uses: ministryofjustice/hmpps-github-actions/.github/actions/setup-schemaspy@improve_binary_downloads_test # WORKFLOW_VERSION
       with:
         version: ${{ inputs.schemaspy_version }}
         sha256: ${{ inputs.schemaspy_sha256 }}
 
-    - uses: ministryofjustice/hmpps-github-actions/.github/actions/setup-postgres-jdbc@v2 # WORKFLOW_VERSION
+    - uses: ministryofjustice/hmpps-github-actions/.github/actions/setup-postgres-jdbc@improve_binary_downloads_test # WORKFLOW_VERSION
       with:
         version: ${{ inputs.postgres_driver_version }}
         sha256: ${{ inputs.postgres_driver_sha256 }}

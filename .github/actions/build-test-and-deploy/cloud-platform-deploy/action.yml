@@ -70,9 +70,9 @@ runs:
     - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       with:
         fetch-depth: 0
-    - uses: ministryofjustice/hmpps-github-actions/.github/actions/build-test-and-deploy/setup-kubectl@v2 # WORKFLOW_VERSION
+    - uses: ministryofjustice/hmpps-github-actions/.github/actions/build-test-and-deploy/setup-kubectl@improve_binary_downloads_test # WORKFLOW_VERSION
     - name: Authenticate
-      uses: ministryofjustice/hmpps-github-actions/.github/actions/build-test-and-deploy/cloud-platform-auth@v2 # WORKFLOW_VERSION
+      uses: ministryofjustice/hmpps-github-actions/.github/actions/build-test-and-deploy/cloud-platform-auth@improve_binary_downloads_test # WORKFLOW_VERSION
       with:
         api: ${{ inputs.api }}
         cert: ${{ inputs.cert }}
@@ -81,7 +81,7 @@ runs:
         token: ${{ inputs.token }}
 
     - name: get version history
-      uses: ministryofjustice/hmpps-github-actions/.github/actions/version_history@v2 # WORKFLOW VERSION
+      uses: ministryofjustice/hmpps-github-actions/.github/actions/version_history@improve_binary_downloads_test # WORKFLOW VERSION
       if: ${{ inputs.show_changelog }}
       id: version_history
       with:
@@ -108,7 +108,7 @@ runs:
           echo "ALLOWLIST_VERSION=--set generic-service.allowlist_version=${{ inputs.helm_allowlist_version }}" >> $GITHUB_OUTPUT
         fi
 
-    - uses: ministryofjustice/hmpps-github-actions/.github/actions/build-test-and-deploy/setup-helm@v2 # WORKFLOW_VERSION
+    - uses: ministryofjustice/hmpps-github-actions/.github/actions/build-test-and-deploy/setup-helm@improve_binary_downloads_test # WORKFLOW_VERSION
 
     - name: Deploy
       shell: bash

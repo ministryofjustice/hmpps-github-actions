@@ -85,7 +85,7 @@ jobs:
     steps:
       - id: app_version
         name: Create application version
-        uses: ministryofjustice/hmpps-github-actions/.github/actions/build-test-and-deploy/create_app_version@v2 # WORKFLOW_VERSION
+        uses: ministryofjustice/hmpps-github-actions/.github/actions/build-test-and-deploy/create_app_version@improve_binary_downloads_test # WORKFLOW_VERSION
 
   docker_build:
     name: Build linux/amd64 (single)
@@ -93,7 +93,7 @@ jobs:
     needs: [create_version]
     runs-on: ubuntu-latest
     steps:
-      - uses: ministryofjustice/hmpps-github-actions/.github/actions/build-test-and-deploy/build_docker@v2 # WORKFLOW_VERSION
+      - uses: ministryofjustice/hmpps-github-actions/.github/actions/build-test-and-deploy/build_docker@improve_binary_downloads_test # WORKFLOW_VERSION
         if: ${{ inputs.docker_registry == 'ghcr.io' }}
         with:
           image_name: ${{ inputs.image_name || github.event.repository.name }}
@@ -110,7 +110,7 @@ jobs:
           file: ${{ inputs.file }}
           download_build_artifacts: ${{ inputs.download_build_artifacts }}
 
-      - uses: ministryofjustice/hmpps-github-actions/.github/actions/build-test-and-deploy/build_docker@v2 # WORKFLOW_VERSION
+      - uses: ministryofjustice/hmpps-github-actions/.github/actions/build-test-and-deploy/build_docker@improve_binary_downloads_test # WORKFLOW_VERSION
         if: ${{ inputs.docker_registry == 'quay.io' }}
         with:
           image_name: ${{ inputs.image_name || github.event.repository.name }}
