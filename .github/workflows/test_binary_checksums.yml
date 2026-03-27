@@ -7,6 +7,7 @@ on:
       - '.github/workflows/node_integration_tests_redis.yml'
       - '.github/workflows/security_veracode_policy_scan.yml'
       - '.github/actions/build-test-and-deploy/setup-helm/action.yml'
+      - '.github/actions/build-test-and-deploy/setup-kubectl/action.yml'
       - '.github/actions/database_schema_report/action.yml'
       - '.github/workflows/test_binary_checksums.yml'
   workflow_dispatch:
@@ -27,6 +28,16 @@ jobs:
           curl -fsSL "https://get.helm.sh/helm-${HELM_VERSION}-linux-amd64.tar.gz" -o helm.tar.gz
           echo "${HELM_SHA256}  helm.tar.gz" | sha256sum -c -
           echo "✅ Helm checksum verified"
+
+      - name: Test kubectl checksum
+        run: |
+          KUBECTL_VERSION=$(yq '.runs.steps[] | select(.id == "install-kubectl") | .env.KUBECTL_VERSION' .github/actions/build-test-and-deploy/setup-kubectl/action.yml)
+          KUBECTL_SHA256=$(yq '.runs.steps[] | select(.id == "install-kubectl") | .env.KUBECTL_SHA256' .github/actions/build-test-and-deploy/setup-kubectl/action.yml)
+          
+          echo "Testing kubectl ${KUBECTL_VERSION}..."
+          curl -fsSL "https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl" -o kubectl
+          echo "${KUBECTL_SHA256}  kubectl" | sha256sum -c -
+          echo "✅ kubectl checksum verified"
 
       - name: Test Veracode wrapper checksum
         run: |
