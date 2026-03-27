@@ -38,7 +38,7 @@ jobs:
           echo "${VERACODE_WRAPPER_SHA256}  VeracodeJavaAPI.jar" | sha256sum -c -
           echo "✅ Veracode wrapper checksum verified"
 
-      - name: Test WireMock checksum
+      - name: Test WireMock checksum (node_integration_tests)
         run: |
           WIREMOCK_VERSION=$(yq '.jobs.*.steps[] | select(.id == "get-wiremock") | .env.WIREMOCK_VERSION' .github/workflows/node_integration_tests.yml)
           WIREMOCK_SHA256=$(yq '.jobs.*.steps[] | select(.id == "get-wiremock") | .env.WIREMOCK_SHA256' .github/workflows/node_integration_tests.yml)
@@ -46,7 +46,17 @@ jobs:
           echo "Testing WireMock ${WIREMOCK_VERSION}..."
           curl -fsSL "https://repo1.maven.org/maven2/org/wiremock/wiremock-standalone/${WIREMOCK_VERSION}/wiremock-standalone-${WIREMOCK_VERSION}.jar" -o wiremock.jar
           echo "${WIREMOCK_SHA256}  wiremock.jar" | sha256sum -c -
-          echo "✅ WireMock checksum verified"
+          echo "✅ WireMock checksum verified (node_integration_tests)"
+
+      - name: Test WireMock checksum (node_integration_tests_redis)
+        run: |
+          WIREMOCK_VERSION=$(yq '.jobs.*.steps[] | select(.id == "get-wiremock") | .env.WIREMOCK_VERSION' .github/workflows/node_integration_tests_redis.yml)
+          WIREMOCK_SHA256=$(yq '.jobs.*.steps[] | select(.id == "get-wiremock") | .env.WIREMOCK_SHA256' .github/workflows/node_integration_tests_redis.yml)
+          
+          echo "Testing WireMock ${WIREMOCK_VERSION}..."
+          curl -fsSL "https://repo1.maven.org/maven2/org/wiremock/wiremock-standalone/${WIREMOCK_VERSION}/wiremock-standalone-${WIREMOCK_VERSION}.jar" -o wiremock.jar
+          echo "${WIREMOCK_SHA256}  wiremock.jar" | sha256sum -c -
+          echo "✅ WireMock checksum verified (node_integration_tests_redis)"
 
       - name: Test SchemaSpy checksum
         run: |
