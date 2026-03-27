@@ -101,7 +101,6 @@ jobs:
           cluster: ${{ secrets.KUBE_CLUSTER }}
           namespace: ${{ secrets.KUBE_NAMESPACE }}
           token: ${{ secrets.KUBE_TOKEN }}
-          github_token: ${{ secrets.GITHUB_TOKEN }}
           k8s_deployment_name: ${{ inputs.k8s_deployment_name }}
           changelog_git_paths: ${{ inputs.changelog_git_paths }}
           show_changelog: ${{ inputs.show_changelog }}

@@ -23,9 +23,6 @@ inputs:
   token:
     description: The KUBE_TOKEN
     required: true
-  github_token:
-    description: GitHub token for gh API calls
-    required: true
   k8s_deployment_name:
     description: "Kubernetes deployment name, also Helm release name"
     required: true
