@@ -1,0 +1,20 @@
+name: Setup kubectl
+description: Install kubectl with checksum verification
+
+runs:
+  using: composite
+  steps:
+    - name: Install kubectl
+      id: install-kubectl
+      shell: bash
+      env:
+        # renovate: datasource=github-releases depName=kubernetes/kubernetes
+        KUBECTL_VERSION: v1.33.10
+        # SHA256 from https://dl.k8s.io/release/${VERSION}/bin/linux/amd64/kubectl.sha256
+        KUBECTL_SHA256: f156acb753ee4366789ab7a663916eb580e7ee1b9e449bc9b052181db524e3f5
+      run: |
+        curl -fsSL "https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl" -o kubectl
+        echo "${KUBECTL_SHA256}  kubectl" | sha256sum -c -
+        chmod +x kubectl
+        sudo mv kubectl /usr/local/bin/kubectl
+        kubectl version --client
