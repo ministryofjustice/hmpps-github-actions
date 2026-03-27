@@ -1,0 +1,69 @@
+name: Test binary checksums
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/node_integration_tests.yml'
+      - '.github/workflows/node_integration_tests_redis.yml'
+      - '.github/workflows/security_veracode_policy_scan.yml'
+      - '.github/actions/build-test-and-deploy/cloud-platform-deploy/action.yml'
+      - '.github/actions/database_schema_report/action.yml'
+      - '.github/workflows/test_binary_checksums.yml'
+  workflow_dispatch:
+
+jobs:
+  test-checksums:
+    name: Verify binary checksums
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - name: Test Helm checksum
+        run: |
+          HELM_VERSION=$(yq '.runs.steps[] | select(.id == "install-helm") | .env.HELM_VERSION' .github/actions/build-test-and-deploy/cloud-platform-deploy/action.yml)
+          HELM_SHA256=$(yq '.runs.steps[] | select(.id == "install-helm") | .env.HELM_SHA256' .github/actions/build-test-and-deploy/cloud-platform-deploy/action.yml)
+          
+          echo "Testing Helm ${HELM_VERSION}..."
+          curl -fsSL "https://get.helm.sh/helm-${HELM_VERSION}-linux-amd64.tar.gz" -o helm.tar.gz
+          echo "${HELM_SHA256}  helm.tar.gz" | sha256sum -c -
+          echo "✅ Helm checksum verified"
+
+      - name: Test Veracode wrapper checksum
+        run: |
+          VERACODE_WRAPPER_VERSION=$(yq '.jobs.*.steps[] | select(.id == "download-veracode-agent") | .env.VERACODE_WRAPPER_VERSION' .github/workflows/security_veracode_policy_scan.yml)
+          VERACODE_WRAPPER_SHA256=$(yq '.jobs.*.steps[] | select(.id == "download-veracode-agent") | .env.VERACODE_WRAPPER_SHA256' .github/workflows/security_veracode_policy_scan.yml)
+          
+          echo "Testing Veracode wrapper ${VERACODE_WRAPPER_VERSION}..."
+          curl -fsSL "https://repo1.maven.org/maven2/com/veracode/vosp/api/wrappers/vosp-api-wrappers-java/${VERACODE_WRAPPER_VERSION}/vosp-api-wrappers-java-${VERACODE_WRAPPER_VERSION}.jar" -o VeracodeJavaAPI.jar
+          echo "${VERACODE_WRAPPER_SHA256}  VeracodeJavaAPI.jar" | sha256sum -c -
+          echo "✅ Veracode wrapper checksum verified"
+
+      - name: Test WireMock checksum
+        run: |
+          WIREMOCK_VERSION=$(yq '.jobs.*.steps[] | select(.id == "get-wiremock") | .env.WIREMOCK_VERSION' .github/workflows/node_integration_tests.yml)
+          WIREMOCK_SHA256=$(yq '.jobs.*.steps[] | select(.id == "get-wiremock") | .env.WIREMOCK_SHA256' .github/workflows/node_integration_tests.yml)
+          
+          echo "Testing WireMock ${WIREMOCK_VERSION}..."
+          curl -fsSL "https://repo1.maven.org/maven2/org/wiremock/wiremock-standalone/${WIREMOCK_VERSION}/wiremock-standalone-${WIREMOCK_VERSION}.jar" -o wiremock.jar
+          echo "${WIREMOCK_SHA256}  wiremock.jar" | sha256sum -c -
+          echo "✅ WireMock checksum verified"
+
+      - name: Test SchemaSpy checksum
+        run: |
+          SCHEMASPY_VERSION=$(yq '.inputs.schemaspy_version.default' .github/actions/database_schema_report/action.yml)
+          SCHEMASPY_SHA256=$(yq '.inputs.schemaspy_sha256.default' .github/actions/database_schema_report/action.yml)
+          
+          echo "Testing SchemaSpy ${SCHEMASPY_VERSION}..."
+          curl -fsSL "https://github.com/schemaspy/schemaspy/releases/download/v${SCHEMASPY_VERSION}/schemaspy-${SCHEMASPY_VERSION}.jar" -o schemaspy.jar
+          echo "${SCHEMASPY_SHA256}  schemaspy.jar" | sha256sum -c -
+          echo "✅ SchemaSpy checksum verified"
+
+      - name: Test PostgreSQL JDBC driver checksum
+        run: |
+          POSTGRES_DRIVER_VERSION=$(yq '.inputs.postgres_driver_version.default' .github/actions/database_schema_report/action.yml)
+          POSTGRES_DRIVER_SHA256=$(yq '.inputs.postgres_driver_sha256.default' .github/actions/database_schema_report/action.yml)
+          
+          echo "Testing PostgreSQL JDBC ${POSTGRES_DRIVER_VERSION}..."
+          curl -fsSL "https://jdbc.postgresql.org/download/postgresql-${POSTGRES_DRIVER_VERSION}.jar" -o postgres-driver.jar
+          echo "${POSTGRES_DRIVER_SHA256}  postgres-driver.jar" | sha256sum -c -
+          echo "✅ PostgreSQL JDBC driver checksum verified"

@@ -21,5 +21,39 @@
       "excludePackagePrefixes": ["ministryofjustice/hmpps-github-actions"],
       "pinDigests": true
     }
+  ],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "fileMatch": ["^\\.github/(workflows|actions)/.*\\.ya?ml$"],
+      "matchStrings": [
+        "# renovate: datasource=github-releases depName=(?<depName>[^\\s]+)\\s+.*_VERSION:\\s*(?<currentValue>v?[\\d.]+)"
+      ],
+      "datasourceTemplate": "github-releases"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": ["^\\.github/(workflows|actions)/.*\\.ya?ml$"],
+      "matchStrings": [
+        "# renovate: datasource=github-releases depName=(?<depName>[^\\s]+)\\s+\\w+:\\s+default:\\s*\"?(?<currentValue>[\\d.]+)\"?"
+      ],
+      "datasourceTemplate": "github-releases"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": ["^\\.github/(workflows|actions)/.*\\.ya?ml$"],
+      "matchStrings": [
+        "# renovate: datasource=maven depName=(?<depName>[^\\s]+)\\s+.*_VERSION:\\s*(?<currentValue>[\\d.]+)"
+      ],
+      "datasourceTemplate": "maven"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": ["^\\.github/(workflows|actions)/.*\\.ya?ml$"],
+      "matchStrings": [
+        "# renovate: datasource=maven depName=(?<depName>[^\\s]+)\\s+\\w+:\\s+default:\\s*\"?(?<currentValue>[\\d.]+)\"?"
+      ],
+      "datasourceTemplate": "maven"
+    }
   ]
 }

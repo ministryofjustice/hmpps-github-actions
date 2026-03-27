@@ -23,12 +23,20 @@ inputs:
   password:
     default: "dev"
     description: Database password
+  # renovate: datasource=github-releases depName=schemaspy/schemaspy
   schemaspy_version:
     default: "6.2.4"
     description: Schemaspy version
+  schemaspy_sha256:
+    default: "50abf42c6fbf746b36365f81adb9686e1da83344e89f2719a31e6c1209ebcaad"
+    description: SHA256 checksum for SchemaSpy JAR (from GitHub releases)
+  # renovate: datasource=maven depName=org.postgresql:postgresql
   postgres_driver_version:
     default: "42.7.3"
     description: Postgres driver version
+  postgres_driver_sha256:
+    default: "a2644cbfba1baa145ff7e8c8ef582a6eed7a7ec4ca792f7f054122bdec756268"
+    description: SHA256 checksum for PostgreSQL JDBC driver
 
 runs:
   using: "composite"
@@ -41,11 +49,21 @@ runs:
 
     - name: Install schemaspy
       shell: bash
-      run: curl -L https://github.com/schemaspy/schemaspy/releases/download/v${{ inputs.schemaspy_version }}/schemaspy-${{ inputs.schemaspy_version }}.jar --output /tmp/schemaspy.jar
+      env:
+        SCHEMASPY_VERSION: ${{ inputs.schemaspy_version }}
+        SCHEMASPY_SHA256: ${{ inputs.schemaspy_sha256 }}
+      run: |
+        curl -fsSL "https://github.com/schemaspy/schemaspy/releases/download/v${SCHEMASPY_VERSION}/schemaspy-${SCHEMASPY_VERSION}.jar" -o /tmp/schemaspy.jar
+        echo "${SCHEMASPY_SHA256}  /tmp/schemaspy.jar" | sha256sum -c -
 
     - name: Install postgres jdbc driver
       shell: bash
-      run: curl -L https://jdbc.postgresql.org/download/postgresql-${{ inputs.postgres_driver_version }}.jar --output /tmp/postgres-driver.jar
+      env:
+        POSTGRES_DRIVER_VERSION: ${{ inputs.postgres_driver_version }}
+        POSTGRES_DRIVER_SHA256: ${{ inputs.postgres_driver_sha256 }}
+      run: |
+        curl -fsSL "https://jdbc.postgresql.org/download/postgresql-${POSTGRES_DRIVER_VERSION}.jar" -o /tmp/postgres-driver.jar
+        echo "${POSTGRES_DRIVER_SHA256}  /tmp/postgres-driver.jar" | sha256sum -c -
 
     - name: Generate database schema report
       shell: bash
