@@ -47,23 +47,15 @@ runs:
         java-version: ${{ inputs.jdk_tag }}
         distribution: 'temurin'
 
-    - name: Install schemaspy
-      shell: bash
-      env:
-        SCHEMASPY_VERSION: ${{ inputs.schemaspy_version }}
-        SCHEMASPY_SHA256: ${{ inputs.schemaspy_sha256 }}
-      run: |
-        curl -fsSL "https://github.com/schemaspy/schemaspy/releases/download/v${SCHEMASPY_VERSION}/schemaspy-${SCHEMASPY_VERSION}.jar" -o /tmp/schemaspy.jar
-        echo "${SCHEMASPY_SHA256}  /tmp/schemaspy.jar" | sha256sum -c -
+    - uses: ministryofjustice/hmpps-github-actions/.github/actions/setup-schemaspy@v2 # WORKFLOW_VERSION
+      with:
+        version: ${{ inputs.schemaspy_version }}
+        sha256: ${{ inputs.schemaspy_sha256 }}
 
-    - name: Install postgres jdbc driver
-      shell: bash
-      env:
-        POSTGRES_DRIVER_VERSION: ${{ inputs.postgres_driver_version }}
-        POSTGRES_DRIVER_SHA256: ${{ inputs.postgres_driver_sha256 }}
-      run: |
-        curl -fsSL "https://jdbc.postgresql.org/download/postgresql-${POSTGRES_DRIVER_VERSION}.jar" -o /tmp/postgres-driver.jar
-        echo "${POSTGRES_DRIVER_SHA256}  /tmp/postgres-driver.jar" | sha256sum -c -
+    - uses: ministryofjustice/hmpps-github-actions/.github/actions/setup-postgres-jdbc@v2 # WORKFLOW_VERSION
+      with:
+        version: ${{ inputs.postgres_driver_version }}
+        sha256: ${{ inputs.postgres_driver_sha256 }}
 
     - name: Generate database schema report
       shell: bash

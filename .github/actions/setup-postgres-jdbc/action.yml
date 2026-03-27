@@ -1,0 +1,32 @@
+name: Setup PostgreSQL JDBC
+description: Download PostgreSQL JDBC driver with checksum verification
+
+inputs:
+  version:
+    description: PostgreSQL JDBC driver version
+    required: false
+    # renovate: datasource=maven depName=org.postgresql:postgresql
+    default: "42.7.3"
+  sha256:
+    description: SHA256 checksum for PostgreSQL JDBC driver
+    required: false
+    default: "a2644cbfba1baa145ff7e8c8ef582a6eed7a7ec4ca792f7f054122bdec756268"
+
+outputs:
+  jar_path:
+    description: Path to the PostgreSQL JDBC driver JAR file
+    value: ${{ steps.download-postgres-jdbc.outputs.jar_path }}
+
+runs:
+  using: composite
+  steps:
+    - name: Download PostgreSQL JDBC driver
+      id: download-postgres-jdbc
+      shell: bash
+      env:
+        POSTGRES_DRIVER_VERSION: ${{ inputs.version }}
+        POSTGRES_DRIVER_SHA256: ${{ inputs.sha256 }}
+      run: |
+        curl -fsSL "https://jdbc.postgresql.org/download/postgresql-${POSTGRES_DRIVER_VERSION}.jar" -o /tmp/postgres-driver.jar
+        echo "${POSTGRES_DRIVER_SHA256}  /tmp/postgres-driver.jar" | sha256sum -c -
+        echo "jar_path=/tmp/postgres-driver.jar" >> "$GITHUB_OUTPUT"

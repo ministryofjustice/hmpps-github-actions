@@ -1,0 +1,23 @@
+name: Setup Veracode Wrapper
+description: Download Veracode Java API wrapper with checksum verification
+
+outputs:
+  jar_path:
+    description: Path to the Veracode wrapper JAR file
+    value: ${{ steps.download-veracode-wrapper.outputs.jar_path }}
+
+runs:
+  using: composite
+  steps:
+    - name: Download Veracode wrapper
+      id: download-veracode-wrapper
+      shell: bash
+      env:
+        # renovate: datasource=maven depName=com.veracode.vosp.api.wrappers:vosp-api-wrappers-java
+        VERACODE_WRAPPER_VERSION: 26.3.19.0
+        # SHA256 checksum for verification
+        VERACODE_WRAPPER_SHA256: 56d9f6d812261f1e3b69ead4d0b7ac6be7c817bd9aef432ea3a74edc8abf8b6f
+      run: |
+        curl -fsSL "https://repo1.maven.org/maven2/com/veracode/vosp/api/wrappers/vosp-api-wrappers-java/${VERACODE_WRAPPER_VERSION}/vosp-api-wrappers-java-${VERACODE_WRAPPER_VERSION}.jar" -o VeracodeJavaAPI.jar
+        echo "${VERACODE_WRAPPER_SHA256}  VeracodeJavaAPI.jar" | sha256sum -c -
+        echo "jar_path=$(pwd)/VeracodeJavaAPI.jar" >> "$GITHUB_OUTPUT"

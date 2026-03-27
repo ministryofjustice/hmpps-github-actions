@@ -1,0 +1,23 @@
+name: Setup WireMock
+description: Download WireMock standalone JAR with checksum verification
+
+outputs:
+  jar_path:
+    description: Path to the WireMock JAR file
+    value: ${{ steps.download-wiremock.outputs.jar_path }}
+
+runs:
+  using: composite
+  steps:
+    - name: Download WireMock
+      id: download-wiremock
+      shell: bash
+      env:
+        # renovate: datasource=maven depName=org.wiremock:wiremock-standalone
+        WIREMOCK_VERSION: 3.9.1
+        # SHA256 from Maven Central
+        WIREMOCK_SHA256: 723a880d50d3b0a145af0df07e578c2cb85e77feb2231e6991c9a1366926912c
+      run: |
+        curl -fsSL "https://repo1.maven.org/maven2/org/wiremock/wiremock-standalone/${WIREMOCK_VERSION}/wiremock-standalone-${WIREMOCK_VERSION}.jar" -o wiremock.jar
+        echo "${WIREMOCK_SHA256}  wiremock.jar" | sha256sum -c -
+        echo "jar_path=$(pwd)/wiremock.jar" >> "$GITHUB_OUTPUT"

@@ -67,17 +67,7 @@ jobs:
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json', '!**/node_modules/**') }}
       - name: Init testing framework if necessary
         run: npm run int-test-init:ci --if-present
-      - name: Get wiremock
-        id: get-wiremock
-        shell: bash
-        env:
-          # renovate: datasource=maven depName=org.wiremock:wiremock-standalone
-          WIREMOCK_VERSION: 3.9.1
-          # SHA256 from Maven Central
-          WIREMOCK_SHA256: 723a880d50d3b0a145af0df07e578c2cb85e77feb2231e6991c9a1366926912c
-        run: |
-          curl -fsSL "https://repo1.maven.org/maven2/org/wiremock/wiremock-standalone/${WIREMOCK_VERSION}/wiremock-standalone-${WIREMOCK_VERSION}.jar" -o wiremock.jar
-          echo "${WIREMOCK_SHA256}  wiremock.jar" | sha256sum -c -
+      - uses: ministryofjustice/hmpps-github-actions/.github/actions/setup-wiremock@v2 # WORKFLOW_VERSION
       - name: Prepare and run integration tests
         id: integration-tests
         shell: bash

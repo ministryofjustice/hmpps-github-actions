@@ -1,0 +1,32 @@
+name: Setup SchemaSpy
+description: Download SchemaSpy JAR with checksum verification
+
+inputs:
+  version:
+    description: SchemaSpy version
+    required: false
+    # renovate: datasource=github-releases depName=schemaspy/schemaspy
+    default: "6.2.4"
+  sha256:
+    description: SHA256 checksum for SchemaSpy JAR
+    required: false
+    default: "50abf42c6fbf746b36365f81adb9686e1da83344e89f2719a31e6c1209ebcaad"
+
+outputs:
+  jar_path:
+    description: Path to the SchemaSpy JAR file
+    value: ${{ steps.download-schemaspy.outputs.jar_path }}
+
+runs:
+  using: composite
+  steps:
+    - name: Download SchemaSpy
+      id: download-schemaspy
+      shell: bash
+      env:
+        SCHEMASPY_VERSION: ${{ inputs.version }}
+        SCHEMASPY_SHA256: ${{ inputs.sha256 }}
+      run: |
+        curl -fsSL "https://github.com/schemaspy/schemaspy/releases/download/v${SCHEMASPY_VERSION}/schemaspy-${SCHEMASPY_VERSION}.jar" -o /tmp/schemaspy.jar
+        echo "${SCHEMASPY_SHA256}  /tmp/schemaspy.jar" | sha256sum -c -
+        echo "jar_path=/tmp/schemaspy.jar" >> "$GITHUB_OUTPUT"

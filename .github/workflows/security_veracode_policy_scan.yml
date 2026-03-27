@@ -104,17 +104,7 @@ jobs:
       uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
       with:
         name: ${{ inputs.veracode_package_artifact_name }}
-    - name: "Download/Extract veracode agent"
-      id: download-veracode-agent
-      shell: bash
-      env:
-        # renovate: datasource=maven depName=com.veracode.vosp.api.wrappers:vosp-api-wrappers-java
-        VERACODE_WRAPPER_VERSION: 26.3.19.0
-        # SHA256 checksum for verification
-        VERACODE_WRAPPER_SHA256: 56d9f6d812261f1e3b69ead4d0b7ac6be7c817bd9aef432ea3a74edc8abf8b6f
-      run: |
-        curl -fsSL "https://repo1.maven.org/maven2/com/veracode/vosp/api/wrappers/vosp-api-wrappers-java/${VERACODE_WRAPPER_VERSION}/vosp-api-wrappers-java-${VERACODE_WRAPPER_VERSION}.jar" -o VeracodeJavaAPI.jar
-        echo "${VERACODE_WRAPPER_SHA256}  VeracodeJavaAPI.jar" | sha256sum -c -
+    - uses: ministryofjustice/hmpps-github-actions/.github/actions/setup-veracode-wrapper@v2 # WORKFLOW_VERSION
     - name: "Upload to Veracode"
       shell: bash
       run: |
