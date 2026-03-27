@@ -6,7 +6,7 @@ on:
       - '.github/workflows/node_integration_tests.yml'
       - '.github/workflows/node_integration_tests_redis.yml'
       - '.github/workflows/security_veracode_policy_scan.yml'
-      - '.github/actions/build-test-and-deploy/cloud-platform-deploy/action.yml'
+      - '.github/actions/build-test-and-deploy/setup-helm/action.yml'
       - '.github/actions/database_schema_report/action.yml'
       - '.github/workflows/test_binary_checksums.yml'
   workflow_dispatch:
@@ -20,8 +20,8 @@ jobs:
 
       - name: Test Helm checksum
         run: |
-          HELM_VERSION=$(yq '.runs.steps[] | select(.id == "install-helm") | .env.HELM_VERSION' .github/actions/build-test-and-deploy/cloud-platform-deploy/action.yml)
-          HELM_SHA256=$(yq '.runs.steps[] | select(.id == "install-helm") | .env.HELM_SHA256' .github/actions/build-test-and-deploy/cloud-platform-deploy/action.yml)
+          HELM_VERSION=$(yq '.runs.steps[] | select(.id == "install-helm") | .env.HELM_VERSION' .github/actions/build-test-and-deploy/setup-helm/action.yml)
+          HELM_SHA256=$(yq '.runs.steps[] | select(.id == "install-helm") | .env.HELM_SHA256' .github/actions/build-test-and-deploy/setup-helm/action.yml)
           
           echo "Testing Helm ${HELM_VERSION}..."
           curl -fsSL "https://get.helm.sh/helm-${HELM_VERSION}-linux-amd64.tar.gz" -o helm.tar.gz
