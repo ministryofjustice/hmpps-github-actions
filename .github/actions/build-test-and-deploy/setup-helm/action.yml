@@ -1,0 +1,21 @@
+name: Setup Helm
+description: Install Helm with checksum verification
+
+runs:
+  using: composite
+  steps:
+    - name: Install Helm
+      id: install-helm
+      shell: bash
+      env:
+        # renovate: datasource=github-releases depName=helm/helm
+        HELM_VERSION: v4.1.3
+        # SHA256 from https://github.com/helm/helm/releases (linux-amd64)
+        HELM_SHA256: 02ce9722d541238f81459938b84cf47df2fdf1187493b4bfb2346754d82a4700
+      run: |
+        curl -fsSL "https://get.helm.sh/helm-${HELM_VERSION}-linux-amd64.tar.gz" -o helm.tar.gz
+        echo "${HELM_SHA256}  helm.tar.gz" | sha256sum -c -
+        tar -xzf helm.tar.gz
+        sudo mv linux-amd64/helm /usr/local/bin/helm
+        rm -rf helm.tar.gz linux-amd64
+        helm version

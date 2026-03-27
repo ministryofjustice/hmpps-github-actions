@@ -22,10 +22,6 @@ on:
         required: false
         default: ''
         type: string
-      helm_version:
-        required: false
-        default: 'v3.4.2'
-        type: string
     secrets:
       HMPPS_SRE_SLACK_BOT_TOKEN:
         description: 'Slack bot token'
@@ -40,10 +36,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-    - uses: azure/setup-helm@1a275c3b69536ee54be43f2070a358922e12c8d4 # v4.3.1
-      with:
-        version: ${{ inputs.helm_version }} 
-      id: install_helm
+    - uses: ministryofjustice/hmpps-github-actions/.github/actions/build-test-and-deploy/setup-helm@v2 # WORKFLOW_VERSION
     - name: 'Run helm lint commands'
       shell: bash
       run: | 
