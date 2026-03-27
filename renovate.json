@@ -1,12 +1,18 @@
 {
   "extends": [
-    "config:recommended"
+    "config:recommended",
+    "schedule:biweekly"
   ],
   "labels": [
     "dependencies",
     "github-actions"
   ],
   "packageRules": [
+    {
+      "matchManagers": ["github-actions", "custom.regex"],
+      "groupName": "all dependencies",
+      "groupSlug": "all-dependencies"
+    },
     {
       "matchManagers": ["github-actions"],
       "matchFileNames": [
