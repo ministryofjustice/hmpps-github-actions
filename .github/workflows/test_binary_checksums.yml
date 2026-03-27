@@ -12,6 +12,9 @@ on:
       - '.github/workflows/test_binary_checksums.yml'
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   test-helm:
     name: Test Helm checksum
