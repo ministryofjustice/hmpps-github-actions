@@ -53,7 +53,7 @@ jobs:
       id: sarif-format
       # While we're paying for advanced security, we can scan all repos...
       # if: ${{ github.event.repository.visibility != 'private' && github.event.repository.visibility != 'internal' }}
-      uses: ministryofjustice/hmpps-github-actions/.github/actions/auditjson_to_sarif@v2
+      uses: ministryofjustice/hmpps-github-actions/.github/actions/auditjson_to_sarif@95c48db64a6d50acd1f8f8a0f93d1019727e5b4d
       with:
         input-file: 'npm-security-check-reports.json'
     # Upload Sarif file: this will attempt to upload the sarif file for private/internal repositories as well
@@ -69,12 +69,12 @@ jobs:
     - name:  Run translator to convert to a Slack-compatible table # returns SLACK_TXT
       id: slack-format
       if: steps.npm.outcome == 'failure' && inputs.channel_id != 'NO_SLACK'
-      uses: ministryofjustice/hmpps-github-actions/.github/actions/auditjson_to_slack@v2 # WORKFLOW_VERSION
+      uses: ministryofjustice/hmpps-github-actions/.github/actions/auditjson_to_slack@95c48db64a6d50acd1f8f8a0f93d1019727e5b4d
       with:
         input_file: 'npm-security-check-reports.json'
       # Slack notification if there either of the two audits fail
     - name: npm audit slack notification
-      uses: ministryofjustice/hmpps-github-actions/.github/actions/slack_codescan_notification@v2 # WORKFLOW_VERSION
+      uses: ministryofjustice/hmpps-github-actions/.github/actions/slack_codescan_notification@95c48db64a6d50acd1f8f8a0f93d1019727e5b4d
       if: (failure() || steps.npm.outcome == 'failure' || steps.npm.outcome == 'failure') && inputs.channel_id != 'NO_SLACK'
       with:
         title: "npm dependency scan"
