@@ -62,10 +62,10 @@ Example templates that can be used to call shared workflows can be found in the 
 
 ## Version Control
 
-Workflows and actions are referred to by the tags associated with the current release, eg:
+Workflows are referred to by the tags associated with the current release, eg:
 
 ```
-    - uses: ministryofjustice/hmpps-github-actions/.github/actions/security_owasp_reports@v2 # WORKFLOW_VERSION
+    - uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/security_owasp_reports@SHA #vx.y.z
 ```
 
 When a new release is issued, all of these referred workflows (as well as the calling ones within applications) will need to be updated as well.
@@ -106,12 +106,12 @@ Check which workflow/action file was modified (e.g.: .github/workflows/security_
 Search for a repository that references the changed workflow from hmpps-github-actions.
 Look in .github/workflows/*.yml files for lines like:
 ```
-ministryofjustice/hmpps-github-actions/.github/workflows/<workflow>.yml@<version>
+ministryofjustice/hmpps-github-actions/.github/workflows/<workflow>.yml@SHA #<version>
 ```
 It may be that the update is within an action file rather than a parent workflow. To validate this, the parent workflow within hmpps-github-actions will also need to be modified to point to the patched action, eg in workflows/deploy_env.yaml, and then a repository that uses the workflow can be modified appropriately.
 
 eg (in shared Github Workflow)
-uses: ministryofjustice/hmpps-github-actions/.github/actions/slack_release_results@<branch_name>
+uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/slack_release_results@<branch_name>
 
 Obviously, don't forget to put this back to the appropriate tag when the PR is raised.
 

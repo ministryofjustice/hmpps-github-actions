@@ -15,7 +15,7 @@ runs:
   using: "composite"
   steps:
     - name: process slack message results # returns SLACK_TXT
-      uses: ministryofjustice/hmpps-github-actions/.github/actions/slack_prepare_results@v2 # WORKFLOW_VERSION
+      uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/slack_prepare_results@73fcfc4dcadcb4671963010917becb911fd4197d #v1
       id: slack_message_result 
       with:
         input_file: ${{ inputs.input_file }}
