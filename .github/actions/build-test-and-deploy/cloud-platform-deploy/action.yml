@@ -1,3 +1,5 @@
+# DEPRECATED - PLEASE USE hmpps-github-shared-actions
+# ===================================================
 name: Cloud Platform Deploy
 description: Deploy to Cloud Platform using Helm
 
@@ -60,7 +62,7 @@ inputs:
   autogenerate_scheduled_downtime_cron:
     description: "Whether to set the deterministic scheduled downtime cron values"
     required: false
-    default: true
+    default: 'true'
 
 outputs:
   deployment_changelog:

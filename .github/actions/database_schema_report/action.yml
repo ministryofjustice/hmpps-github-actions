@@ -1,3 +1,6 @@
+# DEPRECATED - PLEASE USE hmpps-github-shared-actions
+#              This action will soon be removed.
+# ===================================================
 name: Generate postgres database schema report
 description: 'action to generate postgres database schema report, requires postgres database running with pipeline'
 

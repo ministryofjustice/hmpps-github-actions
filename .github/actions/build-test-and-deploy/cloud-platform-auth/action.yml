@@ -1,3 +1,6 @@
+# DEPRECATED - PLEASE USE hmpps-github-shared-actions
+#              This action will soon be removed.
+# ===================================================
 name: Cloud Platform Auth
 description: Authenticate with MOJ Cloud Platform
 
