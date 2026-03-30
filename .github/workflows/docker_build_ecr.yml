@@ -78,9 +78,9 @@ jobs:
     steps:
       - id: app_version
         name: Application version creators
-        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/create_app_version@73fcfc4dcadcb4671963010917becb911fd4197d #v1
+        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/create_app_version@f52dbae537425d92f2216c4a2d9e0e44e603abb1 #v1
 
-      - uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/build_docker@73fcfc4dcadcb4671963010917becb911fd4197d #v1
+      - uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/build_docker@f52dbae537425d92f2216c4a2d9e0e44e603abb1 #v1
         if: ${{ inputs.docker_registry == 'ecr' && ( ! inputs.docker_multiplatform )}}
         with:
           image_name: ${{ inputs.image_name || github.event.repository.name }}
