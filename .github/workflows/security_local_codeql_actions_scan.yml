@@ -11,7 +11,7 @@ permissions:
 jobs:
   security-actions-codeql-check:
     name: Project security Github Actions CodeQL check
-    uses: ministryofjustice/hmpps-github-actions/.github/workflows/security_codeql_actions.yml@f52dbae537425d92f2216c4a2d9e0e44e603abb1 #v1
+    uses: ministryofjustice/hmpps-github-actions/.github/workflows/security_codeql_actions.yml@v2 # WORKFLOW_VERSION
     with:
       channel_id: ${{ vars.SECURITY_ALERTS_SLACK_CHANNEL_ID || 'NO_SLACK' }}
     secrets: inherit
