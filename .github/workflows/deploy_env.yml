@@ -113,6 +113,18 @@ jobs:
           helm_allowlist_version: ${{ vars.HMPPS_IP_ALLOWLIST_GROUPS_VERSION }}
           autogenerate_scheduled_downtime_cron: ${{inputs.autogenerate_scheduled_downtime_cron }}
 
+      # Version history
+      - name: get version history
+        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/version_history@73fcfc4dcadcb4671963010917becb911fd4197d #v1
+        if: ${{ inputs.show_changelog }}
+        id: version_history
+        with:
+          app_version: ${{ inputs.app_version }}
+          environment: ${{ inputs.environment }}
+          namespace: ${{ secrets.KUBE_NAMESPACE }}
+          k8s_deployment_name: ${{ inputs.k8s_deployment_name }}
+          changelog_git_paths: ${{ inputs.changelog_git_paths }}
+
       # Notification bit - always send prod releases to dps-releases - CVA3MKDTR
       - if: ${{ always() && ( inputs.environment == 'prod' || inputs.environment == 'production' ) }}
         id: prod-dps-slack
