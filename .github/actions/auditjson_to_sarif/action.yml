@@ -1,3 +1,6 @@
+# DEPRECATED - PLEASE USE hmpps-github-shared-actions
+#              This action will soon be removed.
+# ===================================================
 name: 'Convert NPM Audit to SARIF'
 description: 'Converts npm audit-ci json output to SARIF format'
 inputs:

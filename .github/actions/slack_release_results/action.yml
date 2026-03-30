@@ -1,3 +1,6 @@
+# DEPRECATED - PLEASE USE hmpps-github-shared-actions
+#              This action will soon be removed.
+# ===================================================
 name: 'send a slack release message'
 description: 'For a given channel ID and environment, send a slack message with the release status'
 inputs:

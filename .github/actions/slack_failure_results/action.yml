@@ -1,3 +1,6 @@
+# DEPRECATED - PLEASE USE hmpps-github-shared-actions
+#              This action will soon be removed.
+# ===================================================
 name: 'failure Slack message'
 description: 'Sends a slack message based on a file uploaded'
 inputs:
@@ -15,7 +18,7 @@ runs:
   using: "composite"
   steps:
     - name: process slack message results # returns SLACK_TXT
-      uses: ministryofjustice/hmpps-github-actions/.github/actions/slack_prepare_results@v2 # WORKFLOW_VERSION
+      uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/slack_prepare_results@f52dbae537425d92f2216c4a2d9e0e44e603abb1 #v1
       id: slack_message_result 
       with:
         input_file: ${{ inputs.input_file }}

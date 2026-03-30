@@ -1,3 +1,6 @@
+# DEPRECATED - PLEASE USE hmpps-github-shared-actions
+#              This action will soon be removed.
+# ===================================================
 name: 'Convert NPM Audit to a table suitable for Slack'
 description: 'Converts npm audit-ci json output to a presentable table'
 inputs:

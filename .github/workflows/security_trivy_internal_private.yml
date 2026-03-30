@@ -69,5 +69,5 @@ jobs:
       actions: read
     steps:
     - name: Trivy disabled
-      run: echo "Trivy has temporarily been disabled - see the Security Slack channel"
+      run: echo "Trivy has been disabled - see the Security Slack channel"
       shell: bash
