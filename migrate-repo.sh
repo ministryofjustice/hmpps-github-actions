@@ -307,7 +307,7 @@ migrate_deployment_jobs() {
     fi
 
     # rest of the workflow bits
-    echo "    uses: ministryofjustice/hmpps-github-actions/.github/workflows/deploy_env.yml@f52dbae537425d92f2216c4a2d9e0e44e603abb1 #v1" >> ${pipeline_file}
+    echo "    uses: ministryofjustice/hmpps-github-actions/.github/workflows/deploy_env.yml@6ca6653862e916a9221d915216228aee57717570 #v1" >> ${pipeline_file}
     echo "    secrets: inherit" >> ${pipeline_file}
 
     echo "    with:" >> ${pipeline_file}
