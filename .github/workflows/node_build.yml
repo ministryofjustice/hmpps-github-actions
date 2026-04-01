@@ -16,7 +16,7 @@ on:
       enable_slsa_action:
         description: Enable dev-sec-ops SLSA action
         required: false
-        type: boolean
+        type: string
         default: false   
 
 permissions:
