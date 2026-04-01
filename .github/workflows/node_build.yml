@@ -13,61 +13,69 @@ on:
         required: false
         type: string
         default: "npm ci --no-audit"
+      enable_slsa_action:
+        description: Enable dev-sec-ops SLSA action
+        required: false
+        type: boolean
+        default: false   
 
 permissions:
   contents: read
 
 jobs:
   node-build:
-    name: Run the node build 
+    name: Run the node build
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-    - name: Use Node.js ${{ inputs.node_version_file }}
-      uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
-      with:
-        node-version-file: ${{ inputs.node_version_file }}
-    - name: update npm
-      shell: bash
-      run: |
-        npm install -g npm@latest
-    - name: restore cache
-      id: restore-cache
-      uses: actions/cache/restore@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
-      env: 
-        cache-name: node-modules
-      with:
-        path: |
-          ./node_modules
-          ~/.cache/Cypress
-        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json', '!**/node_modules/**') }}
-    - name: install dependencies
-      if: steps.restore-cache.outputs.cache-hit != 'true'
-      shell: bash
-      run: "${{ inputs.install_command }}"
-    - name: build npm
-      shell: bash
-      run: |
-        npm run build
-    - name: Linter check # Run linter after build because the integration test code depend on compiled typescript...
-      shell: bash
-      run: | 
-        npm run lint
-    - name: upload the artifacts
-      uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
-      with: 
-        name: npm_build_artifacts
-        path: |
-          build/
-          dist/
-          assets/stylesheets/
-    - name: save cache
-      id: save-cache
-      uses: actions/cache/save@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
-      env: 
-        cache-name: node-modules
-      with:
-        path: |
-          ./node_modules
-          ~/.cache/Cypress
-        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json', '!**/node_modules/**') }}
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - name: Use Node.js ${{ inputs.node_version_file }}
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
+        with:
+          node-version-file: ${{ inputs.node_version_file }}
+      - name: update npm
+        shell: bash
+        run: |
+          npm install -g npm@latest
+      - name: restore cache
+        id: restore-cache
+        uses: actions/cache/restore@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
+        env:
+          cache-name: node-modules
+        with:
+          path: |
+            ./node_modules
+            ~/.cache/Cypress
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json', '!**/node_modules/**') }}
+      - name: SLSA
+        if: ${{ inputs.enable_slsa_action ==  'true' }}
+        uses: ministryofjustice/devsecops-actions/sca/slsa@4cd163be7859cd130800d6719d925318826038ea #v1
+      - name: install dependencies
+        if: steps.restore-cache.outputs.cache-hit != 'true'
+        shell: bash
+        run: "${{ inputs.install_command }}"
+      - name: build npm
+        shell: bash
+        run: |
+          npm run build
+      - name: Linter check # Run linter after build because the integration test code depend on compiled typescript...
+        shell: bash
+        run: |
+          npm run lint
+      - name: upload the artifacts
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        with:
+          name: npm_build_artifacts
+          path: |
+            build/
+            dist/
+            assets/stylesheets/
+      - name: save cache
+        id: save-cache
+        uses: actions/cache/save@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
+        env:
+          cache-name: node-modules
+        with:
+          path: |
+            ./node_modules
+            ~/.cache/Cypress
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json', '!**/node_modules/**') }}
