@@ -16,12 +16,13 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 0
-
       - name: Set up Python
         uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6
         with:
           python-version: '3.x'
-
+      # ⛓️ SLSA Protection - Add BEFORE pip install
+      - name: ⛓️ SLSA Supply Chain Security
+        uses: ministryofjustice/devsecops-actions/sca/slsa@e3c63a5986ea6e7d57d38b7f72e5b8cf08dc7020
       - name: Download .ruff.toml configuration file
         run: |
           curl -o .ruff.toml https://raw.githubusercontent.com/ministryofjustice/hmpps-sre-python-lib/main/.ruff.toml
