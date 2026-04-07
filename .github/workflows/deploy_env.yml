@@ -112,7 +112,7 @@ jobs:
 
       # Version history
       - name: get version history
-        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/version_history@6ca6653862e916a9221d915216228aee57717570 #v1
+        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/version_history@aa995417e9ea1ae1c57c8f2597ff6326ba270a88 # v1
         if: ${{ inputs.show_changelog }}
         id: version_history
         with:
@@ -125,7 +125,7 @@ jobs:
       # Notification bit - always send prod releases to dps-releases - CVA3MKDTR
       - if: ${{ always() && ( inputs.environment == 'prod' || inputs.environment == 'production' ) }}
         id: prod-dps-slack
-        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/slack_release_results@6ca6653862e916a9221d915216228aee57717570 #v1
+        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/slack_release_results@aa995417e9ea1ae1c57c8f2597ff6326ba270a88 # v1
         with:
           channel_id: 'CVA3MKDTR'
           environment: ${{ inputs.environment }}
@@ -138,7 +138,7 @@ jobs:
       # Optional prod releases slack channel (using PROD_RELEASES_SLACK_CHANNEL variable)
       - if: ${{ always() && ( inputs.slack_notification == 'true' && steps.set-slack-channel-id.outputs.slack_channel_id != '' ) }}
         id: send-release-slack
-        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/slack_release_results@6ca6653862e916a9221d915216228aee57717570 #v1
+        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/slack_release_results@aa995417e9ea1ae1c57c8f2597ff6326ba270a88 # v1
         with:
           channel_id: ${{ steps.set-slack-channel-id.outputs.slack_channel_id }}
           environment: ${{ inputs.environment }}
