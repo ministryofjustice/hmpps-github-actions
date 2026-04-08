@@ -67,10 +67,7 @@ jobs:
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json', '!**/node_modules/**') }}
       - name: Init testing framework if necessary
         run: npm run int-test-init:ci --if-present
-      - name: Get wiremock
-        shell: bash
-        run: |
-          curl -o wiremock.jar https://repo1.maven.org/maven2/org/wiremock/wiremock-standalone/3.9.1/wiremock-standalone-3.9.1.jar
+      - uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/tool-installers/setup-wiremock@aa995417e9ea1ae1c57c8f2597ff6326ba270a88 # v1
       - name: Prepare and run integration tests
         id: integration-tests
         shell: bash

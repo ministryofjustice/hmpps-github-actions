@@ -77,11 +77,8 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           fetch-depth: 0
-      - uses: azure/setup-kubectl@776406bce94f63e41d621b960d78ee25c8b76ede # v4
-        id: install
-        with:
-          version: latest
-
+      - uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/tool-installers/setup-helm@aa995417e9ea1ae1c57c8f2597ff6326ba270a88 # v1
+      - uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/tool-installers/setup-kubectl@aa995417e9ea1ae1c57c8f2597ff6326ba270a88 # v1
       - name: Set Slack Channel ID
         id: set-slack-channel-id
         run: |
@@ -91,7 +88,7 @@ jobs:
             echo "slack_channel_id=${{ vars.NONPROD_RELEASES_SLACK_CHANNEL }}" | tee -a $GITHUB_OUTPUT
           fi
 
-      - uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/cloud-platform-deploy@6ca6653862e916a9221d915216228aee57717570 #v1
+      - uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/cloud-platform-deploy@aa995417e9ea1ae1c57c8f2597ff6326ba270a88 # v1
         id: deploy
         with:
           environment: ${{ inputs.environment }}
@@ -115,7 +112,7 @@ jobs:
 
       # Version history
       - name: get version history
-        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/version_history@6ca6653862e916a9221d915216228aee57717570 #v1
+        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/version_history@aa995417e9ea1ae1c57c8f2597ff6326ba270a88 # v1
         if: ${{ inputs.show_changelog }}
         id: version_history
         with:
@@ -128,7 +125,7 @@ jobs:
       # Notification bit - always send prod releases to dps-releases - CVA3MKDTR
       - if: ${{ always() && ( inputs.environment == 'prod' || inputs.environment == 'production' ) }}
         id: prod-dps-slack
-        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/slack_release_results@6ca6653862e916a9221d915216228aee57717570 #v1
+        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/slack_release_results@aa995417e9ea1ae1c57c8f2597ff6326ba270a88 # v1
         with:
           channel_id: 'CVA3MKDTR'
           environment: ${{ inputs.environment }}
@@ -141,7 +138,7 @@ jobs:
       # Optional prod releases slack channel (using PROD_RELEASES_SLACK_CHANNEL variable)
       - if: ${{ always() && ( inputs.slack_notification == 'true' && steps.set-slack-channel-id.outputs.slack_channel_id != '' ) }}
         id: send-release-slack
-        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/slack_release_results@6ca6653862e916a9221d915216228aee57717570 #v1
+        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/slack_release_results@aa995417e9ea1ae1c57c8f2597ff6326ba270a88 # v1
         with:
           channel_id: ${{ steps.set-slack-channel-id.outputs.slack_channel_id }}
           environment: ${{ inputs.environment }}
