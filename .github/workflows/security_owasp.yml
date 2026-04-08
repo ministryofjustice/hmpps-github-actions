@@ -89,7 +89,7 @@ jobs:
         slack_summary="$(echo "${formatted_output}" | awk '{s=s $0} END {if (length(s) >= 3000) print substr(s, 1, 2997) "..."; else print s}')"
         echo "summary=${slack_summary}" >> $GITHUB_ENV
     - name: Gradle OWASP slack notification
-      uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/slack_codescan_notification@aa995417e9ea1ae1c57c8f2597ff6326ba270a88 # v1
+      uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/slack_codescan_notification@26a2c5bec7cf251b299e28848d3b950a9c253e7c # v1
       if: (failure() || steps.owasp-analyse.outcome == 'failure') && inputs.channel_id != 'NO_SLACK'
       with:
         title: "Gradle OWASP"
@@ -144,7 +144,7 @@ jobs:
         slack_summary="$(echo "${formatted_output}" | awk '{s=s $0} END {if (length(s) >= 3000) print substr(s, 1, 2997) "..."; else print s}')"
         echo "summary=${slack_summary}" >> $GITHUB_ENV
     - name: Gradle OWASP slack notification
-      uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/slack_codescan_notification@aa995417e9ea1ae1c57c8f2597ff6326ba270a88 # v1
+      uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/slack_codescan_notification@26a2c5bec7cf251b299e28848d3b950a9c253e7c # v1
       if: (failure() || steps.owasp-analyse.outcome == 'failure') && inputs.channel_id != 'NO_SLACK'
       with:
         title: "Gradle OWASP"
