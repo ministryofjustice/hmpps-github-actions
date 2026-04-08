@@ -79,6 +79,13 @@ jobs:
           fetch-depth: 0
       - uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/tool-installers/setup-helm@aa995417e9ea1ae1c57c8f2597ff6326ba270a88 # v1
       - uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/tool-installers/setup-kubectl@aa995417e9ea1ae1c57c8f2597ff6326ba270a88 # v1
+      - uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/cloud-platform-auth@aa995417e9ea1ae1c57c8f2597ff6326ba270a88 # v1
+        with:
+          api: https://${{ secrets.KUBE_CLUSTER }}
+          cert: ${{ secrets.KUBE_CERT }}
+          cluster: ${{ secrets.KUBE_CLUSTER }}
+          namespace: ${{ secrets.KUBE_NAMESPACE }}
+          token: ${{ secrets.KUBE_TOKEN }}
       - name: Set Slack Channel ID
         id: set-slack-channel-id
         run: |
@@ -110,7 +117,6 @@ jobs:
           cluster: ${{ secrets.KUBE_CLUSTER }}
           namespace: ${{ secrets.KUBE_NAMESPACE }}
           token: ${{ secrets.KUBE_TOKEN }}
-          github_token: ${{ secrets.GITHUB_TOKEN }}
           k8s_deployment_name: ${{ inputs.k8s_deployment_name }}
           changelog_git_paths: ${{ inputs.changelog_git_paths }}
           show_changelog: ${{ inputs.show_changelog }}
