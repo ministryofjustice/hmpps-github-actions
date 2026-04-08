@@ -88,6 +88,18 @@ jobs:
             echo "slack_channel_id=${{ vars.NONPROD_RELEASES_SLACK_CHANNEL }}" | tee -a $GITHUB_OUTPUT
           fi
 
+      # Version history
+      - name: get version history
+        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/version_history@aa995417e9ea1ae1c57c8f2597ff6326ba270a88 # v1
+        if: ${{ inputs.show_changelog }}
+        id: version_history
+        with:
+          app_version: ${{ inputs.app_version }}
+          environment: ${{ inputs.environment }}
+          namespace: ${{ secrets.KUBE_NAMESPACE }}
+          k8s_deployment_name: ${{ inputs.k8s_deployment_name }}
+          changelog_git_paths: ${{ inputs.changelog_git_paths }}
+
       - uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/cloud-platform-deploy@aa995417e9ea1ae1c57c8f2597ff6326ba270a88 # v1
         id: deploy
         with:
@@ -109,18 +121,6 @@ jobs:
           helm_allowlist_groups: ${{ vars.HMPPS_IP_ALLOWLIST_GROUPS_YAML }}
           helm_allowlist_version: ${{ vars.HMPPS_IP_ALLOWLIST_GROUPS_VERSION }}
           autogenerate_scheduled_downtime_cron: ${{inputs.autogenerate_scheduled_downtime_cron }}
-
-      # Version history
-      - name: get version history
-        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/version_history@aa995417e9ea1ae1c57c8f2597ff6326ba270a88 # v1
-        if: ${{ inputs.show_changelog }}
-        id: version_history
-        with:
-          app_version: ${{ inputs.app_version }}
-          environment: ${{ inputs.environment }}
-          namespace: ${{ secrets.KUBE_NAMESPACE }}
-          k8s_deployment_name: ${{ inputs.k8s_deployment_name }}
-          changelog_git_paths: ${{ inputs.changelog_git_paths }}
 
       # Notification bit - always send prod releases to dps-releases - CVA3MKDTR
       - if: ${{ always() && ( inputs.environment == 'prod' || inputs.environment == 'production' ) }}
