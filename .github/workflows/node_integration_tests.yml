@@ -67,7 +67,7 @@ jobs:
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json', '!**/node_modules/**') }}
       - name: Init testing framework if necessary
         run: npm run int-test-init:ci --if-present
-      - uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/tool-installers/setup-wiremock@4f801a4e83e834fddfe52ef0c385b276023d2b10 # v1
+      - uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/tool-installers/setup-wiremock@7277152a31c152f8d65ccdea0df7cceca7ab3856 # v1
       - name: Prepare and run integration tests
         id: integration-tests
         shell: bash
