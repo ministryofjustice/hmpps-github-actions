@@ -1,6 +1,9 @@
 name: Run gradle checks
 on:
   workflow_call:
+    secrets:
+      GRADLE_CACHE_ENCRYPTION_KEY:
+        required: false
     inputs:
       java-version:
         type: string
@@ -116,7 +119,9 @@ jobs:
           distribution: 'temurin'
           java-version: '${{ inputs.java-version }}'
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@0723195856401067f7a2779048b490ace7a47d7c # v5
+        uses: gradle/actions/setup-gradle@50e97c2cd7a37755bbfafc9c5b7cafaece252f6e # v6.1.0
+        with:
+          cache-encryption-key: ${{ secrets.GRADLE_CACHE_ENCRYPTION_KEY }}
       - name: Run checks with gradle
         shell: bash
         run: |
@@ -141,7 +146,7 @@ jobs:
           retention-days: 1
       - name: publish test report
         if: ${{ inputs.upload-test-artifacts && !cancelled() && github.event.repository.visibility == 'public' }}
-        uses: dorny/test-reporter@df6247429542221bc30d46a036ee47af1102c451 # v2
+        uses: dorny/test-reporter@a43b3a5f7366b97d083190328d2c652e1a8b6aa2 # v3.0.0
         with:
           artifact: ${{ inputs.artifact-name }}
           name: Test Report
