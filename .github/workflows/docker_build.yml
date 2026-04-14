@@ -220,7 +220,7 @@ jobs:
     env:
       IMAGE_REF: ${{ inputs.docker_registry }}/${{ inputs.registry_org }}/${{ inputs.image_name || github.event.repository.name }}:${{ needs.create_version.outputs.version }}
     permissions:
-      contents: write
+      contents: read
       packages: write
     steps:
       - name: Generate SBOM for pushed image
@@ -262,7 +262,7 @@ jobs:
     env:
       IMAGE_REF: ${{ inputs.docker_registry }}/${{ inputs.registry_org }}/${{ inputs.image_name || github.event.repository.name }}:${{ needs.create_version.outputs.version }}
     permissions:
-      contents: write
+      contents: read
       packages: write
     steps:
       - name: Generate SBOM for pushed image
