@@ -251,6 +251,7 @@ jobs:
         run: |
           oras attach \
             --artifact-type application/spdx+json \
+            --disable-path-validation \
             "${{ env.IMAGE_REF }}" \
             "${{ runner.temp }}/sbom.spdx.json:application/spdx+json"
 
@@ -293,5 +294,6 @@ jobs:
         run: |
           oras attach \
             --artifact-type application/spdx+json \
+            --disable-path-validation \
             "${{ env.IMAGE_REF }}" \
             "${{ runner.temp }}/sbom.spdx.json:application/spdx+json"
