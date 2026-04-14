@@ -61,6 +61,16 @@ on:
         required: false
         type: boolean
         default: false
+      generate_sbom:
+        description: Generate an SBOM for the final pushed image and upload it as a workflow artifact
+        required: false
+        type: boolean
+        default: false
+      attach_sbom_to_registry:
+        description: Attach the generated SBOM to the pushed image in the container registry (OCI referrer)
+        required: false
+        type: boolean
+        default: false
     secrets:
       HMPPS_QUAYIO_USER:
         required: false
@@ -201,3 +211,87 @@ jobs:
       tag_latest: ${{ inputs.tag_latest }}
       additional_docker_tag: ${{ inputs.additional_docker_tag }}
       docker_multiplatform: true
+
+  generate_sbom_single_platform:
+    name: Generate SBOM (single-platform image)
+    if: ${{ inputs.generate_sbom && !inputs.docker_multiplatform && inputs.push && inputs.docker_registry == 'ghcr.io' }}
+    needs: [create_version, docker_build]
+    runs-on: ubuntu-latest
+    env:
+      IMAGE_REF: ${{ inputs.docker_registry }}/${{ inputs.registry_org }}/${{ inputs.image_name || github.event.repository.name }}:${{ needs.create_version.outputs.version }}
+    permissions:
+      contents: write
+      packages: write
+    steps:
+      - name: Generate SBOM for pushed image
+        uses: anchore/sbom-action@f0d33c14eb8d853f6f8cc9bc4349d205b70d34f9 # v0.24.0
+        with:
+          image: ${{ env.IMAGE_REF }}
+          registry-username: ${{ github.actor }}
+          registry-password: ${{ github.token }}
+          artifact-name: sbom-${{ inputs.image_name || github.event.repository.name }}-${{ needs.create_version.outputs.version }}.spdx.json
+          output-file: ${{ runner.temp }}/sbom.spdx.json
+          format: spdx-json
+          upload-artifact: true
+          upload-release-assets: false
+
+      - name: Setup ORAS
+        if: ${{ inputs.attach_sbom_to_registry }}
+        uses: oras-project/setup-oras@38de303aac69abb66f3e6255b7198bff35f323e3 # v2
+
+      - name: Login to container registry
+        if: ${{ inputs.attach_sbom_to_registry }}
+        shell: bash
+        run: |
+          echo "${{ github.token }}" | oras login "${{ inputs.docker_registry }}" -u "${{ github.actor }}" --password-stdin
+
+      - name: Attach SBOM to image in registry
+        if: ${{ inputs.attach_sbom_to_registry }}
+        shell: bash
+        run: |
+          oras attach \
+            --artifact-type application/spdx+json \
+            "${{ env.IMAGE_REF }}" \
+            "${{ runner.temp }}/sbom.spdx.json:application/spdx+json"
+
+  generate_sbom_multi_platform:
+    name: Generate SBOM (multi-platform image)
+    if: ${{ inputs.generate_sbom && inputs.docker_multiplatform && inputs.push && inputs.docker_registry == 'ghcr.io' }}
+    needs: [create_version, docker_build_merge]
+    runs-on: ubuntu-latest
+    env:
+      IMAGE_REF: ${{ inputs.docker_registry }}/${{ inputs.registry_org }}/${{ inputs.image_name || github.event.repository.name }}:${{ needs.create_version.outputs.version }}
+    permissions:
+      contents: write
+      packages: write
+    steps:
+      - name: Generate SBOM for pushed image
+        uses: anchore/sbom-action@f0d33c14eb8d853f6f8cc9bc4349d205b70d34f9 # v0.24.0
+        with:
+          image: ${{ env.IMAGE_REF }}
+          registry-username: ${{ github.actor }}
+          registry-password: ${{ github.token }}
+          artifact-name: sbom-${{ inputs.image_name || github.event.repository.name }}-${{ needs.create_version.outputs.version }}.spdx.json
+          output-file: ${{ runner.temp }}/sbom.spdx.json
+          format: spdx-json
+          upload-artifact: true
+          upload-release-assets: false
+
+      - name: Setup ORAS
+        if: ${{ inputs.attach_sbom_to_registry }}
+        uses: oras-project/setup-oras@38de303aac69abb66f3e6255b7198bff35f323e3 # v2
+
+      - name: Login to container registry
+        if: ${{ inputs.attach_sbom_to_registry }}
+        shell: bash
+        run: |
+          echo "${{ github.token }}" | oras login "${{ inputs.docker_registry }}" -u "${{ github.actor }}" --password-stdin
+
+      - name: Attach SBOM to image in registry
+        if: ${{ inputs.attach_sbom_to_registry }}
+        shell: bash
+        run: |
+          oras attach \
+            --artifact-type application/spdx+json \
+            "${{ env.IMAGE_REF }}" \
+            "${{ runner.temp }}/sbom.spdx.json:application/spdx+json"
