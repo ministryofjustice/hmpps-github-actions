@@ -287,6 +287,14 @@ jobs:
           echo "subject_name=$SUBJECT_NAME" >> "$GITHUB_OUTPUT"
           echo "subject_digest=$SUBJECT_DIGEST" >> "$GITHUB_OUTPUT"
 
+      - name: Login to ghcr.io for attestation
+        if: ${{ inputs.attach_sbom_to_registry }}
+        uses: docker/login-action@b45d80f862d83dbcd57f89517bcf500b2ab88fb2 # v4
+        with:
+          registry: ${{ inputs.docker_registry }}
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+
       - name: Create SBOM attestation
         if: ${{ inputs.attach_sbom_to_registry }}
         uses: actions/attest@59d89421af93a897026c735860bf21b6eb4f7b26 # v4
@@ -344,6 +352,14 @@ jobs:
           fi
           echo "subject_name=$SUBJECT_NAME" >> "$GITHUB_OUTPUT"
           echo "subject_digest=$SUBJECT_DIGEST" >> "$GITHUB_OUTPUT"
+
+      - name: Login to ghcr.io for attestation
+        if: ${{ inputs.attach_sbom_to_registry }}
+        uses: docker/login-action@b45d80f862d83dbcd57f89517bcf500b2ab88fb2 # v4
+        with:
+          registry: ${{ inputs.docker_registry }}
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
 
       - name: Create SBOM attestation
         if: ${{ inputs.attach_sbom_to_registry }}
