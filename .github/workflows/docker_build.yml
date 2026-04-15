@@ -250,6 +250,7 @@ jobs:
       packages: write
       id-token: write
       attestations: write
+      artifact-metadata: write
     steps:
       - name: Generate SBOM for pushed image
         uses: anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610 # v0.24.0
@@ -303,7 +304,7 @@ jobs:
           subject-version: ${{ needs.create_version.outputs.version }}
           sbom-path: sbom.spdx.json
           push-to-registry: true
-          create-storage-record: false
+          create-storage-record: true
 
   generate_sbom_multi_platform:
     name: Generate SBOM (multi-platform image)
@@ -317,6 +318,7 @@ jobs:
       packages: write
       id-token: write
       attestations: write
+      artifact-metadata: write
     steps:
       - name: Generate SBOM for pushed image
         uses: anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610 # v0.24.0
@@ -370,4 +372,4 @@ jobs:
           subject-version: ${{ needs.create_version.outputs.version }}
           sbom-path: sbom.spdx.json
           push-to-registry: true
-          create-storage-record: false
+          create-storage-record: true
