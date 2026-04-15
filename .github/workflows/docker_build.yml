@@ -250,7 +250,6 @@ jobs:
       packages: write
       id-token: write
       attestations: write
-      artifact-metadata: write
     steps:
       - name: Generate SBOM for pushed image
         uses: anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610 # v0.24.0
@@ -258,9 +257,9 @@ jobs:
           image: ${{ env.IMAGE_REF }}
           registry-username: ${{ github.actor }}
           registry-password: ${{ github.token }}
-          artifact-name: sbom-${{ inputs.image_name || github.event.repository.name }}-${{ needs.create_version.outputs.version }}.spdx.json
-          output-file: sbom.spdx.json
-          format: spdx-json
+          artifact-name: sbom-${{ inputs.image_name || github.event.repository.name }}-${{ needs.create_version.outputs.version }}.cdx.json
+          output-file: sbom.cdx.json
+          format: cyclonedx-json
           upload-artifact: true
           upload-release-assets: false
 
@@ -301,10 +300,9 @@ jobs:
         with:
           subject-name: ${{ steps.prepare_attestation_subject.outputs.subject_name }}
           subject-digest: ${{ steps.prepare_attestation_subject.outputs.subject_digest }}
-          subject-version: ${{ needs.create_version.outputs.version }}
-          sbom-path: sbom.spdx.json
+          sbom-path: sbom.cdx.json
           push-to-registry: true
-          create-storage-record: true
+          create-storage-record: false
 
   generate_sbom_multi_platform:
     name: Generate SBOM (multi-platform image)
@@ -318,7 +316,6 @@ jobs:
       packages: write
       id-token: write
       attestations: write
-      artifact-metadata: write
     steps:
       - name: Generate SBOM for pushed image
         uses: anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610 # v0.24.0
@@ -326,9 +323,9 @@ jobs:
           image: ${{ env.IMAGE_REF }}
           registry-username: ${{ github.actor }}
           registry-password: ${{ github.token }}
-          artifact-name: sbom-${{ inputs.image_name || github.event.repository.name }}-${{ needs.create_version.outputs.version }}.spdx.json
-          output-file: sbom.spdx.json
-          format: spdx-json
+          artifact-name: sbom-${{ inputs.image_name || github.event.repository.name }}-${{ needs.create_version.outputs.version }}.cdx.json
+          output-file: sbom.cdx.json
+          format: cyclonedx-json
           upload-artifact: true
           upload-release-assets: false
 
@@ -369,7 +366,6 @@ jobs:
         with:
           subject-name: ${{ steps.prepare_attestation_subject.outputs.subject_name }}
           subject-digest: ${{ steps.prepare_attestation_subject.outputs.subject_digest }}
-          subject-version: ${{ needs.create_version.outputs.version }}
-          sbom-path: sbom.spdx.json
+          sbom-path: sbom.cdx.json
           push-to-registry: true
-          create-storage-record: true
+          create-storage-record: false
