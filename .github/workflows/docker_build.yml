@@ -300,6 +300,7 @@ jobs:
         with:
           subject-name: ${{ steps.prepare_attestation_subject.outputs.subject_name }}
           subject-digest: ${{ steps.prepare_attestation_subject.outputs.subject_digest }}
+          subject-version: ${{ needs.create_version.outputs.version }}
           sbom-path: sbom.spdx.json
           push-to-registry: true
           create-storage-record: false
@@ -366,6 +367,7 @@ jobs:
         with:
           subject-name: ${{ steps.prepare_attestation_subject.outputs.subject_name }}
           subject-digest: ${{ steps.prepare_attestation_subject.outputs.subject_digest }}
+          subject-version: ${{ needs.create_version.outputs.version }}
           sbom-path: sbom.spdx.json
           push-to-registry: true
           create-storage-record: false
