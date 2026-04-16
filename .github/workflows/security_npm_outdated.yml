@@ -24,6 +24,11 @@ on:
       version:
         required: true
         type: string
+      enable_slsa_action:
+        description: Enable dev-sec-ops SLSA action
+        required: false
+        type: boolean
+        default: false   
     secrets:
       HMPPS_SRE_SLACK_BOT_TOKEN:
         description: Slack bot token
@@ -54,6 +59,9 @@ jobs:
       - id: node-version
         name: Show node version
         run: "node -v"
+      - name: SLSA
+        if: ${{ inputs.enable_slsa_action ==  'true' }}
+        uses: ministryofjustice/devsecops-actions/sca/slsa@4cd163be7859cd130800d6719d925318826038ea #v1
       - id: npm-ci
         name: run npm ci
         run: "${{ inputs.install_command }}"
