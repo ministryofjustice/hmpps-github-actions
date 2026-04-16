@@ -76,7 +76,7 @@ runs:
       with:
         fetch-depth: 0
     - name: Authenticate
-      uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/cloud-platform-auth@7277152a31c152f8d65ccdea0df7cceca7ab3856 # v1
+      uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/cloud-platform-auth@fddc5f11d6a8ce9b82a06fe76268835bfd99bcd4 # v1
       with:
         api: ${{ inputs.api }}
         cert: ${{ inputs.cert }}
@@ -85,7 +85,7 @@ runs:
         token: ${{ inputs.token }}
 
     - name: get version history
-      uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/version_history@7277152a31c152f8d65ccdea0df7cceca7ab3856 # v1 # WORKFLOW VERSION
+      uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/version_history@fddc5f11d6a8ce9b82a06fe76268835bfd99bcd4 # v1
       if: ${{ inputs.show_changelog }}
       id: version_history
       with:
