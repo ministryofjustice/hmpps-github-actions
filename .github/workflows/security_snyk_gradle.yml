@@ -1,0 +1,37 @@
+name: Security Snyk vulnerability check (Gradle)
+
+on:
+  workflow_call:
+    inputs:
+      channel_id:
+        description: 'The slack channel ID to send a message on failure. If this is not provided then no message is sent.'
+        required: false
+        default: 'NO_SLACK'
+        type: string
+      subproject:
+        description: 'For gradle multi module projects, leave blank for single module projects'
+        required: false
+        default: ''
+        type: string
+    secrets:
+      HMPPS_SRE_SLACK_BOT_TOKEN:
+        description: 'Slack bot token'
+        required: false
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  snyk_node:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: Run Snyk to check for vulnerabilities
+        uses: snyk/actions/gradle@9adf32b1121593767fc3c057af55b55db032dc04 # v1.0.0
+        continue-on-error: true
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          command: monitor
+          json: true
