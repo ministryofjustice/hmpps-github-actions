@@ -17,7 +17,10 @@ on:
       HMPPS_SRE_SLACK_BOT_TOKEN:
         description: 'Slack bot token'
         required: false
-
+      SNYK_TOKEN:
+        description: 'Snyk API token'
+        required: true
+        
 permissions:
   contents: read
   security-events: write
