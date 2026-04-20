@@ -101,7 +101,7 @@ runs:
 
     - name: Login to Amazon ECR
       if: ${{ inputs.docker_registry == 'ecr' }}
-      uses: aws-actions/amazon-ecr-login@183a1442edf41672e66566b7fc560e297a290896 # v2
+      uses: aws-actions/amazon-ecr-login@376925c9d111252e87ae59691e5a442dd100ef6a # v2
 
     - name: Set Docker Tags
       id: set_tags
