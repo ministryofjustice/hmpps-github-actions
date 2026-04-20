@@ -112,16 +112,6 @@ runs:
           echo "ALLOWLIST_VERSION=--set generic-service.allowlist_version=${{ inputs.helm_allowlist_version }}" >> $GITHUB_OUTPUT
         fi
 
-    - name: Get latest Helm v4 version
-      shell: bash
-      id: helm-version
-      env:
-        GH_TOKEN: ${{ inputs.github_token }}
-      run: |
-        LATEST_V4=$(gh api repos/helm/helm/releases --jq '[.[] | select(.tag_name | startswith("v4.")) | select(.prerelease == false) | .tag_name] | first')
-        echo "version=${LATEST_V4}" >> $GITHUB_OUTPUT
-        echo "Latest Helm v4 version: ${LATEST_V4}"
-
     - uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/tool-installers/setup-helm@fddc5f11d6a8ce9b82a06fe76268835bfd99bcd4 # v1
 
     - name: Deploy
