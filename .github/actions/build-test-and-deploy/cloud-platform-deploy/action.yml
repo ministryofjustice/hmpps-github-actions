@@ -122,9 +122,7 @@ runs:
         echo "version=${LATEST_V4}" >> $GITHUB_OUTPUT
         echo "Latest Helm v4 version: ${LATEST_V4}"
 
-    - uses: azure/setup-helm@1a275c3b69536ee54be43f2070a358922e12c8d4 # v4
-      with:
-        version: ${{ steps.helm-version.outputs.version }}
+    - uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/tool-installers/setup-helm@fddc5f11d6a8ce9b82a06fe76268835bfd99bcd4 # v1
 
     - name: Deploy
       shell: bash
