@@ -112,8 +112,6 @@ runs:
           echo "ALLOWLIST_VERSION=--set generic-service.allowlist_version=${{ inputs.helm_allowlist_version }}" >> $GITHUB_OUTPUT
         fi
 
-    - uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/tool-installers/setup-helm@fddc5f11d6a8ce9b82a06fe76268835bfd99bcd4 # v1
-
     - name: Deploy
       shell: bash
       run: |
