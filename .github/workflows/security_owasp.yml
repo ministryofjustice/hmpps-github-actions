@@ -77,6 +77,11 @@ jobs:
       with:
         name: gradle-owasp-dependency-check-${{ inputs.subproject == '' && github.event.repository.name || inputs.subproject }}
         path: ${{ inputs.subproject == '' && '.' || inputs.subproject }}/build/reports/dependency-check-report.html
+    - uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+      id: owasp-upload-artifact-sarif
+      with:
+        name: gradle-owasp-dependency-check-${{ inputs.subproject == '' && github.event.repository.name || inputs.subproject }}.json
+        path: ${{ inputs.subproject == '' && '.' || inputs.subproject }}/build/reports/dependency-check-report.sarif
     - name: Prepare OWASP summary
       id: owasp-summary
       run: |
