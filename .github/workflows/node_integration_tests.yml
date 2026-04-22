@@ -27,6 +27,11 @@ on:
         required: false
         type: number
         default: 9091
+      working_directory:
+        description: "Working directory for the npm project, relative to the repo root"
+        required: false
+        type: string
+        default: "."
 
 permissions:
   contents: read
@@ -35,6 +40,9 @@ jobs:
   integration_test:
     name: ${{ inputs.npm_script == 'int-test' && 'Run the integration tests' || format('Run the integration tests – {0}', inputs.npm_script) }}
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ inputs.working_directory }}
     services:
       redis:
         image: ${{ inputs.redis_tag && format('redis:{0}', inputs.redis_tag) || '' }}
@@ -50,11 +58,12 @@ jobs:
       - name: Use Node.js ${{ inputs.node_version_file }}
         uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
         with:
-          node-version-file: ${{ inputs.node_version_file }}
+          node-version-file: ${{ inputs.working_directory }}/${{ inputs.node_version_file }}
       - name: download artifacts
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
         with:
           name: npm_build_artifacts
+          path: ${{ inputs.working_directory }}
       - name: restore cache
         id: restore-cache
         uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
@@ -62,9 +71,9 @@ jobs:
           cache-name: node-modules
         with:
           path: |
-            ./node_modules
+            ${{ inputs.working_directory }}/node_modules
             ~/.cache/Cypress
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json', '!**/node_modules/**') }}
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles(format('{0}/package-lock.json', inputs.working_directory)) }}
       - name: Init testing framework if necessary
         run: npm run int-test-init:ci --if-present
       - uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/tool-installers/setup-wiremock@fddc5f11d6a8ce9b82a06fe76268835bfd99bcd4 # v1
@@ -82,11 +91,11 @@ jobs:
         with:
           name: ${{ inputs.test_results_artifact_name }}
           path: |
-            integration_tests/videos/
-            integration_tests/screenshots/
-            coverage/
-            test_results/
-            ctrf/
+            ${{ inputs.working_directory }}/integration_tests/videos/
+            ${{ inputs.working_directory }}/integration_tests/screenshots/
+            ${{ inputs.working_directory }}/coverage/
+            ${{ inputs.working_directory }}/test_results/
+            ${{ inputs.working_directory }}/ctrf/
       - name: publish test report
         if: ${{ !cancelled() && github.event.repository.visibility == 'public' }}
         uses: dorny/test-reporter@df6247429542221bc30d46a036ee47af1102c451 # v2

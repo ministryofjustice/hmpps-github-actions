@@ -24,6 +24,11 @@ on:
       version:
         required: true
         type: string
+      working_directory:
+        description: "Working directory for the npm project, relative to the repo root"
+        required: false
+        type: string
+        default: "."
     secrets:
       HMPPS_SRE_SLACK_BOT_TOKEN:
         description: Slack bot token
@@ -37,6 +42,9 @@ jobs:
   security-npm-check:
     name: Security npm outdated check
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ inputs.working_directory }}
     permissions:
       security-events: write
       contents: read
@@ -47,7 +55,7 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
         with:
-          node-version-file: ${{ inputs.node_version_file }}
+          node-version-file: ${{ inputs.working_directory }}/${{ inputs.node_version_file }}
       - id: npm-version
         name: Show npm version
         run: "npm -v"

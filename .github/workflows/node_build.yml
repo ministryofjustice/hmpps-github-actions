@@ -13,20 +13,28 @@ on:
         required: false
         type: string
         default: "npm ci --no-audit"
+      working_directory:
+        description: "Working directory for the npm project, relative to the repo root"
+        required: false
+        type: string
+        default: "."
 
 permissions:
   contents: read
 
 jobs:
   node-build:
-    name: Run the node build 
+    name: Run the node build
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ inputs.working_directory }}
     steps:
     - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
     - name: Use Node.js ${{ inputs.node_version_file }}
       uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
       with:
-        node-version-file: ${{ inputs.node_version_file }}
+        node-version-file: ${{ inputs.working_directory }}/${{ inputs.node_version_file }}
     - name: update npm
       shell: bash
       run: |
@@ -34,13 +42,13 @@ jobs:
     - name: restore cache
       id: restore-cache
       uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
-      env: 
+      env:
         cache-name: node-modules
       with:
         path: |
-          ./node_modules
+          ${{ inputs.working_directory }}/node_modules
           ~/.cache/Cypress
-        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json', '!**/node_modules/**') }}
+        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles(format('{0}/package-lock.json', inputs.working_directory)) }}
     - name: install dependencies
       if: steps.restore-cache.outputs.cache-hit != 'true'
       shell: bash
@@ -58,16 +66,16 @@ jobs:
       with: 
         name: npm_build_artifacts
         path: |
-          build/
-          dist/
-          assets/stylesheets/
+          ${{ inputs.working_directory }}/build/
+          ${{ inputs.working_directory }}/dist/
+          ${{ inputs.working_directory }}/assets/stylesheets/
     - name: save cache
       id: save-cache
       uses: actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
-      env: 
+      env:
         cache-name: node-modules
       with:
         path: |
-          ./node_modules
+          ${{ inputs.working_directory }}/node_modules
           ~/.cache/Cypress
-        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json', '!**/node_modules/**') }}
+        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles(format('{0}/package-lock.json', inputs.working_directory)) }}
