@@ -86,7 +86,7 @@ jobs:
       id: owasp-summary
       run: |
         formatted_output=$(jq -r '.runs[0].tool.driver.rules[] | [.id, .shortDescription.text, .properties.cvssv2_score, .properties.cvssv2_severity] | @tsv' ${{ inputs.subproject == '' && '.' || inputs.subproject }}/build/reports/dependency-check-report.sarif \
-        | awk -F'\t' '{print $1" - "$NF" ("$(NF-1)") - "substr($2,index($2,":")+1)}' \
+        | awk -F'\t' '{print substr($1,1,50)" - "$NF" ("$(NF-1)") - "substr(substr($2,index($2,":")+1),50)}' \
         | awk '{printf "%s\\n", $0}') 
         echo "Vulnerability Summary"
         echo "====================="
