@@ -63,6 +63,11 @@ jobs:
       id: owasp-analyse
       run: ./gradlew ${{ inputs.subproject }}:dependencyCheckAnalyze -Pdatafeed.url='file:///opt/vulnz/cache' -PossIndex.username=${{ secrets.HMPPS_OSS_INDEX_USERNAME }} -PossIndex.password=${{ secrets.HMPPS_OSS_INDEX_PASSWORD }}
       continue-on-error: true
+    # Extra sanitisation of SARIF files:
+    # - remove newlines from rules ID and reduce them to less than 15 characters
+    # - reduce newlines from shortDescription and reduce them to less than 100 characters
+    # - amalgamate CVSSv3 and CVSSv2 severities and scores to improve coverage
+    # - remove newlines from results RuleID and reduce them to less than 15 characters
     - name: Sanitise sarif
       id: sanitise-sarif
       run: |
@@ -174,6 +179,11 @@ jobs:
       id: owasp-analyse
       run: ./gradlew ${{ inputs.subproject }}:dependencyCheckAnalyze --info
       continue-on-error: true
+    # Extra sanitisation of SARIF files:
+    # - remove newlines from rules ID and reduce them to less than 15 characters
+    # - reduce newlines from shortDescription and reduce them to less than 100 characters
+    # - amalgamate CVSSv3 and CVSSv2 severities and scores to improve coverage
+    # - remove newlines from results RuleID and reduce them to less than 15 characters
     - name: Sanitise sarif
       id: sanitise-sarif
       run: |
