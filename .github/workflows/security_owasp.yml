@@ -72,12 +72,19 @@ jobs:
               .tool.driver.rules |= map(
                 (if (.id | type) == "string" then .id = .id[0:15] else . end)
                 | (if (.shortDescription.text | type) == "string" and (.shortDescription.text | length) > 100 then .shortDescription.text = (.shortDescription.text[0:96] + "...") else . end)
-                | .properties.cvss_score = (.properties.cvssv3_score // .properties.cvssv2_score)
-                | .properties.cvss_severity = (.properties.cvssv3_severity // .properties.cvssv2_severity)
+                | .properties.cvss_score = (.properties.cvssv3_baseScore // .properties.cvssv3_score // .properties.cvssv2_score // .properties."security-severity")
+                | .properties.cvss_severity = (.properties.cvssv3_baseSeverity // .properties.cvssv3_severity // .properties.cvssv2_severity)
               )
             else
               .
             end
+            | if (.results | type) == "array" then
+                .results |= map(
+                  if (.ruleId | type) == "string" then .ruleId = .ruleId[0:15] else . end
+                )
+              else
+                .
+              end
           )
         ' "$SARIF_FILE" > "$SARIF_MOD_FILE"
       env:
@@ -158,12 +165,19 @@ jobs:
               .tool.driver.rules |= map(
                 (if (.id | type) == "string" then .id = .id[0:15] else . end)
                 | (if (.shortDescription.text | type) == "string" and (.shortDescription.text | length) > 100 then .shortDescription.text = (.shortDescription.text[0:96] + "...") else . end)
-                | .properties.cvss_score = (.properties.cvssv3_baseScore // .properties.cvssv2_score)
-                | .properties.cvss_severity = (.properties.cvssv3_baseSeverity // .properties.cvssv2_severity)
+                | .properties.cvss_score = (.properties.cvssv3_baseScore // .properties.cvssv3_score // .properties.cvssv2_score // .properties."security-severity")
+                | .properties.cvss_severity = (.properties.cvssv3_baseSeverity // .properties.cvssv3_severity // .properties.cvssv2_severity)
               )
             else
               .
             end
+            | if (.results | type) == "array" then
+                .results |= map(
+                  if (.ruleId | type) == "string" then .ruleId = .ruleId[0:15] else . end
+                )
+              else
+                .
+              end
           )
         ' "$SARIF_FILE" > "$SARIF_MOD_FILE"
       env:
