@@ -63,12 +63,33 @@ jobs:
       id: owasp-analyse
       run: ./gradlew ${{ inputs.subproject }}:dependencyCheckAnalyze -Pdatafeed.url='file:///opt/vulnz/cache' -PossIndex.username=${{ secrets.HMPPS_OSS_INDEX_USERNAME }} -PossIndex.password=${{ secrets.HMPPS_OSS_INDEX_PASSWORD }}
       continue-on-error: true
+    - name: Sanitise sarif
+      id: sanitise-sarif
+      run: |
+        jq '
+          .runs |= map(
+            if (.tool.driver.rules | type) == "array" then
+              .tool.driver.rules |= map(
+                (if (.id | type) == "string" then .id = .id[0:15] else . end)
+                | (if (.shortDescription.text | type) == "string" then .shortDescription.text = (.shortDescription.text[0:96] + "...") else . end)
+                | .properties.cvssv_score = (.properties.cvssv3_score // .properties.cvssv2_score)
+                | .properties.cvssv_severity = (.properties.cvssv3_severity // .properties.cvssv2_severity)
+              )
+            else
+              .
+            end
+          )
+        ' "$SARIF_FILE" > "$SARIF_MOD_FILE"
+      env:
+        SARIF_FILE: ${{ inputs.subproject == '' && '.' || inputs.subproject }}/build/reports/dependency-check-report.sarif
+        SARIF_MOD_FILE: ${{ inputs.subproject == '' && '.' || inputs.subproject }}/build/reports/dependency-check-report-mod.sarif
+      
     # Upload Sarif file: this will attempt to upload the sarif file for private/internal repositories as well
     - name: OWASP upload sarif
       id: owasp-upload-sarif
       uses: github/codeql-action/upload-sarif@38697555549f1db7851b81482ff19f1fa5c4fedc # v4
       with:
-        sarif_file: ${{ inputs.subproject == '' && '.' || inputs.subproject }}/build/reports/dependency-check-report.sarif
+        sarif_file: ${{ inputs.subproject == '' && '.' || inputs.subproject }}/build/reports/dependency-check-report-mod.sarif
         category: gradle-owasp-dependency-check
       # don't stop the job even if Github Advanced Security isn't enabled
       continue-on-error: true
@@ -81,12 +102,12 @@ jobs:
       id: owasp-upload-artifact-sarif
       with:
         name: gradle-owasp-dependency-check-${{ inputs.subproject == '' && github.event.repository.name || inputs.subproject }}.json
-        path: ${{ inputs.subproject == '' && '.' || inputs.subproject }}/build/reports/dependency-check-report.sarif
+        path: ${{ inputs.subproject == '' && '.' || inputs.subproject }}/build/reports/dependency-check-report-mod.sarif
     - name: Prepare OWASP summary
       id: owasp-summary
       run: |
-        formatted_output=$(jq -r '.runs[0].tool.driver.rules[] | [.id, .shortDescription.text, .properties.cvssv2_score, .properties.cvssv2_severity] | @tsv' ${{ inputs.subproject == '' && '.' || inputs.subproject }}/build/reports/dependency-check-report.sarif \
-        | awk -F'\t' '{print substr($1,1,10)" - "$NF" ("$(NF-1)") - "substr(substr($2,index($2,":")+1),1,10)}' \
+        formatted_output=$(jq -r '.runs[0].tool.driver.rules[] | [.id, .shortDescription.text, .properties.cvssv_score, .properties.cvssv_severity] | @tsv' ${{ inputs.subproject == '' && '.' || inputs.subproject }}/build/reports/dependency-check-report-mod.sarif \
+        | awk -F'\t' '{print $1" - "$NF" ("$(NF-1)") - "substr($2,index($2,":")+1)}' \
         | awk '{printf "%s\\n", $0}') 
         echo "Vulnerability Summary"
         echo "====================="
@@ -123,12 +144,32 @@ jobs:
       id: owasp-analyse
       run: ./gradlew ${{ inputs.subproject }}:dependencyCheckAnalyze --info
       continue-on-error: true
+    - name: Sanitise sarif
+      id: sanitise-sarif
+      run: |
+        jq '
+          .runs |= map(
+            if (.tool.driver.rules | type) == "array" then
+              .tool.driver.rules |= map(
+                (if (.id | type) == "string" then .id = .id[0:15] else . end)
+                | (if (.shortDescription.text | type) == "string" then .shortDescription.text = (.shortDescription.text[0:96] + "...") else . end)
+                | .properties.cvssv_score = (.properties.cvssv3_score // .properties.cvssv2_score)
+                | .properties.cvssv_severity = (.properties.cvssv3_severity // .properties.cvssv2_severity)
+              )
+            else
+              .
+            end
+          )
+        ' "$SARIF_FILE" > "$SARIF_MOD_FILE"
+      env:
+        SARIF_FILE: ${{ inputs.subproject == '' && '.' || inputs.subproject }}/build/reports/dependency-check-report.sarif
+        SARIF_MOD_FILE: ${{ inputs.subproject == '' && '.' || inputs.subproject }}/build/reports/dependency-check-report-mod.sarif
     # Upload Sarif file: this will attempt to upload the sarif file for private/internal repositories as well
     - name: OWASP upload sarif
       id: owasp-upload-sarif
       uses: github/codeql-action/upload-sarif@38697555549f1db7851b81482ff19f1fa5c4fedc # v4
       with:
-        sarif_file: ${{ inputs.subproject == '' && '.' || inputs.subproject }}/build/reports/dependency-check-report.sarif
+        sarif_file: ${{ inputs.subproject == '' && '.' || inputs.subproject }}/build/reports/dependency-check-report-mod.sarif
         category: gradle-owasp-dependency-check
       # don't stop the job even if Github Advanced Security isn't enabled
       continue-on-error: true
@@ -137,10 +178,15 @@ jobs:
       with:
         name: gradle-owasp-dependency-check-${{ inputs.subproject == '' && github.event.repository.name || inputs.subproject }}
         path: ${{ inputs.subproject == '' && '.' || inputs.subproject }}/build/reports/dependency-check-report.html
+    - uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+      id: owasp-upload-artifact-sarif
+      with:
+        name: gradle-owasp-dependency-check-${{ inputs.subproject == '' && github.event.repository.name || inputs.subproject }}.json
+        path: ${{ inputs.subproject == '' && '.' || inputs.subproject }}/build/reports/dependency-check-report-mod.sarif
     - name: Prepare OWASP summary
       id: owasp-summary
       run: |
-        formatted_output=$(jq -r '.runs[0].tool.driver.rules[] | [.id, .shortDescription.text, .properties.cvssv2_score, .properties.cvssv2_severity] | @tsv' ${{ inputs.subproject == '' && '.' || inputs.subproject }}/build/reports/dependency-check-report.sarif \
+        formatted_output=$(jq -r '.runs[0].tool.driver.rules[] | [.id, .shortDescription.text, .properties.cvssv_score, .properties.cvssv_severity] | @tsv' ${{ inputs.subproject == '' && '.' || inputs.subproject }}/build/reports/dependency-check-report-mod.sarif \
         | awk -F'\t' '{print $1" - "$NF" ("$(NF-1)") - "substr($2,index($2,":")+1)}' \
         | awk '{printf "%s\\n", $0}') 
         echo "Vulnerability Summary"
@@ -158,3 +204,4 @@ jobs:
         SLACK_BOT_TOKEN: ${{ secrets.HMPPS_SRE_SLACK_BOT_TOKEN }}
         subproject: ${{ inputs.subproject }}
         summary: ${{ inputs.slack_include_summary && env.summary || '' }}
+
