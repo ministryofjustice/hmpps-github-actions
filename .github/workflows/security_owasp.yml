@@ -71,9 +71,9 @@ jobs:
             if (.tool.driver.rules | type) == "array" then
               .tool.driver.rules |= map(
                 (if (.id | type) == "string" then .id = .id[0:15] else . end)
-                | (if (.shortDescription.text | type) == "string" then .shortDescription.text = (.shortDescription.text[0:96] + "...") else . end)
-                | .properties.cvssv_score = (.properties.cvssv3_score // .properties.cvssv2_score)
-                | .properties.cvssv_severity = (.properties.cvssv3_severity // .properties.cvssv2_severity)
+                | (if (.shortDescription.text | type) == "string" and (.shortDescription.text | length) > 100 then .shortDescription.text = (.shortDescription.text[0:96] + "...") else . end)
+                | .properties.cvss_score = (.properties.cvssv3_score // .properties.cvssv2_score)
+                | .properties.cvss_severity = (.properties.cvssv3_severity // .properties.cvssv2_severity)
               )
             else
               .
@@ -106,14 +106,14 @@ jobs:
     - name: Prepare OWASP summary
       id: owasp-summary
       run: |
-        formatted_output=$(jq -r '.runs[0].tool.driver.rules[] | [.id, .shortDescription.text, .properties.cvssv_score, .properties.cvssv_severity] | @tsv' ${{ inputs.subproject == '' && '.' || inputs.subproject }}/build/reports/dependency-check-report-mod.sarif \
+        formatted_output=$(jq -r '.runs[0].tool.driver.rules[] | [.id, .shortDescription.text, .properties.cvss_score, .properties.cvss_severity] | @tsv' ${{ inputs.subproject == '' && '.' || inputs.subproject }}/build/reports/dependency-check-report-mod.sarif \
         | awk -F'\t' '{print $1" - "$NF" ("$(NF-1)") - "substr($2,index($2,":")+1)}' \
         | awk '{printf "%s\\n", $0}') 
         echo "Vulnerability Summary"
         echo "====================="
         echo "${formatted_output}" | sed 's/\\n/\n/g'
         slack_summary="$(echo "${formatted_output}" | awk '{s=s $0} END {if (length(s) >= 3000) print substr(s, 1, 2997) "..."; else print s}')"
-        echo "summary=${slack_summary}" >> $GITHUB_ENV
+        echo "summary=${slack_summary}" >> $GITHUB_OUTPUT
     - name: Gradle OWASP slack notification
       uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/slack_codescan_notification@fddc5f11d6a8ce9b82a06fe76268835bfd99bcd4 # v1
       if: (failure() || steps.owasp-analyse.outcome == 'failure') && inputs.channel_id != 'NO_SLACK'
@@ -123,7 +123,7 @@ jobs:
         channel_id: ${{ inputs.channel_id}}
         SLACK_BOT_TOKEN: ${{ secrets.HMPPS_SRE_SLACK_BOT_TOKEN }}
         subproject: ${{ inputs.subproject }}
-        summary: ${{ inputs.slack_include_summary && env.summary || '' }}
+        summary: ${{ inputs.slack_include_summary && steps.owasp-summary.outputs.summary || '' }}
   # Previous NVD API version - this will no longer be default when the database is no longer available
   security-owasp-check-nvd1:
     name: Security OWASP dependency check (NVD API 1)
@@ -152,9 +152,9 @@ jobs:
             if (.tool.driver.rules | type) == "array" then
               .tool.driver.rules |= map(
                 (if (.id | type) == "string" then .id = .id[0:15] else . end)
-                | (if (.shortDescription.text | type) == "string" then .shortDescription.text = (.shortDescription.text[0:96] + "...") else . end)
-                | .properties.cvssv_score = (.properties.cvssv3_score // .properties.cvssv2_score)
-                | .properties.cvssv_severity = (.properties.cvssv3_severity // .properties.cvssv2_severity)
+                | (if (.shortDescription.text | type) == "string" and (.shortDescription.text | length) > 100 then .shortDescription.text = (.shortDescription.text[0:96] + "...") else . end)
+                | .properties.cvss_score = (.properties.cvssv3_baseScore // .properties.cvssv2_score)
+                | .properties.cvss_severity = (.properties.cvssv3_baseSeverity // .properties.cvssv2_severity)
               )
             else
               .
@@ -186,14 +186,14 @@ jobs:
     - name: Prepare OWASP summary
       id: owasp-summary
       run: |
-        formatted_output=$(jq -r '.runs[0].tool.driver.rules[] | [.id, .shortDescription.text, .properties.cvssv_score, .properties.cvssv_severity] | @tsv' ${{ inputs.subproject == '' && '.' || inputs.subproject }}/build/reports/dependency-check-report-mod.sarif \
+        formatted_output=$(jq -r '.runs[0].tool.driver.rules[] | [.id, .shortDescription.text, .properties.cvss_score, .properties.cvss_severity] | @tsv' ${{ inputs.subproject == '' && '.' || inputs.subproject }}/build/reports/dependency-check-report-mod.sarif \
         | awk -F'\t' '{print $1" - "$NF" ("$(NF-1)") - "substr($2,index($2,":")+1)}' \
         | awk '{printf "%s\\n", $0}') 
         echo "Vulnerability Summary"
         echo "====================="
         echo "${formatted_output}" | sed 's/\\n/\n/g'
         slack_summary="$(echo "${formatted_output}" | awk '{s=s $0} END {if (length(s) >= 3000) print substr(s, 1, 2997) "..."; else print s}')"
-        echo "summary=${slack_summary}" >> $GITHUB_ENV
+        echo "summary=${slack_summary}" >> $GITHUB_OUTPUT
     - name: Gradle OWASP slack notification
       uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/slack_codescan_notification@fddc5f11d6a8ce9b82a06fe76268835bfd99bcd4 # v1
       if: (failure() || steps.owasp-analyse.outcome == 'failure') && inputs.channel_id != 'NO_SLACK'
@@ -203,5 +203,5 @@ jobs:
         channel_id: ${{ inputs.channel_id}}
         SLACK_BOT_TOKEN: ${{ secrets.HMPPS_SRE_SLACK_BOT_TOKEN }}
         subproject: ${{ inputs.subproject }}
-        summary: ${{ inputs.slack_include_summary && env.summary || '' }}
+        summary: ${{ inputs.slack_include_summary && steps.owasp-summary.outputs.summary || '' }}
 
