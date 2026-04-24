@@ -101,7 +101,12 @@ jobs:
     - uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
       id: owasp-upload-artifact-sarif
       with:
-        name: gradle-owasp-dependency-check-${{ inputs.subproject == '' && github.event.repository.name || inputs.subproject }}.json
+        name: gradle-owasp-dependency-check-${{ inputs.subproject == '' && github.event.repository.name || inputs.subproject }}-orig.json
+        path: ${{ inputs.subproject == '' && '.' || inputs.subproject }}/build/reports/dependency-check-report-orig.sarif
+    - uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+      id: owasp-upload-artifact-mod-sarif
+      with:
+        name: gradle-owasp-dependency-check-${{ inputs.subproject == '' && github.event.repository.name || inputs.subproject }}-mod.json
         path: ${{ inputs.subproject == '' && '.' || inputs.subproject }}/build/reports/dependency-check-report-mod.sarif
     - name: Prepare OWASP summary
       id: owasp-summary
