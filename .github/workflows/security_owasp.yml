@@ -70,8 +70,21 @@ jobs:
           .runs |= map(
             if (.tool.driver.rules | type) == "array" then
               .tool.driver.rules |= map(
-                (if (.id | type) == "string" then .id = .id[0:15] else . end)
-                | (if (.shortDescription.text | type) == "string" and (.shortDescription.text | length) > 100 then .shortDescription.text = (.shortDescription.text[0:96] + "...") else . end)
+                (if (.id | type) == "string" then
+                  .id = ((.id
+                    | gsub("[\\r\\n]+"; " ")
+                    | gsub("[[:space:]]+"; " ")
+                    | gsub("^[[:space:]]+|[[:space:]]+$"; ""))[0:15])
+                else . end)
+                | (if (.shortDescription.text | type) == "string" then
+                    .shortDescription.text = (
+                      .shortDescription.text
+                      | gsub("[\\r\\n]+"; " ")
+                      | gsub("[[:space:]]+"; " ")
+                      | gsub("^[[:space:]]+|[[:space:]]+$"; "")
+                      | if length > 100 then .[0:96] + "..." else . end
+                    )
+                  else . end)
                 | .properties.cvss_score = (.properties.cvssv3_baseScore // .properties.cvssv3_score // .properties.cvssv2_score // .properties."security-severity")
                 | .properties.cvss_severity = (.properties.cvssv3_baseSeverity // .properties.cvssv3_severity // .properties.cvssv2_severity)
               )
@@ -80,7 +93,12 @@ jobs:
             end
             | if (.results | type) == "array" then
                 .results |= map(
-                  if (.ruleId | type) == "string" then .ruleId = .ruleId[0:15] else . end
+                  if (.ruleId | type) == "string" then
+                    .ruleId = ((.ruleId
+                      | gsub("[\\r\\n]+"; " ")
+                      | gsub("[[:space:]]+"; " ")
+                      | gsub("^[[:space:]]+|[[:space:]]+$"; ""))[0:15])
+                  else . end
                 )
               else
                 .
@@ -119,7 +137,7 @@ jobs:
       id: owasp-summary
       run: |
         formatted_output=$(jq -r '.runs[0].tool.driver.rules[] | [.id, .shortDescription.text, .properties.cvss_score, .properties.cvss_severity] | @tsv' ${{ inputs.subproject == '' && '.' || inputs.subproject }}/build/reports/dependency-check-report-mod.sarif \
-        | awk -F'\t' '{print $1" - "$NF" ("$(NF-1)") - "substr($2,index($2,":")+1)}' \
+        | awk -F'\t' '{print $1" - "$NF" ("$(NF-1)") - "$2}' \
         | awk '{printf "%s\\n", $0}') 
         echo "Vulnerability Summary"
         echo "====================="
@@ -163,8 +181,21 @@ jobs:
           .runs |= map(
             if (.tool.driver.rules | type) == "array" then
               .tool.driver.rules |= map(
-                (if (.id | type) == "string" then .id = .id[0:15] else . end)
-                | (if (.shortDescription.text | type) == "string" and (.shortDescription.text | length) > 100 then .shortDescription.text = (.shortDescription.text[0:96] + "...") else . end)
+                (if (.id | type) == "string" then
+                  .id = ((.id
+                    | gsub("[\\r\\n]+"; " ")
+                    | gsub("[[:space:]]+"; " ")
+                    | gsub("^[[:space:]]+|[[:space:]]+$"; ""))[0:15])
+                else . end)
+                | (if (.shortDescription.text | type) == "string" then
+                    .shortDescription.text = (
+                      .shortDescription.text
+                      | gsub("[\\r\\n]+"; " ")
+                      | gsub("[[:space:]]+"; " ")
+                      | gsub("^[[:space:]]+|[[:space:]]+$"; "")
+                      | if length > 100 then .[0:96] + "..." else . end
+                    )
+                  else . end)
                 | .properties.cvss_score = (.properties.cvssv3_baseScore // .properties.cvssv3_score // .properties.cvssv2_score // .properties."security-severity")
                 | .properties.cvss_severity = (.properties.cvssv3_baseSeverity // .properties.cvssv3_severity // .properties.cvssv2_severity)
               )
@@ -173,7 +204,12 @@ jobs:
             end
             | if (.results | type) == "array" then
                 .results |= map(
-                  if (.ruleId | type) == "string" then .ruleId = .ruleId[0:15] else . end
+                  if (.ruleId | type) == "string" then
+                    .ruleId = ((.ruleId
+                      | gsub("[\\r\\n]+"; " ")
+                      | gsub("[[:space:]]+"; " ")
+                      | gsub("^[[:space:]]+|[[:space:]]+$"; ""))[0:15])
+                  else . end
                 )
               else
                 .
@@ -206,7 +242,7 @@ jobs:
       id: owasp-summary
       run: |
         formatted_output=$(jq -r '.runs[0].tool.driver.rules[] | [.id, .shortDescription.text, .properties.cvss_score, .properties.cvss_severity] | @tsv' ${{ inputs.subproject == '' && '.' || inputs.subproject }}/build/reports/dependency-check-report-mod.sarif \
-        | awk -F'\t' '{print $1" - "$NF" ("$(NF-1)") - "substr($2,index($2,":")+1)}' \
+        | awk -F'\t' '{print $1" - "$NF" ("$(NF-1)") - "$2}' \
         | awk '{printf "%s\\n", $0}') 
         echo "Vulnerability Summary"
         echo "====================="
