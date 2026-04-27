@@ -63,12 +63,63 @@ jobs:
       id: owasp-analyse
       run: ./gradlew ${{ inputs.subproject }}:dependencyCheckAnalyze -Pdatafeed.url='file:///opt/vulnz/cache' -PossIndex.username=${{ secrets.HMPPS_OSS_INDEX_USERNAME }} -PossIndex.password=${{ secrets.HMPPS_OSS_INDEX_PASSWORD }}
       continue-on-error: true
+    # Extra sanitisation of SARIF files:
+    # - remove newlines from rules ID and reduce them to less than 15 characters
+    # - reduce newlines from shortDescription and reduce them to less than 100 characters
+    # - amalgamate CVSSv3 and CVSSv2 severities and scores to improve coverage
+    # - remove newlines from results RuleID and reduce them to less than 15 characters
+    - name: Sanitise sarif
+      id: sanitise-sarif
+      run: |
+        jq '
+          .runs |= map(
+            if (.tool.driver.rules | type) == "array" then
+              .tool.driver.rules |= map(
+                (if (.id | type) == "string" then
+                  .id = ((.id
+                    | gsub("[\\r\\n]+"; " ")
+                    | gsub("[[:space:]]+"; " ")
+                    | gsub("^[[:space:]]+|[[:space:]]+$"; ""))[0:15])
+                else . end)
+                | (if (.shortDescription.text | type) == "string" then
+                    .shortDescription.text = (
+                      .shortDescription.text
+                      | gsub("[\\r\\n]+"; " ")
+                      | gsub("[[:space:]]+"; " ")
+                      | gsub("^[[:space:]]+|[[:space:]]+$"; "")
+                      | if length > 100 then .[0:96] + "..." else . end
+                    )
+                  else . end)
+                | .properties.cvss_score = (.properties.cvssv3_baseScore // .properties.cvssv3_score // .properties.cvssv2_score // .properties."security-severity")
+                | .properties.cvss_severity = (.properties.cvssv3_baseSeverity // .properties.cvssv3_severity // .properties.cvssv2_severity)
+              )
+            else
+              .
+            end
+            | if (.results | type) == "array" then
+                .results |= map(
+                  if (.ruleId | type) == "string" then
+                    .ruleId = ((.ruleId
+                      | gsub("[\\r\\n]+"; " ")
+                      | gsub("[[:space:]]+"; " ")
+                      | gsub("^[[:space:]]+|[[:space:]]+$"; ""))[0:15])
+                  else . end
+                )
+              else
+                .
+              end
+          )
+        ' "$SARIF_FILE" > "$SARIF_MOD_FILE"
+      env:
+        SARIF_FILE: ${{ inputs.subproject == '' && '.' || inputs.subproject }}/build/reports/dependency-check-report.sarif
+        SARIF_MOD_FILE: ${{ inputs.subproject == '' && '.' || inputs.subproject }}/build/reports/dependency-check-report-mod.sarif
+      
     # Upload Sarif file: this will attempt to upload the sarif file for private/internal repositories as well
     - name: OWASP upload sarif
       id: owasp-upload-sarif
       uses: github/codeql-action/upload-sarif@38697555549f1db7851b81482ff19f1fa5c4fedc # v4
       with:
-        sarif_file: ${{ inputs.subproject == '' && '.' || inputs.subproject }}/build/reports/dependency-check-report.sarif
+        sarif_file: ${{ inputs.subproject == '' && '.' || inputs.subproject }}/build/reports/dependency-check-report-mod.sarif
         category: gradle-owasp-dependency-check
       # don't stop the job even if Github Advanced Security isn't enabled
       continue-on-error: true
@@ -77,17 +128,27 @@ jobs:
       with:
         name: gradle-owasp-dependency-check-${{ inputs.subproject == '' && github.event.repository.name || inputs.subproject }}
         path: ${{ inputs.subproject == '' && '.' || inputs.subproject }}/build/reports/dependency-check-report.html
+    - uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+      id: owasp-upload-artifact-sarif
+      with:
+        name: gradle-owasp-dependency-check-${{ inputs.subproject == '' && github.event.repository.name || inputs.subproject }}-orig.json
+        path: ${{ inputs.subproject == '' && '.' || inputs.subproject }}/build/reports/dependency-check-report.sarif
+    - uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+      id: owasp-upload-artifact-mod-sarif
+      with:
+        name: gradle-owasp-dependency-check-${{ inputs.subproject == '' && github.event.repository.name || inputs.subproject }}-mod.json
+        path: ${{ inputs.subproject == '' && '.' || inputs.subproject }}/build/reports/dependency-check-report-mod.sarif
     - name: Prepare OWASP summary
       id: owasp-summary
       run: |
-        formatted_output=$(jq -r '.runs[0].tool.driver.rules[] | [.id, .shortDescription.text, .properties.cvssv2_score, .properties.cvssv2_severity] | @tsv' ${{ inputs.subproject == '' && '.' || inputs.subproject }}/build/reports/dependency-check-report.sarif \
-        | awk -F'\t' '{print $1" - "$NF" ("$(NF-1)") - "substr($2,index($2,":")+1)}' \
+        formatted_output=$(jq -r '.runs[0].tool.driver.rules[] | [.id, .shortDescription.text, .properties.cvss_score, .properties.cvss_severity] | @tsv' ${{ inputs.subproject == '' && '.' || inputs.subproject }}/build/reports/dependency-check-report-mod.sarif \
+        | awk -F'\t' '{print $1" - "$NF" ("$(NF-1)") - "$2}' \
         | awk '{printf "%s\\n", $0}') 
         echo "Vulnerability Summary"
         echo "====================="
         echo "${formatted_output}" | sed 's/\\n/\n/g'
         slack_summary="$(echo "${formatted_output}" | awk '{s=s $0} END {if (length(s) >= 3000) print substr(s, 1, 2997) "..."; else print s}')"
-        echo "summary=${slack_summary}" >> $GITHUB_ENV
+        echo "summary=${slack_summary}" >> $GITHUB_OUTPUT
     - name: Gradle OWASP slack notification
       uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/slack_codescan_notification@fddc5f11d6a8ce9b82a06fe76268835bfd99bcd4 # v1
       if: (failure() || steps.owasp-analyse.outcome == 'failure') && inputs.channel_id != 'NO_SLACK'
@@ -97,7 +158,7 @@ jobs:
         channel_id: ${{ inputs.channel_id}}
         SLACK_BOT_TOKEN: ${{ secrets.HMPPS_SRE_SLACK_BOT_TOKEN }}
         subproject: ${{ inputs.subproject }}
-        summary: ${{ inputs.slack_include_summary && env.summary || '' }}
+        summary: ${{ inputs.slack_include_summary && steps.owasp-summary.outputs.summary || '' }}
   # Previous NVD API version - this will no longer be default when the database is no longer available
   security-owasp-check-nvd1:
     name: Security OWASP dependency check (NVD API 1)
@@ -118,12 +179,62 @@ jobs:
       id: owasp-analyse
       run: ./gradlew ${{ inputs.subproject }}:dependencyCheckAnalyze --info
       continue-on-error: true
+    # Extra sanitisation of SARIF files:
+    # - remove newlines from rules ID and reduce them to less than 15 characters
+    # - reduce newlines from shortDescription and reduce them to less than 100 characters
+    # - amalgamate CVSSv3 and CVSSv2 severities and scores to improve coverage
+    # - remove newlines from results RuleID and reduce them to less than 15 characters
+    - name: Sanitise sarif
+      id: sanitise-sarif
+      run: |
+        jq '
+          .runs |= map(
+            if (.tool.driver.rules | type) == "array" then
+              .tool.driver.rules |= map(
+                (if (.id | type) == "string" then
+                  .id = ((.id
+                    | gsub("[\\r\\n]+"; " ")
+                    | gsub("[[:space:]]+"; " ")
+                    | gsub("^[[:space:]]+|[[:space:]]+$"; ""))[0:15])
+                else . end)
+                | (if (.shortDescription.text | type) == "string" then
+                    .shortDescription.text = (
+                      .shortDescription.text
+                      | gsub("[\\r\\n]+"; " ")
+                      | gsub("[[:space:]]+"; " ")
+                      | gsub("^[[:space:]]+|[[:space:]]+$"; "")
+                      | if length > 100 then .[0:96] + "..." else . end
+                    )
+                  else . end)
+                | .properties.cvss_score = (.properties.cvssv3_baseScore // .properties.cvssv3_score // .properties.cvssv2_score // .properties."security-severity")
+                | .properties.cvss_severity = (.properties.cvssv3_baseSeverity // .properties.cvssv3_severity // .properties.cvssv2_severity)
+              )
+            else
+              .
+            end
+            | if (.results | type) == "array" then
+                .results |= map(
+                  if (.ruleId | type) == "string" then
+                    .ruleId = ((.ruleId
+                      | gsub("[\\r\\n]+"; " ")
+                      | gsub("[[:space:]]+"; " ")
+                      | gsub("^[[:space:]]+|[[:space:]]+$"; ""))[0:15])
+                  else . end
+                )
+              else
+                .
+              end
+          )
+        ' "$SARIF_FILE" > "$SARIF_MOD_FILE"
+      env:
+        SARIF_FILE: ${{ inputs.subproject == '' && '.' || inputs.subproject }}/build/reports/dependency-check-report.sarif
+        SARIF_MOD_FILE: ${{ inputs.subproject == '' && '.' || inputs.subproject }}/build/reports/dependency-check-report-mod.sarif
     # Upload Sarif file: this will attempt to upload the sarif file for private/internal repositories as well
     - name: OWASP upload sarif
       id: owasp-upload-sarif
       uses: github/codeql-action/upload-sarif@38697555549f1db7851b81482ff19f1fa5c4fedc # v4
       with:
-        sarif_file: ${{ inputs.subproject == '' && '.' || inputs.subproject }}/build/reports/dependency-check-report.sarif
+        sarif_file: ${{ inputs.subproject == '' && '.' || inputs.subproject }}/build/reports/dependency-check-report-mod.sarif
         category: gradle-owasp-dependency-check
       # don't stop the job even if Github Advanced Security isn't enabled
       continue-on-error: true
@@ -132,17 +243,22 @@ jobs:
       with:
         name: gradle-owasp-dependency-check-${{ inputs.subproject == '' && github.event.repository.name || inputs.subproject }}
         path: ${{ inputs.subproject == '' && '.' || inputs.subproject }}/build/reports/dependency-check-report.html
+    - uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+      id: owasp-upload-artifact-sarif
+      with:
+        name: gradle-owasp-dependency-check-${{ inputs.subproject == '' && github.event.repository.name || inputs.subproject }}.json
+        path: ${{ inputs.subproject == '' && '.' || inputs.subproject }}/build/reports/dependency-check-report-mod.sarif
     - name: Prepare OWASP summary
       id: owasp-summary
       run: |
-        formatted_output=$(jq -r '.runs[0].tool.driver.rules[] | [.id, .shortDescription.text, .properties.cvssv2_score, .properties.cvssv2_severity] | @tsv' ${{ inputs.subproject == '' && '.' || inputs.subproject }}/build/reports/dependency-check-report.sarif \
-        | awk -F'\t' '{print $1" - "$NF" ("$(NF-1)") - "substr($2,index($2,":")+1)}' \
+        formatted_output=$(jq -r '.runs[0].tool.driver.rules[] | [.id, .shortDescription.text, .properties.cvss_score, .properties.cvss_severity] | @tsv' ${{ inputs.subproject == '' && '.' || inputs.subproject }}/build/reports/dependency-check-report-mod.sarif \
+        | awk -F'\t' '{print $1" - "$NF" ("$(NF-1)") - "$2}' \
         | awk '{printf "%s\\n", $0}') 
         echo "Vulnerability Summary"
         echo "====================="
         echo "${formatted_output}" | sed 's/\\n/\n/g'
         slack_summary="$(echo "${formatted_output}" | awk '{s=s $0} END {if (length(s) >= 3000) print substr(s, 1, 2997) "..."; else print s}')"
-        echo "summary=${slack_summary}" >> $GITHUB_ENV
+        echo "summary=${slack_summary}" >> $GITHUB_OUTPUT
     - name: Gradle OWASP slack notification
       uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/slack_codescan_notification@fddc5f11d6a8ce9b82a06fe76268835bfd99bcd4 # v1
       if: (failure() || steps.owasp-analyse.outcome == 'failure') && inputs.channel_id != 'NO_SLACK'
@@ -152,4 +268,5 @@ jobs:
         channel_id: ${{ inputs.channel_id}}
         SLACK_BOT_TOKEN: ${{ secrets.HMPPS_SRE_SLACK_BOT_TOKEN }}
         subproject: ${{ inputs.subproject }}
-        summary: ${{ inputs.slack_include_summary && env.summary || '' }}
+        summary: ${{ inputs.slack_include_summary && steps.owasp-summary.outputs.summary || '' }}
+
