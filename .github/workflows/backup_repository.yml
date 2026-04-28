@@ -4,6 +4,7 @@ on:
   workflow_dispatch: # manual trigger
   schedule:
     - cron: '35 1 * * *'
+permissions: {}
 
 jobs:
   backup:
