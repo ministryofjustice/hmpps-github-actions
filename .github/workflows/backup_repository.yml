@@ -5,6 +5,8 @@ on:
   schedule:
     - cron: '35 1 * * *'
 
+permissions: {}
+
 jobs:
   backup:
     name: Backup to SharePoint
