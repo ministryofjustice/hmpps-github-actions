@@ -105,7 +105,8 @@ jobs:
     outputs:
       image_digest_ref: ${{ steps.resolve_image_digest.outputs.image_digest_ref }}
     steps:
-      - uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/build_docker@7277152a31c152f8d65ccdea0df7cceca7ab3856 # v1
+      - id: build_docker_step
+        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/build_docker@5a2c3da0779ed4d281f3e63c045fb7e5d295b6b1 # v1
         if: ${{ inputs.docker_registry == 'ghcr.io' }}
         with:
           image_name: ${{ inputs.image_name || github.event.repository.name }}
@@ -122,7 +123,7 @@ jobs:
           file: ${{ inputs.file }}
           download_build_artifacts: ${{ inputs.download_build_artifacts }}
 
-      - uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/build_docker@7277152a31c152f8d65ccdea0df7cceca7ab3856 # v1
+      - uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/build_docker@5a2c3da0779ed4d281f3e63c045fb7e5d295b6b1 # v1
         if: ${{ inputs.docker_registry == 'quay.io' }}
         with:
           image_name: ${{ inputs.image_name || github.event.repository.name }}
@@ -140,29 +141,18 @@ jobs:
           additional_docker_build_args: ${{ inputs.additional_docker_build_args }}
           download_build_artifacts: ${{ inputs.download_build_artifacts }}
 
-      - name: Setup ORAS
-        if: ${{ inputs.push && inputs.docker_registry == 'ghcr.io' }}
-        uses: oras-project/setup-oras@38de303aac69abb66f3e6255b7198bff35f323e3 # v2
-
-      - name: Login ORAS to ghcr.io
-        if: ${{ inputs.push && inputs.docker_registry == 'ghcr.io' }}
-        shell: bash
-        run: |
-          echo "${{ github.token }}" | oras login "${{ inputs.docker_registry }}" -u "${{ github.actor }}" --password-stdin
-
-      # TODO: Remove this lookup once hmpps-github-shared-actions build_docker exposes pushed digest as an output.
       - name: Resolve image digest
         id: resolve_image_digest
         if: ${{ inputs.push && inputs.docker_registry == 'ghcr.io' }}
         shell: bash
         run: |
-          IMAGE_REF="${{ inputs.docker_registry }}/${{ inputs.registry_org }}/${{ inputs.image_name || github.event.repository.name }}:${{ needs.create_version.outputs.version }}"
-          DIGEST=$(oras discover "$IMAGE_REF" --format json | jq -r '.digest // empty')
+          DIGEST='${{ steps.build_docker_step.outputs.digest }}'
           if [[ -z "$DIGEST" ]]; then
-            echo "Failed to resolve digest for $IMAGE_REF" >&2
+            echo "Failed to resolve digest from build_docker_step output" >&2
             exit 1
           fi
-          echo "image_digest_ref=${IMAGE_REF%:*}@${DIGEST}" >> "$GITHUB_OUTPUT"
+          IMAGE_BASE="${{ inputs.docker_registry }}/${{ inputs.registry_org }}/${{ inputs.image_name || github.event.repository.name }}"
+          echo "image_digest_ref=${IMAGE_BASE}@${DIGEST}" >> "$GITHUB_OUTPUT"
 
   docker_build_platform:
     name: Build ${{ matrix.platform }} (parallel)
