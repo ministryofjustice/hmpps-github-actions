@@ -71,6 +71,11 @@ on:
         required: false
         type: boolean
         default: false
+      sign_image:
+        description: Sign pushed image digest in the container registry
+        required: false
+        type: boolean
+        default: false
     secrets:
       HMPPS_QUAYIO_USER:
         required: false
@@ -216,6 +221,28 @@ jobs:
       tag_latest: ${{ inputs.tag_latest }}
       additional_docker_tag: ${{ inputs.additional_docker_tag }}
       docker_multiplatform: true
+
+  sign_image_single_platform:
+    name: Sign image (single-platform)
+    if: ${{ inputs.sign_image && !inputs.docker_multiplatform && inputs.push && inputs.docker_registry == 'ghcr.io' }}
+    needs: [create_version, docker_build]
+    uses: ./.github/workflows/docker_sign.yml
+    with:
+      docker_registry: ${{ inputs.docker_registry }}
+      registry_org: ${{ inputs.registry_org }}
+      image_name: ${{ inputs.image_name }}
+      image_digest: ${{ needs.docker_build.outputs.image_digest }}
+
+  sign_image_multi_platform:
+    name: Sign image (multi-platform)
+    if: ${{ inputs.sign_image && inputs.docker_multiplatform && inputs.push && inputs.docker_registry == 'ghcr.io' }}
+    needs: [create_version, docker_build_merge]
+    uses: ./.github/workflows/docker_sign.yml
+    with:
+      docker_registry: ${{ inputs.docker_registry }}
+      registry_org: ${{ inputs.registry_org }}
+      image_name: ${{ inputs.image_name }}
+      image_digest: ${{ needs.docker_build_merge.outputs.image_digest }}
 
   generate_sbom_single_platform:
     name: Generate SBOM (single-platform image)

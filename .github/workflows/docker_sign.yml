@@ -1,0 +1,58 @@
+name: Sign container image
+
+on:
+  workflow_call:
+    inputs:
+      docker_registry:
+        description: Docker registry
+        required: true
+        type: string
+      registry_org:
+        description: Docker registry organisation
+        required: true
+        type: string
+      image_name:
+        description: Name of the image
+        required: false
+        type: string
+      image_digest:
+        description: Image digest (sha256:<64 hex chars>) to sign
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  packages: write
+  id-token: write
+
+jobs:
+  sign_image:
+    name: Sign image
+    runs-on: ubuntu-latest
+    env:
+      IMAGE_NAME: ${{ inputs.docker_registry }}/${{ inputs.registry_org }}/${{ inputs.image_name || github.event.repository.name }}
+    steps:
+      - name: Validate image digest
+        shell: bash
+        run: |
+          DIGEST='${{ inputs.image_digest }}'
+          if [[ ! "$DIGEST" =~ ^sha256:[0-9a-f]{64}$ ]]; then
+            echo "Invalid digest format: $DIGEST (expected sha256:<64 hex chars>)" >&2
+            exit 1
+          fi
+
+      - name: Install cosign
+        uses: sigstore/cosign-installer@c0700ca906bd720be9f7b1e9e9aee5f3795ff1e0 # v3.8.1
+
+      - name: Login to GHCR
+        if: ${{ inputs.docker_registry == 'ghcr.io' }}
+        uses: docker/login-action@b45d80f862d83dbcd57f89517bcf500b2ab88fb2 # v4
+        with:
+          registry: ${{ inputs.docker_registry }}
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+
+      - name: Sign image with cosign keyless
+        shell: bash
+        run: |
+          cosign sign --yes "${IMAGE_NAME}@${{ inputs.image_digest }}"
