@@ -42,11 +42,11 @@ jobs:
           fi
 
       - name: Install cosign
-        uses: sigstore/cosign-installer@c0700ca906bd720be9f7b1e9e9aee5f3795ff1e0 # v3.8.1
+        uses: sigstore/cosign-installer@cad07c2e89fa2edd6e2d7bab4c1aa38e53f76003 # v4.1.1
 
       - name: Login to GHCR
         if: ${{ inputs.docker_registry == 'ghcr.io' }}
-        uses: docker/login-action@b45d80f862d83dbcd57f89517bcf500b2ab88fb2 # v4
+        uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121 # v4
         with:
           registry: ${{ inputs.docker_registry }}
           username: ${{ github.actor }}
