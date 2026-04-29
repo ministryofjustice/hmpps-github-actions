@@ -38,6 +38,10 @@ on:
         required: false 
       HMPPS_QUAYIO_TOKEN:
         required: false
+    outputs:
+      image_digest_ref:
+        description: Full image reference including digest
+        value: ${{ jobs.docker_push.outputs.image_digest_ref }}
 
 permissions:
   contents: read
@@ -47,6 +51,8 @@ jobs:
   docker_push:
     name: Push docker image
     runs-on: ubuntu-latest
+    outputs:
+      image_digest_ref: ${{ steps.resolve_image_digest.outputs.image_digest_ref }}
     env:
       IMAGE_NAME: ${{ inputs.docker_registry }}/${{ inputs.registry_org }}/${{ inputs.image_name || github.event.repository.name }}
     steps:
@@ -159,3 +165,15 @@ jobs:
           if [[ -n "${{ inputs.additional_docker_tag }}" ]]; then
             skopeo copy --all "oci:$RUNNER_TEMP/oci:$OCI_SOURCE_REF" "docker://${IMAGE_NAME}:${{ inputs.additional_docker_tag }}"
           fi
+
+      - name: Resolve pushed image digest
+        id: resolve_image_digest
+        if: ${{ inputs.docker_multiplatform }}
+        shell: bash
+        run: |
+          DIGEST=$(skopeo inspect --format '{{ .Digest }}' "docker://${IMAGE_NAME}:${{ inputs.app_version }}")
+          if [[ -z "$DIGEST" ]]; then
+            echo "Failed to resolve digest for ${IMAGE_NAME}:${{ inputs.app_version }}" >&2
+            exit 1
+          fi
+          echo "image_digest_ref=${IMAGE_NAME}@${DIGEST}" >> "$GITHUB_OUTPUT"
