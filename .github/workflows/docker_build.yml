@@ -103,7 +103,7 @@ jobs:
     needs: [create_version]
     runs-on: ubuntu-latest
     outputs:
-      image_digest_ref: ${{ steps.resolve_image_digest.outputs.image_digest_ref }}
+      image_digest: ${{ steps.build_docker_step.outputs.digest }}
     steps:
       - id: build_docker_step
         uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/build_docker@5a2c3da0779ed4d281f3e63c045fb7e5d295b6b1 # v1
@@ -140,19 +140,6 @@ jobs:
           HMPPS_QUAYIO_TOKEN: ${{ secrets.HMPPS_QUAYIO_TOKEN}}
           additional_docker_build_args: ${{ inputs.additional_docker_build_args }}
           download_build_artifacts: ${{ inputs.download_build_artifacts }}
-
-      - name: Resolve image digest
-        id: resolve_image_digest
-        if: ${{ inputs.push && inputs.docker_registry == 'ghcr.io' }}
-        shell: bash
-        run: |
-          DIGEST='${{ steps.build_docker_step.outputs.digest }}'
-          if [[ -z "$DIGEST" ]]; then
-            echo "Failed to resolve digest from build_docker_step output" >&2
-            exit 1
-          fi
-          IMAGE_BASE="${{ inputs.docker_registry }}/${{ inputs.registry_org }}/${{ inputs.image_name || github.event.repository.name }}"
-          echo "image_digest_ref=${IMAGE_BASE}@${DIGEST}" >> "$GITHUB_OUTPUT"
 
   docker_build_platform:
     name: Build ${{ matrix.platform }} (parallel)
@@ -258,23 +245,17 @@ jobs:
         if: ${{ inputs.attach_sbom_to_registry }}
         shell: bash
         run: |
-          IMAGE_DIGEST_REF='${{ needs.docker_build.outputs.image_digest_ref }}'
-          if [[ -z "$IMAGE_DIGEST_REF" ]]; then
+          DIGEST='${{ needs.docker_build.outputs.image_digest }}'
+          if [[ -z "$DIGEST" ]]; then
             echo "Missing image digest output from docker_build job" >&2
             exit 1
           fi
-          SUBJECT_NAME="${IMAGE_DIGEST_REF%@*}"
-          SUBJECT_DIGEST="${IMAGE_DIGEST_REF#*@}"
-          if [[ -z "$SUBJECT_NAME" || "$SUBJECT_NAME" == "$IMAGE_DIGEST_REF" ]]; then
-            echo "Invalid subject name parsed from image digest ref: $IMAGE_DIGEST_REF" >&2
+          if [[ ! "$DIGEST" =~ ^sha256:[0-9a-f]{64}$ ]]; then
+            echo "Invalid digest format: $DIGEST (expected sha256:<64 hex chars>)" >&2
             exit 1
           fi
-          if [[ ! "$SUBJECT_DIGEST" =~ ^sha256:[0-9a-f]{64}$ ]]; then
-            echo "Invalid subject digest format: $SUBJECT_DIGEST (expected sha256:<64 hex chars>)" >&2
-            exit 1
-          fi
-          echo "subject_name=$SUBJECT_NAME" >> "$GITHUB_OUTPUT"
-          echo "subject_digest=$SUBJECT_DIGEST" >> "$GITHUB_OUTPUT"
+          echo "subject_name=${{ inputs.docker_registry }}/${{ inputs.registry_org }}/${{ inputs.image_name || github.event.repository.name }}" >> "$GITHUB_OUTPUT"
+          echo "subject_digest=$DIGEST" >> "$GITHUB_OUTPUT"
 
       - name: Login to ghcr.io for attestation
         if: ${{ inputs.attach_sbom_to_registry }}
