@@ -36,7 +36,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-    - uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/tool-installers/setup-helm@7277152a31c152f8d65ccdea0df7cceca7ab3856 # v1
+    - uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/tool-installers/setup-helm@fddc5f11d6a8ce9b82a06fe76268835bfd99bcd4 # v1
     - name: 'Run helm lint commands'
       shell: bash
       run: | 

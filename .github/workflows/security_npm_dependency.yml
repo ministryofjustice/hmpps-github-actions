@@ -43,7 +43,9 @@ jobs:
       run: 'node -v'
     - name: Audit for vulnerabilities
       id: npm
-      run: npx audit-ci@^7 --config ./audit-ci.json -o json > npm-security-check-reports.json
+      env:
+        NPM_CONFIG_MIN_RELEASE_AGE: '7'
+      run: npx audit-ci@7.1.0 --config ./audit-ci.json -o json > npm-security-check-reports.json
       continue-on-error: true
     - uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
       with:
@@ -53,7 +55,7 @@ jobs:
       id: sarif-format
       # While we're paying for advanced security, we can scan all repos...
       # if: ${{ github.event.repository.visibility != 'private' && github.event.repository.visibility != 'internal' }}
-      uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/auditjson_to_sarif@7277152a31c152f8d65ccdea0df7cceca7ab3856 # v1
+      uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/auditjson_to_sarif@fddc5f11d6a8ce9b82a06fe76268835bfd99bcd4 # v1
       with:
         input-file: 'npm-security-check-reports.json'
     # Upload Sarif file: this will attempt to upload the sarif file for private/internal repositories as well
@@ -69,12 +71,12 @@ jobs:
     - name:  Run translator to convert to a Slack-compatible table # returns SLACK_TXT
       id: slack-format
       if: steps.npm.outcome == 'failure' && inputs.channel_id != 'NO_SLACK'
-      uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/auditjson_to_slack@7277152a31c152f8d65ccdea0df7cceca7ab3856 # v1
+      uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/auditjson_to_slack@fddc5f11d6a8ce9b82a06fe76268835bfd99bcd4 # v1
       with:
         input_file: 'npm-security-check-reports.json'
       # Slack notification if there either of the two audits fail
     - name: npm audit slack notification
-      uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/slack_codescan_notification@7277152a31c152f8d65ccdea0df7cceca7ab3856 # v1
+      uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/slack_codescan_notification@fddc5f11d6a8ce9b82a06fe76268835bfd99bcd4 # v1
       if: (failure() || steps.npm.outcome == 'failure' || steps.npm.outcome == 'failure') && inputs.channel_id != 'NO_SLACK'
       with:
         title: "npm dependency scan"
