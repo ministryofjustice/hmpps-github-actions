@@ -71,7 +71,7 @@ jobs:
 
       - name: Docker login if Docker registry is quay.io
         if: ${{ inputs.docker_registry  == 'quay.io' }}
-        uses: docker/login-action@b45d80f862d83dbcd57f89517bcf500b2ab88fb2 # v4
+        uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121 # v4
         with:
           registry: ${{ inputs.docker_registry }}
           username: ${{ secrets.HMPPS_QUAYIO_USER }}
@@ -79,7 +79,7 @@ jobs:
 
       - name: Docker login if Docker registry is ghcr.io
         if: ${{ inputs.docker_registry  == 'ghcr.io' }}
-        uses: docker/login-action@b45d80f862d83dbcd57f89517bcf500b2ab88fb2 # v4
+        uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121 # v4
         with:
           registry: ${{ inputs.docker_registry }}
           username: ${{ github.actor }}
