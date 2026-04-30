@@ -61,7 +61,7 @@ jobs:
         java-version: '${{ inputs.java_version }}'
     - name: Run gradle OWASP Dependency Check Analyse
       id: owasp-analyse
-      run: ./gradlew ${{ inputs.subproject }}:dependencyCheckAnalyze -Pdatafeed.url='file:///opt/vulnz/cache' -PossIndex.username=${{ secrets.HMPPS_OSS_INDEX_USERNAME }} -PossIndex.password=${{ secrets.HMPPS_OSS_INDEX_PASSWORD }}
+      run: ./gradlew ${{ inputs.subproject }}:dependencyCheckAnalyze -Pdatafeed.url='file:///opt/vulnz/cache'
       continue-on-error: true
     # Extra sanitisation of SARIF files:
     # - remove newlines from rules ID and reduce them to less than 15 characters
