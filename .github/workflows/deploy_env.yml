@@ -77,9 +77,9 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           fetch-depth: 0
-      - uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/tool-installers/setup-helm@fddc5f11d6a8ce9b82a06fe76268835bfd99bcd4 # v1
-      - uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/tool-installers/setup-kubectl@fddc5f11d6a8ce9b82a06fe76268835bfd99bcd4 # v1
-      - uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/cloud-platform-auth@fddc5f11d6a8ce9b82a06fe76268835bfd99bcd4 # v1
+      - uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/tool-installers/setup-helm@c9b92b85a2aa7e313fb377a81fec08dd4f6f15b8 # v1
+      - uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/tool-installers/setup-kubectl@c9b92b85a2aa7e313fb377a81fec08dd4f6f15b8 # v1
+      - uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/cloud-platform-auth@c9b92b85a2aa7e313fb377a81fec08dd4f6f15b8 # v1
         with:
           api: https://${{ secrets.KUBE_CLUSTER }}
           cert: ${{ secrets.KUBE_CERT }}
@@ -97,7 +97,7 @@ jobs:
 
       # Version history
       - name: get version history
-        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/version_history@fddc5f11d6a8ce9b82a06fe76268835bfd99bcd4 # v1
+        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/version_history@c9b92b85a2aa7e313fb377a81fec08dd4f6f15b8 # v1
         if: ${{ inputs.show_changelog }}
         id: version_history
         with:
@@ -107,7 +107,7 @@ jobs:
           k8s_deployment_name: ${{ inputs.k8s_deployment_name }}
           changelog_git_paths: ${{ inputs.changelog_git_paths }}
 
-      - uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/cloud-platform-deploy@fddc5f11d6a8ce9b82a06fe76268835bfd99bcd4 # v1
+      - uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/cloud-platform-deploy@c9b92b85a2aa7e313fb377a81fec08dd4f6f15b8 # v1
         id: deploy
         with:
           environment: ${{ inputs.environment }}
@@ -126,7 +126,7 @@ jobs:
       # Notification bit - always send prod releases to dps-releases - CVA3MKDTR
       - if: ${{ always() && ( inputs.environment == 'prod' || inputs.environment == 'production' ) }}
         id: prod-dps-slack
-        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/slack_release_results@fddc5f11d6a8ce9b82a06fe76268835bfd99bcd4 # v1
+        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/slack_release_results@c9b92b85a2aa7e313fb377a81fec08dd4f6f15b8 # v1
         with:
           channel_id: 'CVA3MKDTR'
           environment: ${{ inputs.environment }}
@@ -139,7 +139,7 @@ jobs:
       # Optional prod releases slack channel (using PROD_RELEASES_SLACK_CHANNEL variable)
       - if: ${{ always() && ( inputs.slack_notification == 'true' && steps.set-slack-channel-id.outputs.slack_channel_id != '' ) }}
         id: send-release-slack
-        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/slack_release_results@fddc5f11d6a8ce9b82a06fe76268835bfd99bcd4 # v1
+        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/slack_release_results@c9b92b85a2aa7e313fb377a81fec08dd4f6f15b8 # v1
         with:
           channel_id: ${{ steps.set-slack-channel-id.outputs.slack_channel_id }}
           environment: ${{ inputs.environment }}
