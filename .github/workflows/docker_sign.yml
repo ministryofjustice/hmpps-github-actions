@@ -4,7 +4,7 @@ on:
   workflow_call:
     inputs:
       docker_registry:
-        description: Docker registry
+        description: Docker registry (currently only ghcr.io is supported)
         required: true
         type: string
       registry_org:
@@ -32,6 +32,16 @@ jobs:
     env:
       IMAGE_NAME: ${{ inputs.docker_registry }}/${{ inputs.registry_org }}/${{ inputs.image_name || github.event.repository.name }}
     steps:
+      - name: Validate docker registry
+        shell: bash
+        run: |
+          REGISTRY='${{ inputs.docker_registry }}'
+          if [[ "$REGISTRY" != "ghcr.io" ]]; then
+            echo "Unsupported docker_registry: $REGISTRY" >&2
+            echo "This workflow currently supports only ghcr.io for keyless signing." >&2
+            exit 1
+          fi
+
       - name: Validate image digest
         shell: bash
         run: |
@@ -45,7 +55,6 @@ jobs:
         uses: sigstore/cosign-installer@cad07c2e89fa2edd6e2d7bab4c1aa38e53f76003 # v4.1.1
 
       - name: Login to GHCR
-        if: ${{ inputs.docker_registry == 'ghcr.io' }}
         uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121 # v4
         with:
           registry: ${{ inputs.docker_registry }}
