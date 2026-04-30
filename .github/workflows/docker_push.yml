@@ -111,7 +111,6 @@ jobs:
           docker push "${IMAGE_NAME}:${{ inputs.additional_docker_tag }}"
 
       - name: Ensure skopeo is available
-        if: ${{ inputs.docker_multiplatform }}
         shell: bash
         run: |
           if ! command -v skopeo >/dev/null 2>&1; then
@@ -168,7 +167,6 @@ jobs:
 
       - name: Resolve pushed image digest
         id: resolve_image_digest
-        if: ${{ inputs.docker_multiplatform }}
         shell: bash
         run: |
           DIGEST=$(skopeo inspect --format '{{ .Digest }}' "docker://${IMAGE_NAME}:${{ inputs.app_version }}")
