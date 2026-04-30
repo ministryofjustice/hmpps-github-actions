@@ -29,12 +29,12 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
     - name: Initialize CodeQL
-      uses: github/codeql-action/init@38697555549f1db7851b81482ff19f1fa5c4fedc # v4
+      uses: github/codeql-action/init@95e58e9a2cdfd71adc6e0353d5c52f41a045d225 # v4
       with:
         languages: actions 
     - name: Perform CodeQL Analysis
       id: codeql_analysis
-      uses: github/codeql-action/analyze@38697555549f1db7851b81482ff19f1fa5c4fedc # v4
+      uses: github/codeql-action/analyze@95e58e9a2cdfd71adc6e0353d5c52f41a045d225 # v4
     - name: CodeQL slack notification
       uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/slack_codescan_notification@fddc5f11d6a8ce9b82a06fe76268835bfd99bcd4 # v1
       if: (failure() || steps.codeql_analysis.outcome == 'failure') && inputs.channel_id != 'NO_SLACK'
