@@ -85,7 +85,7 @@ jobs:
         SLACK_BOT_TOKEN: ${{ secrets.HMPPS_SRE_SLACK_BOT_TOKEN }}
 
     - name: npm slack output results 
-      uses: slackapi/slack-github-action@91efab103c0de0a537f72a35f6b8cda0ee76bf0a # v2.1.1
+      uses: slackapi/slack-github-action@03ea5433c137af7c0495bc0cad1af10403fc800c # v3.0.2
       if: inputs.channel_id != 'NO_SLACK' && steps.slack-format.outcome == 'success'
       with:
         method: chat.postMessage
