@@ -90,8 +90,6 @@ on:
 permissions:
   contents: read
   packages: write
-  id-token: write
-  attestations: write
 
 jobs:
   create_version:
@@ -226,6 +224,10 @@ jobs:
     name: Sign image (single-platform)
     if: ${{ inputs.sign_image && !inputs.docker_multiplatform && inputs.push && inputs.docker_registry == 'ghcr.io' }}
     needs: [create_version, docker_build]
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
     uses: ./.github/workflows/docker_sign.yml
     with:
       docker_registry: ${{ inputs.docker_registry }}
@@ -237,6 +239,10 @@ jobs:
     name: Sign image (multi-platform)
     if: ${{ inputs.sign_image && inputs.docker_multiplatform && inputs.push && inputs.docker_registry == 'ghcr.io' }}
     needs: [create_version, docker_build_merge]
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
     uses: ./.github/workflows/docker_sign.yml
     with:
       docker_registry: ${{ inputs.docker_registry }}
@@ -248,6 +254,11 @@ jobs:
     name: Generate SBOM (single-platform image)
     if: ${{ inputs.generate_sbom && !inputs.docker_multiplatform && inputs.push && inputs.docker_registry == 'ghcr.io' }}
     needs: [create_version, docker_build]
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+      attestations: write
     uses: ./.github/workflows/docker_sbom.yml
     with:
       docker_registry: ${{ inputs.docker_registry }}
@@ -261,6 +272,11 @@ jobs:
     name: Generate SBOM (multi-platform image)
     if: ${{ inputs.generate_sbom && inputs.docker_multiplatform && inputs.push && inputs.docker_registry == 'ghcr.io' }}
     needs: [create_version, docker_build_merge]
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+      attestations: write
     uses: ./.github/workflows/docker_sbom.yml
     with:
       docker_registry: ${{ inputs.docker_registry }}
