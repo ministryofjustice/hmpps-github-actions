@@ -61,6 +61,21 @@ on:
         required: false
         type: boolean
         default: false
+      generate_sbom:
+        description: Generate an SBOM for the final pushed image and upload it as a workflow artifact
+        required: false
+        type: boolean
+        default: false
+      attach_sbom_to_registry:
+        description: Create and push an SBOM attestation for the pushed image in the container registry
+        required: false
+        type: boolean
+        default: false
+      sign_image:
+        description: Sign pushed image digest in the container registry
+        required: false
+        type: boolean
+        default: false
     secrets:
       HMPPS_QUAYIO_USER:
         required: false
@@ -92,8 +107,11 @@ jobs:
     if: ${{ ! inputs.docker_multiplatform }}
     needs: [create_version]
     runs-on: ubuntu-latest
+    outputs:
+      image_digest: ${{ steps.build_docker_step.outputs.digest }}
     steps:
-      - uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/build_docker@fddc5f11d6a8ce9b82a06fe76268835bfd99bcd4 # v1
+      - id: build_docker_step
+        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/build_docker@5a2c3da0779ed4d281f3e63c045fb7e5d295b6b1 # v1
         if: ${{ inputs.docker_registry == 'ghcr.io' }}
         with:
           image_name: ${{ inputs.image_name || github.event.repository.name }}
@@ -110,7 +128,7 @@ jobs:
           file: ${{ inputs.file }}
           download_build_artifacts: ${{ inputs.download_build_artifacts }}
 
-      - uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/build_docker@fddc5f11d6a8ce9b82a06fe76268835bfd99bcd4 # v1
+      - uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/build_docker@5a2c3da0779ed4d281f3e63c045fb7e5d295b6b1 # v1
         if: ${{ inputs.docker_registry == 'quay.io' }}
         with:
           image_name: ${{ inputs.image_name || github.event.repository.name }}
@@ -201,3 +219,69 @@ jobs:
       tag_latest: ${{ inputs.tag_latest }}
       additional_docker_tag: ${{ inputs.additional_docker_tag }}
       docker_multiplatform: true
+
+  sign_image_single_platform:
+    name: Sign image (single-platform)
+    if: ${{ inputs.sign_image && !inputs.docker_multiplatform && inputs.push && inputs.docker_registry == 'ghcr.io' }}
+    needs: [create_version, docker_build]
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+    uses: ./.github/workflows/docker_sign.yml
+    with:
+      docker_registry: ${{ inputs.docker_registry }}
+      registry_org: ${{ inputs.registry_org }}
+      image_name: ${{ inputs.image_name }}
+      image_digest: ${{ needs.docker_build.outputs.image_digest }}
+
+  sign_image_multi_platform:
+    name: Sign image (multi-platform)
+    if: ${{ inputs.sign_image && inputs.docker_multiplatform && inputs.push && inputs.docker_registry == 'ghcr.io' }}
+    needs: [create_version, docker_build_merge]
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+    uses: ./.github/workflows/docker_sign.yml
+    with:
+      docker_registry: ${{ inputs.docker_registry }}
+      registry_org: ${{ inputs.registry_org }}
+      image_name: ${{ inputs.image_name }}
+      image_digest: ${{ needs.docker_build_merge.outputs.image_digest }}
+
+  generate_sbom_single_platform:
+    name: Generate SBOM (single-platform image)
+    if: ${{ inputs.generate_sbom && !inputs.docker_multiplatform && inputs.push && inputs.docker_registry == 'ghcr.io' }}
+    needs: [create_version, docker_build]
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+      attestations: write
+    uses: ./.github/workflows/docker_sbom.yml
+    with:
+      docker_registry: ${{ inputs.docker_registry }}
+      registry_org: ${{ inputs.registry_org }}
+      image_name: ${{ inputs.image_name }}
+      app_version: ${{ needs.create_version.outputs.version }}
+      image_digest: ${{ needs.docker_build.outputs.image_digest }}
+      attach_sbom_to_registry: ${{ inputs.attach_sbom_to_registry }}
+
+  generate_sbom_multi_platform:
+    name: Generate SBOM (multi-platform image)
+    if: ${{ inputs.generate_sbom && inputs.docker_multiplatform && inputs.push && inputs.docker_registry == 'ghcr.io' }}
+    needs: [create_version, docker_build_merge]
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+      attestations: write
+    uses: ./.github/workflows/docker_sbom.yml
+    with:
+      docker_registry: ${{ inputs.docker_registry }}
+      registry_org: ${{ inputs.registry_org }}
+      image_name: ${{ inputs.image_name }}
+      app_version: ${{ needs.create_version.outputs.version }}
+      image_digest: ${{ needs.docker_build_merge.outputs.image_digest }}
+      attach_sbom_to_registry: ${{ inputs.attach_sbom_to_registry }}
