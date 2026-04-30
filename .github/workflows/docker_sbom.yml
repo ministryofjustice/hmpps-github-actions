@@ -71,7 +71,7 @@ jobs:
           echo "subject_name=${{ inputs.docker_registry }}/${{ inputs.registry_org }}/${{ inputs.image_name || github.event.repository.name }}" >> "$GITHUB_OUTPUT"
           echo "subject_digest=$DIGEST" >> "$GITHUB_OUTPUT"
 
-      - name: Login to ghcr.io for attestation
+      - name: Login to registry for attestation
         if: ${{ inputs.attach_sbom_to_registry }}
         uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121 # v4
         with:
