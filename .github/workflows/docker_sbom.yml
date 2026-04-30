@@ -29,12 +29,6 @@ on:
         type: boolean
         default: false
 
-permissions:
-  contents: read
-  packages: write
-  id-token: write
-  attestations: write
-
 jobs:
   generate_sbom:
     name: Generate SBOM
