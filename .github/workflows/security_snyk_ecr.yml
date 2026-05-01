@@ -1,0 +1,85 @@
+name: Security Snyk dependency check
+
+on:
+  workflow_call:
+    inputs:
+      channel_id:
+        description: 'The slack channel ID to send a message on failure. If this is not provided then no message is sent.'
+        required: false
+        default: 'NO_SLACK'
+        type: string
+      subproject:
+        description: 'For gradle multi module projects, leave blank for single module projects'
+        required: false
+        default: ''
+        type: string
+      severity:
+        description: 'Customisable severity levels'
+        required: false
+        default: 'HIGH,CRITICAL'
+        type: string
+      slack_include_summary:
+        description: 'boolean to include a summary of vulnerabilities in the Slack message'
+        required: false
+        default: true
+        type: boolean
+      scan_type:
+        description: 'A scan type to use - either image (default) or fs'
+        required: false
+        default: 'image'
+        type: string
+      location:
+        description: 'A location for scans to take place'
+        required: false
+        default: '.'
+        type: string
+    secrets:
+      HMPPS_SRE_SLACK_BOT_TOKEN:
+        description: 'Slack bot token'
+        required: false
+      SNYK_TOKEN:
+        description: 'Snyk token'
+        required: true
+      ECR_ROLE_TO_ASSUME:
+        required: false
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  security-snyk-check:
+    name: Security snyk dependency check
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    permissions:
+      security-events: write
+      contents: read
+      actions: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Run Snyk Security Scan
+        id: snyk-scan
+        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/snyk-scan@v1 # WORKFLOW_VERSION
+        with:
+          subproject: ${{ inputs.subproject }}
+          severity: ${{ inputs.severity }}
+          scan_type: ${{ inputs.scan_type }}
+          location: ${{ inputs.location }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          snyk_token: ${{ secrets.SNYK_TOKEN }}
+          ECR_ROLE_TO_ASSUME: ${{ secrets.ECR_ROLE_TO_ASSUME }}
+
+      - name: Snyk slack notification
+        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/slack_snyk_scan_notification@v1 # WORKFLOW_VERSION
+        if: (failure() || steps.snyk-scan.outcome == 'failure' || steps.snyk-scan.outputs.results_count > 0) && inputs.channel_id != 'NO_SLACK'
+        with:
+          title: 'Snyk'
+          warningOnly: ${{ steps.snyk-scan.outputs.sarif_upload_outcome == 'success' }}
+          channel_id: ${{ inputs.channel_id }}
+          SLACK_BOT_TOKEN: ${{ secrets.HMPPS_SRE_SLACK_BOT_TOKEN }}
+          subproject: ${{ inputs.subproject }}
+          scan_context: ${{ inputs.scan_type }}
+          summary: ${{ inputs.slack_include_summary && steps.snyk-scan.outputs.summary || '' }}
