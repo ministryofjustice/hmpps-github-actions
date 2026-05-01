@@ -33,6 +33,11 @@ on:
         required: false
         default: '.'
         type: string
+      snyk_policy_path:
+        description: 'Optional path to .snyk policy file used for ignore rules'
+        required: false
+        default: ''
+        type: string
     secrets:
       HMPPS_SRE_SLACK_BOT_TOKEN:
         description: 'Slack bot token'
