@@ -1,4 +1,4 @@
-name: Security Snyk dependency check (ECR)
+name: Security Snyk dependency check (for ECR hosted docker images)
 
 on:
   workflow_call:
