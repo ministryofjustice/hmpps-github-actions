@@ -42,7 +42,7 @@ on:
       HMPPS_SRE_SLACK_BOT_TOKEN:
         description: 'Slack bot token'
         required: false
-      SNYK_TOKEN:
+      HMPPS_SNYK_API_KEY:
         description: 'Snyk token'
         required: true
       ECR_ROLE_TO_ASSUME:
@@ -74,7 +74,7 @@ jobs:
           scan_type: ${{ inputs.scan_type }}
           location: ${{ inputs.location }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          snyk_token: ${{ secrets.SNYK_TOKEN }}
+          snyk_token: ${{ secrets.HMPPS_SNYK_API_KEY }}
           ECR_ROLE_TO_ASSUME: ${{ secrets.ECR_ROLE_TO_ASSUME }}
           snyk_policy_path: ${{ inputs.snyk_policy_path }}
 
