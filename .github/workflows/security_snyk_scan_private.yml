@@ -1,4 +1,4 @@
-name: Security Snyk dependency check
+name: Security Snyk dependency check (Private repos)
 
 on:
   workflow_call:
