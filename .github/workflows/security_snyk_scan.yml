@@ -1,4 +1,4 @@
-name: Security Snyk dependency check (Public repos)
+name: Security Snyk dependency check (for publicly hosted docker images)
 
 on:
   workflow_call:
