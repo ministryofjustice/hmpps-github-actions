@@ -70,6 +70,7 @@ jobs:
           severity: ${{ inputs.severity }}
           scan_type: ${{ inputs.scan_type }}
           location: ${{ inputs.location }}
+          snyk_policy_path: ${{ inputs.snyk_policy_path }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
           snyk_token: ${{ secrets.SNYK_TOKEN }}
 
