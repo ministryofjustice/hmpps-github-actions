@@ -41,7 +41,7 @@ migrate_node_security_jobs() {
   gh api repos/ministryofjustice/hmpps-template-typescript/contents/.github/workflows/security_veracode_pipeline_scan.yml -H "Accept: application/vnd.github.v3.raw" > .github/workflows/security_veracode_pipeline_scan.yml
   gh api repos/ministryofjustice/hmpps-template-typescript/contents/.github/workflows/security_veracode_policy_scan.yml -H "Accept: application/vnd.github.v3.raw" > .github/workflows/security_veracode_policy_scan.yml
 
-  RANDOM_HOUR=$((RANDOM % (10 - 3 + 1) + 3))
+  RANDOM_HOUR=$((RANDOM % (9 - 3 + 1) + 3))
   RANDOM_MINUTE=$((RANDOM%60))
   RANDOM_MINUTE2=$((RANDOM%60))
 
