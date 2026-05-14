@@ -1,6 +1,9 @@
 name: Run gradle checks
 on:
   workflow_call:
+    secrets:
+      GRADLE_CACHE_ENCRYPTION_KEY:
+        required: false
     inputs:
       java-version:
         type: string
@@ -31,6 +34,11 @@ on:
       postgres-db:
         type: string
         default: 'postgres'
+        required: false
+      postgres-port:
+        description: The port mapping for postgres
+        type: string
+        default: '5432:5432'
         required: false
       postgres-username:
         type: string
@@ -101,17 +109,19 @@ jobs:
           --health-timeout 5s
           --health-retries 5
         ports:
-          - 5432:5432
+          - ${{ inputs.postgres-port }}
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - name: Setup Java
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5
         with:
           distribution: 'temurin'
           java-version: '${{ inputs.java-version }}'
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v5
+        uses: gradle/actions/setup-gradle@50e97c2cd7a37755bbfafc9c5b7cafaece252f6e # v6.1.0
+        with:
+          cache-encryption-key: ${{ secrets.GRADLE_CACHE_ENCRYPTION_KEY }}
       - name: Run checks with gradle
         shell: bash
         run: |
@@ -119,7 +129,7 @@ jobs:
           ${{ inputs.gradle-command }}
       - name: Upload the test artifacts
         if: ${{ inputs.upload-test-artifacts && !cancelled() }}
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: ${{ inputs.artifact-name }}
           path: |
@@ -128,7 +138,7 @@ jobs:
             ${{ inputs.build-dir }}/reports/jacoco
       - name: Upload the build artifacts
         if: ${{ inputs.upload-build-artifacts && !cancelled() }}
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: ${{ inputs.build-artifact-name }}
           path: |
@@ -136,7 +146,7 @@ jobs:
           retention-days: 1
       - name: publish test report
         if: ${{ inputs.upload-test-artifacts && !cancelled() && github.event.repository.visibility == 'public' }}
-        uses: dorny/test-reporter@v2
+        uses: dorny/test-reporter@a43b3a5f7366b97d083190328d2c652e1a8b6aa2 # v3.0.0
         with:
           artifact: ${{ inputs.artifact-name }}
           name: Test Report

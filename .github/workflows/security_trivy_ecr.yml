@@ -52,6 +52,10 @@ on:
       HMPPS_SRE_SLACK_BOT_TOKEN:
         description: 'Slack bot token'
         required: false
+      ECR_ROLE_TO_ASSUME:
+        required: false
+      ECR_REGISTRY_URL:
+        required: false
 
 permissions:
   contents: read
@@ -66,7 +70,8 @@ jobs:
       security-events: write
       contents: read
       actions: read
+      id-token: write
     steps:
-      - name: Echo Trivy disabled
-        run: echo " Trivy has been disabled - see the Security Slack channel"
-    
+      - name: Trivy disabled
+        run: echo "Trivy has temporarily been disabled - see the Security Slack channel"
+        shell: bash

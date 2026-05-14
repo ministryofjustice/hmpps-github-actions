@@ -74,14 +74,18 @@ jobs:
       fail-fast: false
     environment: ${{ inputs.environment }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           fetch-depth: 0
-      - uses: azure/setup-kubectl@v4
-        id: install
+      - uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/tool-installers/setup-helm@e0e6abc2f67f2bbb81a74610d6c307ab468a1a77 # v1
+      - uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/tool-installers/setup-kubectl@e0e6abc2f67f2bbb81a74610d6c307ab468a1a77 # v1
+      - uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/cloud-platform-auth@e0e6abc2f67f2bbb81a74610d6c307ab468a1a77 # v1
         with:
-          version: latest
-
+          api: https://${{ secrets.KUBE_CLUSTER }}
+          cert: ${{ secrets.KUBE_CERT }}
+          cluster: ${{ secrets.KUBE_CLUSTER }}
+          namespace: ${{ secrets.KUBE_NAMESPACE }}
+          token: ${{ secrets.KUBE_TOKEN }}
       - name: Set Slack Channel ID
         id: set-slack-channel-id
         run: |
@@ -91,16 +95,23 @@ jobs:
             echo "slack_channel_id=${{ vars.NONPROD_RELEASES_SLACK_CHANNEL }}" | tee -a $GITHUB_OUTPUT
           fi
 
-      - uses: ministryofjustice/hmpps-github-actions/.github/actions/build-test-and-deploy/cloud-platform-deploy@v2 # WORKFLOW_VERSION
+      # Version history
+      - name: get version history
+        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/version_history@e0e6abc2f67f2bbb81a74610d6c307ab468a1a77 # v1
+        if: ${{ inputs.show_changelog }}
+        id: version_history
+        with:
+          app_version: ${{ inputs.app_version }}
+          environment: ${{ inputs.environment }}
+          namespace: ${{ secrets.KUBE_NAMESPACE }}
+          k8s_deployment_name: ${{ inputs.k8s_deployment_name }}
+          changelog_git_paths: ${{ inputs.changelog_git_paths }}
+
+      - uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/cloud-platform-deploy@e0e6abc2f67f2bbb81a74610d6c307ab468a1a77 # v1
         id: deploy
         with:
           environment: ${{ inputs.environment }}
           version: ${{ inputs.app_version }}
-          api: https://${{ secrets.KUBE_CLUSTER }}
-          cert: ${{ secrets.KUBE_CERT }}
-          cluster: ${{ secrets.KUBE_CLUSTER }}
-          namespace: ${{ secrets.KUBE_NAMESPACE }}
-          token: ${{ secrets.KUBE_TOKEN }}
           k8s_deployment_name: ${{ inputs.k8s_deployment_name }}
           changelog_git_paths: ${{ inputs.changelog_git_paths }}
           show_changelog: ${{ inputs.show_changelog }}
@@ -115,25 +126,25 @@ jobs:
       # Notification bit - always send prod releases to dps-releases - CVA3MKDTR
       - if: ${{ always() && ( inputs.environment == 'prod' || inputs.environment == 'production' ) }}
         id: prod-dps-slack
-        uses: ministryofjustice/hmpps-github-actions/.github/actions/slack_release_results@v2 # WORKFLOW_VERSION
+        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/slack_release_results@e0e6abc2f67f2bbb81a74610d6c307ab468a1a77 # v1
         with:
           channel_id: 'CVA3MKDTR'
           environment: ${{ inputs.environment }}
           app_version: ${{ inputs.app_version }}
           deploy_outcome: ${{ steps.deploy.outcome }}
           slack_bot_token: ${{ secrets.HMPPS_SRE_SLACK_BOT_TOKEN }}
-          deployment_changelog: ${{ steps.deploy.outputs.deployment_changelog }}
+          deployment_changelog: ${{ steps.version_history.outputs.deployment_changelog }}
           k8s_deployment_name: ${{ inputs.k8s_deployment_name }}
 
       # Optional prod releases slack channel (using PROD_RELEASES_SLACK_CHANNEL variable)
       - if: ${{ always() && ( inputs.slack_notification == 'true' && steps.set-slack-channel-id.outputs.slack_channel_id != '' ) }}
         id: send-release-slack
-        uses: ministryofjustice/hmpps-github-actions/.github/actions/slack_release_results@v2 # WORKFLOW_VERSION
+        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/slack_release_results@e0e6abc2f67f2bbb81a74610d6c307ab468a1a77 # v1
         with:
           channel_id: ${{ steps.set-slack-channel-id.outputs.slack_channel_id }}
           environment: ${{ inputs.environment }}
           app_version: ${{ inputs.app_version }}
           deploy_outcome: ${{ steps.deploy.outcome }}
           slack_bot_token: ${{ secrets.HMPPS_SRE_SLACK_BOT_TOKEN }}
-          deployment_changelog: ${{ steps.deploy.outputs.deployment_changelog }}
+          deployment_changelog: ${{ steps.version_history.outputs.deployment_changelog }}
           k8s_deployment_name: ${{ inputs.k8s_deployment_name }}

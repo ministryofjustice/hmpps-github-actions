@@ -36,3 +36,15 @@ There is a non-backwards compatible change included in this release which is the
 ## v2.7.0
 
 Add support for AWS ECR hosted container images in the `.github/workflow/docker_build.yml` workflow. 
+
+## v2.8.0
+
+Merge gradle verify workflows into one (PR 165)
+
+## 2.9.0
+
+Build multi_platform images in parallel, native runners by Thomas-Geraghty (PR 187)
+
+## v2.10.0
+
+Migrate to use the hmpps-github-shared-actions repository for shared actions
