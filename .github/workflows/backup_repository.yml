@@ -27,7 +27,8 @@ on:
   schedule:
     - cron: "35 1 * * *"
 
-permissions: {}
+permissions:
+  contents: read
 
 jobs:
   backup:
