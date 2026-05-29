@@ -18,8 +18,18 @@
     },
     {
       "matchManagers": ["github-actions"],
-      "excludePackagePrefixes": ["ministryofjustice/hmpps-github-actions"],
+      "matchPackagePrefixes": ["ministryofjustice/hmpps-github-shared-actions"],
+      "pinDigests": true,
+      "minimumReleaseAge": null
+    },
+    {
+      "matchManagers": ["github-actions"],
+      "excludePackagePrefixes": [
+        "ministryofjustice/hmpps-github-actions",
+        "ministryofjustice/hmpps-github-shared-actions"
+      ],
       "pinDigests": true
     }
-  ]
+  ],
+  "platformCommit": "enabled"
 }

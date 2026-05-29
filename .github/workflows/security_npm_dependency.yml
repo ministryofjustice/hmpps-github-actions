@@ -40,7 +40,7 @@ jobs:
       actions: read
     steps:
     - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-    - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
+    - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
       with:
         node-version-file: ${{ inputs.working_directory }}/${{ inputs.node_version_file }}
     - name: Show npm version
@@ -55,7 +55,7 @@ jobs:
         NPM_CONFIG_MIN_RELEASE_AGE: '7'
       run: npx audit-ci@7.1.0 --config ./audit-ci.json -o json > npm-security-check-reports.json
       continue-on-error: true
-    - uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+    - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
       with:
         name: npm-security-check-${{ github.event.repository.name }}
         path: ${{ inputs.working_directory }}/npm-security-check-reports.json
@@ -63,12 +63,12 @@ jobs:
       id: sarif-format
       # While we're paying for advanced security, we can scan all repos...
       # if: ${{ github.event.repository.visibility != 'private' && github.event.repository.visibility != 'internal' }}
-      uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/auditjson_to_sarif@fddc5f11d6a8ce9b82a06fe76268835bfd99bcd4 # v1
+      uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/auditjson_to_sarif@e0e6abc2f67f2bbb81a74610d6c307ab468a1a77 # v1
       with:
         input-file: '${{ inputs.working_directory }}/npm-security-check-reports.json'
     # Upload Sarif file: this will attempt to upload the sarif file for private/internal repositories as well
     - name: npm upload sarif
-      uses: github/codeql-action/upload-sarif@38697555549f1db7851b81482ff19f1fa5c4fedc # v4
+      uses: github/codeql-action/upload-sarif@7211b7c8077ea37d8641b6271f6a365a22a5fbfa # v4
       id: npm-upload-sarif
       # if: ${{ github.event.repository.visibility != 'private' && github.event.repository.visibility != 'internal' }}
       with:
@@ -79,12 +79,12 @@ jobs:
     - name:  Run translator to convert to a Slack-compatible table # returns SLACK_TXT
       id: slack-format
       if: steps.npm.outcome == 'failure' && inputs.channel_id != 'NO_SLACK'
-      uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/auditjson_to_slack@fddc5f11d6a8ce9b82a06fe76268835bfd99bcd4 # v1
+      uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/auditjson_to_slack@e0e6abc2f67f2bbb81a74610d6c307ab468a1a77 # v1
       with:
         input_file: '${{ inputs.working_directory }}/npm-security-check-reports.json'
       # Slack notification if there either of the two audits fail
     - name: npm audit slack notification
-      uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/slack_codescan_notification@fddc5f11d6a8ce9b82a06fe76268835bfd99bcd4 # v1
+      uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/slack_codescan_notification@e0e6abc2f67f2bbb81a74610d6c307ab468a1a77 # v1
       if: (failure() || steps.npm.outcome == 'failure' || steps.npm.outcome == 'failure') && inputs.channel_id != 'NO_SLACK'
       with:
         title: "npm dependency scan"

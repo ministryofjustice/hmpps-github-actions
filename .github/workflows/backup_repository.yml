@@ -1,0 +1,45 @@
+name: Backup Repository to SharePoint
+
+on:
+  workflow_call:
+    inputs:
+      retention_count:
+        description: Number of backups to retain
+        required: false
+        type: number
+        default: 5
+    secrets:
+      SHAREPOINT_CLIENT_ID:
+        required: true
+      SHAREPOINT_CLIENT_SECRET:
+        required: true
+      AZURE_TENANT_ID:
+        required: true
+
+  workflow_dispatch:
+    inputs:
+      retention_count:
+        description: Number of backups to retain
+        required: false
+        type: number
+        default: 5
+
+  schedule:
+    - cron: "35 1 * * *"
+
+permissions:
+  contents: read
+
+jobs:
+  backup:
+    name: Backup to SharePoint
+    runs-on: ubuntu-latest
+    env:
+      SP_CLIENT_ID: ${{ secrets.SHAREPOINT_CLIENT_ID }}
+      SP_CLIENT_SECRET: ${{ secrets.SHAREPOINT_CLIENT_SECRET }}
+      AZ_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+    steps:
+      - name: Backup repository to SharePoint
+        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/sharepoint_repository_backup@e0e6abc2f67f2bbb81a74610d6c307ab468a1a77 # v1
+        with:
+          retention_count: ${{ inputs.retention_count || 5 }}

@@ -96,7 +96,7 @@ jobs:
         java-version: '${{ inputs.java_version }}'
     - name: prepare assets
       if: inputs.veracode_package_artifact_name == ''
-      uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/security_veracode_prepare_artifacts@fddc5f11d6a8ce9b82a06fe76268835bfd99bcd4 # v1
+      uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/security_veracode_prepare_artifacts@e0e6abc2f67f2bbb81a74610d6c307ab468a1a77 # v1
       with:
         docker_image_app_dir: ${{ inputs.docker_image_app_dir }}
     - name: download assets artifact
@@ -104,7 +104,7 @@ jobs:
       uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
       with:
         name: ${{ inputs.veracode_package_artifact_name }}
-    - uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/tool-installers/setup-veracode-wrapper@fddc5f11d6a8ce9b82a06fe76268835bfd99bcd4 # v1
+    - uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/tool-installers/setup-veracode-wrapper@e0e6abc2f67f2bbb81a74610d6c307ab468a1a77 # v1
     - name: "Upload to Veracode"
       shell: bash
       run: |
@@ -138,14 +138,14 @@ jobs:
         VERACODE_API_KEY_2: ${{ secrets.HMPPS_VERACODE_API_KEY_2 }}
         VERACODE_API_KEY_3: ${{ secrets.HMPPS_VERACODE_API_KEY_3 }}
         VERACODE_API_KEY_4: ${{ secrets.HMPPS_VERACODE_API_KEY_4 }}
-    - uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+    - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
       if: success() 
       with:
         name: veracode-policy-check-${{ inputs.application_name || github.event.repository.name }}
         path: output.txt
     - name: send a failure slack message
       if: failure()  && inputs.channel_id != 'NO_SLACK'
-      uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/slack_failure_results@fddc5f11d6a8ce9b82a06fe76268835bfd99bcd4 # v1
+      uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/slack_failure_results@e0e6abc2f67f2bbb81a74610d6c307ab468a1a77 # v1
       with:
         SLACK_BOT_TOKEN: ${{ secrets.HMPPS_SRE_SLACK_BOT_TOKEN }}
         channel_id: ${{ inputs.channel_id }}
