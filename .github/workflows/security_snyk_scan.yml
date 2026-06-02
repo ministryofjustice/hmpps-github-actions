@@ -16,7 +16,7 @@ on:
       severity:
         description: 'Customisable severity levels'
         required: false
-        default: 'HIGH,CRITICAL'
+        default: 'critical,high'
         type: string
       slack_include_summary:
         description: 'boolean to include a summary of vulnerabilities in the Slack message'
@@ -67,7 +67,7 @@ jobs:
 
       - name: Run Snyk Security Scan
         id: snyk-scan
-        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/snyk-scan@replace_snyk_token_with_oauth
+        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/snyk-scan@410c03497c0fe20f972354f2068b1b8ca175a54c # v1.0.14
         with:
           subproject: ${{ inputs.subproject }}
           severity: ${{ inputs.severity }}
@@ -79,7 +79,7 @@ jobs:
           client_secret: ${{ secrets.HMPPS_SNYK_CLIENT_SECRET }}
 
       - name: Snyk slack notification
-        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/slack_snyk_scan_notification@replace_snyk_token_with_oauth
+        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/slack_snyk_scan_notification@410c03497c0fe20f972354f2068b1b8ca175a54c # v1.0.14
         if: (failure() || steps.snyk-scan.outcome == 'failure' || steps.snyk-scan.outputs.results_count > 0) && inputs.channel_id != 'NO_SLACK'
         with:
           title: 'Snyk'
