@@ -16,7 +16,7 @@ on:
       severity:
         description: 'Customisable severity levels'
         required: false
-        default: 'HIGH,CRITICAL'
+        default: 'critical,high'
         type: string
       slack_include_summary:
         description: 'boolean to include a summary of vulnerabilities in the Slack message'
