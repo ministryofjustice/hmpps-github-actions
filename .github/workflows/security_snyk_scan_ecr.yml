@@ -42,12 +42,15 @@ on:
       HMPPS_SRE_SLACK_BOT_TOKEN:
         description: 'Slack bot token'
         required: false
+      HMPPS_SNYK_API_KEY:
+        description: 'Snyk token'
+        required: false
       HMPPS_SNYK_CLIENT_ID:
         description: 'Snyk client ID'
-        required: true
+        required: false
       HMPPS_SNYK_CLIENT_SECRET:
         description: 'Snyk client secret'
-        required: true
+        required: false
       ECR_ROLE_TO_ASSUME:
         required: false
 
