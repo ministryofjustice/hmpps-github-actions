@@ -82,6 +82,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           client_id: ${{ secrets.HMPPS_SNYK_CLIENT_ID }}
           client_secret: ${{ secrets.HMPPS_SNYK_CLIENT_SECRET }}
+          client_token: ${{ secrets.HMPPS_SNYK_API_KEY }}
           ECR_ROLE_TO_ASSUME: ${{ secrets.ECR_ROLE_TO_ASSUME }}
           snyk_policy_path: ${{ inputs.snyk_policy_path }}
 
