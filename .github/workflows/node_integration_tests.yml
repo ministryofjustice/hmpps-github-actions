@@ -64,6 +64,7 @@ jobs:
           path: |
             ./node_modules
             ~/.cache/Cypress
+            ~/.cache/ms-playwright
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json', '!**/node_modules/**') }}
       - name: Init testing framework if necessary
         run: npm run int-test-init:ci --if-present

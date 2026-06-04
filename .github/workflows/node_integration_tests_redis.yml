@@ -42,6 +42,7 @@ jobs:
           path: |
             ./node_modules
             ~/.cache/Cypress
+            ~/.cache/ms-playwright
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json', '!**/node_modules/**') }}
       - uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/tool-installers/setup-wiremock@e0e6abc2f67f2bbb81a74610d6c307ab468a1a77 # v1
       - name: Prepare and run integration tests
