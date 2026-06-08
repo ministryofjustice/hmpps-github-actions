@@ -70,7 +70,7 @@ jobs:
 
       - name: Run Snyk Security Scan
         id: snyk-scan
-        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/snyk-scan@363199fd594247fefadda32f839edb5d4f7ac7d8 # v1.0.15
+        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/snyk-scan@uv_bug
         with:
           subproject: ${{ inputs.subproject }}
           severity: ${{ inputs.severity }}
