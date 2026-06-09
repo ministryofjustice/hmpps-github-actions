@@ -8,8 +8,13 @@ on:
         required: false
         type: string
         default: 'int-test'
+      shard_count:
+        description: 'Number of parallel Cypress or Playwright test shards to run (1-6)'
+        required: false
+        type: number
+        default: 1
       test_results_artifact_name:
-        description: 'Name of uploaded test results artifact; must be unqiue across pipeline (eg. in matrix strategies for parallelised tests)'
+        description: 'Name of uploaded test results artifact; must be unique across pipeline (eg. in matrix strategies for parallelised tests)'
         required: false
         type: string
         default: 'npm_integration_test_artifacts'
@@ -33,8 +38,22 @@ permissions:
 
 jobs:
   integration_test:
-    name: ${{ inputs.npm_script == 'int-test' && 'Run the integration tests' || format('Run the integration tests – {0}', inputs.npm_script) }}
+    name: Run the integration tests${{ inputs.npm_script == 'int-test' && '' || format(' – {0}', inputs.npm_script) }}${{ inputs.shard_count == 1 && '' || format(' – shard {0}/{1}', matrix.shard, inputs.shard_count) }}
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: >-
+          ${{
+            fromJSON(
+              inputs.shard_count == 2 && '[1,2]' ||
+              inputs.shard_count == 3 && '[1,2,3]' ||
+              inputs.shard_count == 4 && '[1,2,3,4]' ||
+              inputs.shard_count == 5 && '[1,2,3,4,5]' ||
+              inputs.shard_count == 6 && '[1,2,3,4,5,6]' ||
+              '[1]'
+            )
+          }}
     services:
       redis:
         image: ${{ inputs.redis_tag && format('redis:{0}', inputs.redis_tag) || '' }}
@@ -47,6 +66,15 @@ jobs:
           --health-retries 5
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          persist-credentials: false
+      - name: Check out the shared workflow runner
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          repository: ${{ job.workflow_repository }}
+          ref: ${{ job.workflow_sha }}
+          path: .hmpps-github-actions
+          persist-credentials: false
       - name: Use Node.js ${{ inputs.node_version_file }}
         uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
@@ -70,17 +98,17 @@ jobs:
       - uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/tool-installers/setup-wiremock@97eeedc606b4ce163133d203259a71698c9ad34b # v1.0.16
       - name: Prepare and run integration tests
         id: integration-tests
-        shell: bash
-        run: |
-          nohup java -jar wiremock.jar --port ${{ inputs.wiremock_port }} &
-          nohup npm run start-feature &
-          sleep 5
-          npm run ${{ inputs.npm_script }}
+        env:
+          NPM_SCRIPT: ${{ inputs.npm_script }}
+          SHARD_COUNT: ${{ inputs.shard_count }}
+          SHARD_INDEX: ${{ matrix.shard }}
+          WIREMOCK_PORT: ${{ inputs.wiremock_port }}
+        run: node .hmpps-github-actions/.github/scripts/run-node-integration-tests.mjs
       - name: upload results
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
-          name: ${{ inputs.test_results_artifact_name }}
+          name: ${{ inputs.shard_count == 1 && inputs.test_results_artifact_name || format('{0}-shard-{1}', inputs.test_results_artifact_name, matrix.shard) }}
           path: |
             integration_tests/videos/
             integration_tests/screenshots/
@@ -91,8 +119,8 @@ jobs:
         if: ${{ !cancelled() && github.event.repository.visibility == 'public' }}
         uses: dorny/test-reporter@a43b3a5f7366b97d083190328d2c652e1a8b6aa2 # v3
         with:
-          artifact: ${{ inputs.test_results_artifact_name }}
-          name: Test Report
+          artifact: ${{ inputs.shard_count == 1 && inputs.test_results_artifact_name || format('{0}-shard-{1}', inputs.test_results_artifact_name, matrix.shard) }}
+          name: ${{ inputs.shard_count == 1 && 'Test Report' || format('Test Report – shard {0}/{1}', matrix.shard, inputs.shard_count) }}
           path: 'test_results/**/*.xml'
           reporter: java-junit
           fail-on-empty: false
