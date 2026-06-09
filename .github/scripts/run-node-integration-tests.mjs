@@ -112,11 +112,6 @@ async function prepareTestArguments(npmScript, shardIndex, shardCount) {
 }
 
 async function main() {
-  if (process.env.RUNNER_MODE === 'init') {
-    runSync('npm', ['run', 'int-test-init:ci', '--if-present'])
-    return
-  }
-
   const npmScript = process.env.NPM_SCRIPT
   if (!npmScript) throw new Error('npm_script must not be empty')
 
