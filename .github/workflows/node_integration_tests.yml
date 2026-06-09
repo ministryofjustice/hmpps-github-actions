@@ -119,7 +119,7 @@ jobs:
             ctrf/
       - name: publish test report
         if: ${{ !cancelled() && github.event.repository.visibility == 'public' }}
-        uses: dorny/test-reporter@1cc81a5edf733718d4850df304aaa21c05cd7280 # v3
+        uses: dorny/test-reporter@a43b3a5f7366b97d083190328d2c652e1a8b6aa2 # v3
         with:
           artifact: ${{ inputs.shard_count == 1 && inputs.test_results_artifact_name || format('{0}-shard-{1}', inputs.test_results_artifact_name, matrix.shard) }}
           name: ${{ inputs.shard_count == 1 && 'Test Report' || format('Test Report – shard {0}/{1}', matrix.shard, inputs.shard_count) }}
@@ -131,7 +131,7 @@ jobs:
           list-tests: 'failed'
       - name: fail the action if the tests failed
         if: ${{ steps.integration-tests.outcome == 'failure' }}
-        uses: actions/github-script@373c709c69115d41ff229c7e5df9f8788daa9553 # v9
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
         with:
           script: |
             core.setFailed('Integration tests failed')
