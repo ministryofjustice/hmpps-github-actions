@@ -14,7 +14,7 @@ on:
         type: number
         default: 1
       test_results_artifact_name:
-        description: 'Name of uploaded test results artifact; must be unique across pipeline'
+        description: 'Name of uploaded test results artifact; must be unique across pipeline (eg. in matrix strategies for parallelised tests)'
         required: false
         type: string
         default: 'npm_integration_test_artifacts'
