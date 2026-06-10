@@ -8,6 +8,11 @@ on:
         required: false
         default: 'NO_SLACK'
         type: string
+      queries:
+        description: 'Option for extended queries'
+        required: false
+        default: 'standard'
+        type: string
     secrets:
       HMPPS_SRE_SLACK_BOT_TOKEN:
         description: 'Slack bot token'
@@ -34,6 +39,7 @@ jobs:
       uses: github/codeql-action/init@8aad20d150bbac5944a9f9d289da16a4b0d87c1e # v4
       with:
         languages: actions 
+        queries: ${{ inputs.queries }}
     - name: Perform CodeQL Analysis
       id: codeql_analysis
       uses: github/codeql-action/analyze@8aad20d150bbac5944a9f9d289da16a4b0d87c1e # v4
