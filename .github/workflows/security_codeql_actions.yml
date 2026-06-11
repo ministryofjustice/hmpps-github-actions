@@ -11,7 +11,7 @@ on:
       queries:
         description: 'Option for extended queries'
         required: false
-        default: 'default'
+        default: ''
         type: string
     secrets:
       HMPPS_SRE_SLACK_BOT_TOKEN:
