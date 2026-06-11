@@ -78,9 +78,9 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
-      - uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/tool-installers/setup-helm@92939d1f5cde220f48ff6588b7703e9c6129beaa # fix/persist-credentials_false
-      - uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/tool-installers/setup-kubectl@92939d1f5cde220f48ff6588b7703e9c6129beaa # fix/persist-credentials_false
-      - uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/cloud-platform-auth@92939d1f5cde220f48ff6588b7703e9c6129beaa # fix/persist-credentials_false
+      - uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/tool-installers/setup-helm@138c0c9dfc169d55e40b492f4590c584aa06e313 # fix/persist-credentials_false
+      - uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/tool-installers/setup-kubectl@138c0c9dfc169d55e40b492f4590c584aa06e313 # fix/persist-credentials_false
+      - uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/cloud-platform-auth@138c0c9dfc169d55e40b492f4590c584aa06e313 # fix/persist-credentials_false
         with:
           api: https://${{ secrets.KUBE_CLUSTER }}
           cert: ${{ secrets.KUBE_CERT }}
@@ -98,7 +98,7 @@ jobs:
 
       # Version history
       - name: get version history
-        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/version_history@92939d1f5cde220f48ff6588b7703e9c6129beaa # fix/persist-credentials_false
+        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/version_history@138c0c9dfc169d55e40b492f4590c584aa06e313 # fix/persist-credentials_false
         if: ${{ inputs.show_changelog }}
         id: version_history
         with:
@@ -127,7 +127,7 @@ jobs:
       # Notification bit - always send prod releases to dps-releases - CVA3MKDTR
       - if: ${{ always() && ( inputs.environment == 'prod' || inputs.environment == 'production' ) }}
         id: prod-dps-slack
-        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/slack_release_results@92939d1f5cde220f48ff6588b7703e9c6129beaa # fix/persist-credentials_false
+        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/slack_release_results@138c0c9dfc169d55e40b492f4590c584aa06e313 # fix/persist-credentials_false
         with:
           channel_id: 'CVA3MKDTR'
           environment: ${{ inputs.environment }}
@@ -140,7 +140,7 @@ jobs:
       # Optional prod releases slack channel (using PROD_RELEASES_SLACK_CHANNEL variable)
       - if: ${{ always() && ( inputs.slack_notification == 'true' && steps.set-slack-channel-id.outputs.slack_channel_id != '' ) }}
         id: send-release-slack
-        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/slack_release_results@92939d1f5cde220f48ff6588b7703e9c6129beaa # fix/persist-credentials_false
+        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/slack_release_results@138c0c9dfc169d55e40b492f4590c584aa06e313 # fix/persist-credentials_false
         with:
           channel_id: ${{ steps.set-slack-channel-id.outputs.slack_channel_id }}
           environment: ${{ inputs.environment }}

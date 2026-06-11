@@ -96,7 +96,7 @@ jobs:
     steps:
       - id: app_version
         name: Create application version
-        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/create_app_version@92939d1f5cde220f48ff6588b7703e9c6129beaa # fix/persist-credentials_false
+        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/create_app_version@138c0c9dfc169d55e40b492f4590c584aa06e313 # fix/persist-credentials_false
 
   docker_build:
     name: Build linux/amd64 (single)
@@ -107,7 +107,7 @@ jobs:
       image_digest: ${{ steps.build_docker_step.outputs.digest }}
     steps:
       - id: build_docker_step
-        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/build_docker@92939d1f5cde220f48ff6588b7703e9c6129beaa # fix/persist-credentials_false
+        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/build_docker@138c0c9dfc169d55e40b492f4590c584aa06e313 # fix/persist-credentials_false
         if: ${{ inputs.docker_registry == 'ghcr.io' }}
         with:
           image_name: ${{ inputs.image_name || github.event.repository.name }}
@@ -124,7 +124,7 @@ jobs:
           file: ${{ inputs.file }}
           download_build_artifacts: ${{ inputs.download_build_artifacts }}
 
-      - uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/build_docker@92939d1f5cde220f48ff6588b7703e9c6129beaa # fix/persist-credentials_false
+      - uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/build_docker@138c0c9dfc169d55e40b492f4590c584aa06e313 # fix/persist-credentials_false
         if: ${{ inputs.docker_registry == 'quay.io' }}
         with:
           image_name: ${{ inputs.image_name || github.event.repository.name }}

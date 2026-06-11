@@ -45,7 +45,7 @@ jobs:
             ./node_modules
             ~/.cache/Cypress
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json', '!**/node_modules/**') }}
-      - uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/tool-installers/setup-wiremock@92939d1f5cde220f48ff6588b7703e9c6129beaa # fix/persist-credentials_false
+      - uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/tool-installers/setup-wiremock@138c0c9dfc169d55e40b492f4590c584aa06e313 # fix/persist-credentials_false
       - name: Prepare and run integration tests
         id: integration-tests
         shell: bash
