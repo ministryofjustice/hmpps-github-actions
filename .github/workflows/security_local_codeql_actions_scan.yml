@@ -11,7 +11,7 @@ permissions:
 jobs:
   security-actions-codeql-check:
     name: Project security Github Actions CodeQL check
-    uses: ministryofjustice/hmpps-github-actions/.github/workflows/security_codeql_actions.yml@fix/persist_credentials_false # validation
+    uses: ministryofjustice/hmpps-github-actions/.github/workflows/security_codeql_actions.yml@v2 # WORKFLOW_VERSION
     with:
       queries: security-extended
       channel_id: ${{ vars.SECURITY_ALERTS_SLACK_CHANNEL_ID || 'NO_SLACK' }}
