@@ -67,7 +67,8 @@ jobs:
       actions: read
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
-
+        with:
+          persist-credentials: false
       - name: Run Snyk Security Scan
         id: snyk-scan
         uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/snyk-scan@c241b9febb7a4fc11e88d0e781cbdfcf8abd84a5 # v1.0.17
