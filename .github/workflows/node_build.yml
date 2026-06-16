@@ -65,6 +65,7 @@ jobs:
           assets/stylesheets/
     - name: save cache
       id: save-cache
+      if: always() && steps.restore-cache.outputs.cache-hit != 'true'
       uses: actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
       env: 
         cache-name: node-modules
