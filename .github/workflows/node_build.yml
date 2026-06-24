@@ -46,7 +46,10 @@ jobs:
     - name: install dependencies
       if: steps.restore-cache.outputs.cache-hit != 'true'
       shell: bash
-      run: "${{ inputs.install_command }}"
+      env:
+        INSTALL_COMMAND: ${{ inputs.install_command }}
+      run: |
+        bash -lc "${INSTALL_COMMAND}"
     - name: build npm
       shell: bash
       run: |

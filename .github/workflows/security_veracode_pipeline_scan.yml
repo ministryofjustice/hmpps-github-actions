@@ -129,6 +129,18 @@ jobs:
     - name: "Scan the project"
       id: veracode-pipeline-scan
       shell: bash
+      env:
+        VERACODE_ARTIFACT_NAME: ${{ inputs.veracode_artifact_name }}
+        VERACODE_API_ID_0: ${{ secrets.HMPPS_VERACODE_API_ID_0 }}
+        VERACODE_API_ID_1: ${{ secrets.HMPPS_VERACODE_API_ID_1 }}
+        VERACODE_API_ID_2: ${{ secrets.HMPPS_VERACODE_API_ID_2 }}
+        VERACODE_API_ID_3: ${{ secrets.HMPPS_VERACODE_API_ID_3 }}
+        VERACODE_API_ID_4: ${{ secrets.HMPPS_VERACODE_API_ID_4 }}
+        VERACODE_API_KEY_0: ${{ secrets.HMPPS_VERACODE_API_KEY_0 }}
+        VERACODE_API_KEY_1: ${{ secrets.HMPPS_VERACODE_API_KEY_1 }}
+        VERACODE_API_KEY_2: ${{ secrets.HMPPS_VERACODE_API_KEY_2 }}
+        VERACODE_API_KEY_3: ${{ secrets.HMPPS_VERACODE_API_KEY_3 }}
+        VERACODE_API_KEY_4: ${{ secrets.HMPPS_VERACODE_API_KEY_4 }}
       run: |
           echo "Randomly picking 1 of 5 api keys, to help avoid veracode API rate limits."
           X=$(( RANDOM % 4 ))
@@ -140,7 +152,7 @@ jobs:
           java -jar pipeline-scan.jar \
           $(test -f results.json && echo "--baseline_file results.json") \
           --json_output true \
-          --file ${{ inputs.veracode_artifact_name }} \
+          --file "${VERACODE_ARTIFACT_NAME}" \
           --policy_file Ministry_of_Justice.json \
           --veracode_api_id "${VERACODE_API_ID}" \
           --veracode_api_key "${VERACODE_API_KEY}" \
@@ -148,17 +160,6 @@ jobs:
           --issue_details false \
           --summary_output true
       continue-on-error: true
-      env:
-        VERACODE_API_ID_0: ${{ secrets.HMPPS_VERACODE_API_ID_0 }}
-        VERACODE_API_ID_1: ${{ secrets.HMPPS_VERACODE_API_ID_1 }}
-        VERACODE_API_ID_2: ${{ secrets.HMPPS_VERACODE_API_ID_2 }}
-        VERACODE_API_ID_3: ${{ secrets.HMPPS_VERACODE_API_ID_3 }}
-        VERACODE_API_ID_4: ${{ secrets.HMPPS_VERACODE_API_ID_4 }}
-        VERACODE_API_KEY_0: ${{ secrets.HMPPS_VERACODE_API_KEY_0 }}
-        VERACODE_API_KEY_1: ${{ secrets.HMPPS_VERACODE_API_KEY_1 }}
-        VERACODE_API_KEY_2: ${{ secrets.HMPPS_VERACODE_API_KEY_2 }}
-        VERACODE_API_KEY_3: ${{ secrets.HMPPS_VERACODE_API_KEY_3 }}
-        VERACODE_API_KEY_4: ${{ secrets.HMPPS_VERACODE_API_KEY_4 }}
     - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
       id: veracode-artifact-upload
       if: success() 

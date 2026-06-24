@@ -65,8 +65,10 @@ jobs:
       - name: unit tests
         id: unit-tests
         shell: bash
+        env:
+          NPM_SCRIPT: ${{ inputs.npm_script }}
         run: |
-          npm run ${{ inputs.npm_script }}
+          npm run "${NPM_SCRIPT}"
         # continue-on-error: true
         # Replacing the above with if: always()
       - name: upload the artifacts

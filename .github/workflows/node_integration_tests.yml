@@ -73,11 +73,14 @@ jobs:
       - name: Prepare and run integration tests
         id: integration-tests
         shell: bash
+        env:
+          WIREMOCK_PORT: ${{ inputs.wiremock_port }}
+          NPM_SCRIPT: ${{ inputs.npm_script }}
         run: |
-          nohup java -jar wiremock.jar --port ${{ inputs.wiremock_port }} &
+          nohup java -jar wiremock.jar --port "${WIREMOCK_PORT}" &
           nohup npm run start-feature &
           sleep 5
-          npm run ${{ inputs.npm_script }}
+          npm run "${NPM_SCRIPT}"
       - name: upload results
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7

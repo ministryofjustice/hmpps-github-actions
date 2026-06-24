@@ -52,18 +52,20 @@ jobs:
         id: prepare_attestation_subject
         if: ${{ inputs.attach_sbom_to_registry }}
         shell: bash
+        env:
+          IMAGE_DIGEST: ${{ inputs.image_digest }}
+          SUBJECT_NAME: ${{ inputs.docker_registry }}/${{ inputs.registry_org }}/${{ inputs.image_name || github.event.repository.name }}
         run: |
-          DIGEST='${{ inputs.image_digest }}'
-          if [[ -z "$DIGEST" ]]; then
+          if [[ -z "${IMAGE_DIGEST}" ]]; then
             echo "Missing image digest input" >&2
             exit 1
           fi
-          if [[ ! "$DIGEST" =~ ^sha256:[0-9a-f]{64}$ ]]; then
-            echo "Invalid digest format: $DIGEST (expected sha256:<64 hex chars>)" >&2
+          if [[ ! "${IMAGE_DIGEST}" =~ ^sha256:[0-9a-f]{64}$ ]]; then
+            echo "Invalid digest format: ${IMAGE_DIGEST} (expected sha256:<64 hex chars>)" >&2
             exit 1
           fi
-          echo "subject_name=${{ inputs.docker_registry }}/${{ inputs.registry_org }}/${{ inputs.image_name || github.event.repository.name }}" >> "$GITHUB_OUTPUT"
-          echo "subject_digest=$DIGEST" >> "$GITHUB_OUTPUT"
+          echo "subject_name=${SUBJECT_NAME}" >> "${GITHUB_OUTPUT}"
+          echo "subject_digest=${IMAGE_DIGEST}" >> "${GITHUB_OUTPUT}"
 
       - name: Login to registry for attestation
         if: ${{ inputs.attach_sbom_to_registry }}
