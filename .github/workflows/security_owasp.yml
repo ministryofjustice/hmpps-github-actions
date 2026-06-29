@@ -43,12 +43,12 @@ permissions:
   security-events: write
 
 jobs:
-  # NVD v2 API version of the scan - using self-hosted runner
-  security-owasp-check-nvd2:
-    name: Security OWASP dependency check (NVD API 2)
-    runs-on:  [ self-hosted, hmpps-github-actions-runner-security ]
-    if: github.repository_owner == 'ministryofjustice' && inputs.nvd_feed_version == '2'
-    permissions:
+  # This uses the NVD API v2
+  security-owasp-check:
+    name: Security OWASP dependency check
+    runs-on:  ubuntu-latest
+    if: github.repository_owner == 'ministryofjustice'
+    permissions:  
       security-events: write
       contents: read
       actions: read
@@ -63,7 +63,7 @@ jobs:
         java-version: '${{ inputs.java_version }}'
     - name: Run gradle OWASP Dependency Check Analyse
       id: owasp-analyse
-      run: ./gradlew ${{ inputs.subproject }}:dependencyCheckAnalyze -Pdatafeed.url='file:///opt/vulnz/cache'
+      run: ./gradlew ${{ inputs.subproject }}:dependencyCheckAnalyze -Pdatafeed.url='https://ministryofjustice.github.io/hmpps-github-actions-runner-security/nvd_cache'
       continue-on-error: true
     # Extra sanitisation of SARIF files:
     # - remove newlines from rules ID and reduce them to less than 15 characters
@@ -161,116 +161,3 @@ jobs:
         SLACK_BOT_TOKEN: ${{ secrets.HMPPS_SRE_SLACK_BOT_TOKEN }}
         subproject: ${{ inputs.subproject }}
         summary: ${{ inputs.slack_include_summary && steps.owasp-summary.outputs.summary || '' }}
-  # Previous NVD API version - this will no longer be default when the database is no longer available
-  security-owasp-check-nvd1:
-    name: Security OWASP dependency check (NVD API 1)
-    runs-on:  ubuntu-latest
-    if: inputs.nvd_feed_version == '1'
-    permissions:
-      security-events: write
-      contents: read
-      actions: read
-    steps:
-    - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-      with:
-        persist-credentials: false
-    - name: Set up JDK 21
-      uses: actions/setup-java@ad2b38190b15e4d6bdf0c97fb4fca8412226d287 # v5
-      with:
-        java-version: '21'
-        distribution: 'temurin'
-    - name: Run gradle OWASP Dependency Check Analyse
-      id: owasp-analyse
-      run: ./gradlew ${{ inputs.subproject }}:dependencyCheckAnalyze --info
-      continue-on-error: true
-    # Extra sanitisation of SARIF files:
-    # - remove newlines from rules ID and reduce them to less than 15 characters
-    # - reduce newlines from shortDescription and reduce them to less than 100 characters
-    # - amalgamate CVSSv3 and CVSSv2 severities and scores to improve coverage
-    # - remove newlines from results RuleID and reduce them to less than 15 characters
-    - name: Sanitise sarif
-      id: sanitise-sarif
-      run: |
-        jq '
-          .runs |= map(
-            if (.tool.driver.rules | type) == "array" then
-              .tool.driver.rules |= map(
-                (if (.id | type) == "string" then
-                  .id = ((.id
-                    | gsub("[\\r\\n]+"; " ")
-                    | gsub("[[:space:]]+"; " ")
-                    | gsub("^[[:space:]]+|[[:space:]]+$"; ""))[0:15])
-                else . end)
-                | (if (.shortDescription.text | type) == "string" then
-                    .shortDescription.text = (
-                      .shortDescription.text
-                      | gsub("[\\r\\n]+"; " ")
-                      | gsub("[[:space:]]+"; " ")
-                      | gsub("^[[:space:]]+|[[:space:]]+$"; "")
-                      | if length > 100 then .[0:96] + "..." else . end
-                    )
-                  else . end)
-                | .properties.cvss_score = (.properties.cvssv3_baseScore // .properties.cvssv3_score // .properties.cvssv2_score // .properties."security-severity")
-                | .properties.cvss_severity = (.properties.cvssv3_baseSeverity // .properties.cvssv3_severity // .properties.cvssv2_severity)
-              )
-            else
-              .
-            end
-            | if (.results | type) == "array" then
-                .results |= map(
-                  if (.ruleId | type) == "string" then
-                    .ruleId = ((.ruleId
-                      | gsub("[\\r\\n]+"; " ")
-                      | gsub("[[:space:]]+"; " ")
-                      | gsub("^[[:space:]]+|[[:space:]]+$"; ""))[0:15])
-                  else . end
-                )
-              else
-                .
-              end
-          )
-        ' "$SARIF_FILE" > "$SARIF_MOD_FILE"
-      env:
-        SARIF_FILE: ${{ inputs.subproject == '' && '.' || inputs.subproject }}/build/reports/dependency-check-report.sarif
-        SARIF_MOD_FILE: ${{ inputs.subproject == '' && '.' || inputs.subproject }}/build/reports/dependency-check-report-mod.sarif
-    # Upload Sarif file: this will attempt to upload the sarif file for private/internal repositories as well
-    - name: OWASP upload sarif
-      id: owasp-upload-sarif
-      uses: github/codeql-action/upload-sarif@8aad20d150bbac5944a9f9d289da16a4b0d87c1e # v4
-      with:
-        sarif_file: ${{ inputs.subproject == '' && '.' || inputs.subproject }}/build/reports/dependency-check-report-mod.sarif
-        category: gradle-owasp-dependency-check
-      # don't stop the job even if Github Advanced Security isn't enabled
-      continue-on-error: true
-    - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
-      id: owasp-upload-artifact
-      with:
-        name: gradle-owasp-dependency-check-${{ inputs.subproject == '' && github.event.repository.name || inputs.subproject }}
-        path: ${{ inputs.subproject == '' && '.' || inputs.subproject }}/build/reports/dependency-check-report.html
-    - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
-      id: owasp-upload-artifact-sarif
-      with:
-        name: gradle-owasp-dependency-check-${{ inputs.subproject == '' && github.event.repository.name || inputs.subproject }}.json
-        path: ${{ inputs.subproject == '' && '.' || inputs.subproject }}/build/reports/dependency-check-report-mod.sarif
-    - name: Prepare OWASP summary
-      id: owasp-summary
-      run: |
-        formatted_output=$(jq -r '.runs[0].tool.driver.rules[] | [.id, .shortDescription.text, .properties.cvss_score, .properties.cvss_severity] | @tsv' ${{ inputs.subproject == '' && '.' || inputs.subproject }}/build/reports/dependency-check-report-mod.sarif \
-        | awk -F'\t' '{print $1" - "$NF" ("$(NF-1)") - "$2}' \
-        | awk '{printf "%s\\n", $0}') 
-        echo "Vulnerability Summary"
-        echo "====================="
-        echo "${formatted_output}" | sed 's/\\n/\n/g'
-        slack_summary="$(echo "${formatted_output}" | awk '{s=s $0} END {if (length(s) >= 3000) print substr(s, 1, 2997) "..."; else print s}')"
-        echo "summary=${slack_summary}" >> $GITHUB_OUTPUT
-    - name: Gradle OWASP slack notification
-      uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/slack_codescan_notification@c241b9febb7a4fc11e88d0e781cbdfcf8abd84a5 # v1.0.17
-      if: (failure() || steps.owasp-analyse.outcome == 'failure') && inputs.channel_id != 'NO_SLACK'
-      with:
-        title: "Gradle OWASP"
-        warningOnly: ${{ steps.owasp-upload-sarif.outcome == 'success' && steps.owasp-upload-artifact.outcome == 'success' }}
-        channel_id: ${{ inputs.channel_id}}
-        SLACK_BOT_TOKEN: ${{ secrets.HMPPS_SRE_SLACK_BOT_TOKEN }}
-        subproject: ${{ inputs.subproject }}
-        summary: ${{ inputs.slack_include_summary && steps.owasp-summary.outputs.summary || '' }}
-
