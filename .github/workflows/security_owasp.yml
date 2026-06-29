@@ -21,7 +21,7 @@ on:
       nvd_feed_version:
         description: 'version of the NVD feed to use'
         required: false
-        default: '1'
+        default: '2'
         type: string
       java_version:
         type: string
