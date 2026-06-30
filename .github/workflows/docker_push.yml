@@ -55,6 +55,9 @@ jobs:
       image_digest: ${{ steps.resolve_image_digest.outputs.image_digest }}
     env:
       IMAGE_NAME: ${{ inputs.docker_registry }}/${{ inputs.registry_org }}/${{ inputs.image_name || github.event.repository.name }}
+      APP_VERSION: ${{ inputs.app_version }}
+      TAG_LATEST: ${{ inputs.tag_latest }}
+      ADDITIONAL_DOCKER_TAG: ${{ inputs.additional_docker_tag }}
     steps:
       - name: Download docker image
         if: ${{ ! inputs.docker_multiplatform }}
@@ -73,7 +76,7 @@ jobs:
       - name: Load image
         if: ${{ ! inputs.docker_multiplatform }}
         run: |
-          docker load --input ${{ runner.temp }}/build_image.tar
+          docker load --input "${RUNNER_TEMP}/build_image.tar"
 
       - name: Docker login if Docker registry is quay.io
         if: ${{ inputs.docker_registry  == 'quay.io' }}
@@ -94,21 +97,21 @@ jobs:
       - name: Push image
         if: ${{ ! inputs.docker_multiplatform }}
         shell: bash
-        run: docker push "${IMAGE_NAME}:${{ inputs.app_version }}"
+        run: docker push "${IMAGE_NAME}:${APP_VERSION}"
 
       - name: Push latest tag
         if: ${{ ! inputs.docker_multiplatform && inputs.tag_latest }}
         shell: bash
         run: |
-          docker tag "${IMAGE_NAME}:${{ inputs.app_version }}" "${IMAGE_NAME}:latest"
+          docker tag "${IMAGE_NAME}:${APP_VERSION}" "${IMAGE_NAME}:latest"
           docker push "${IMAGE_NAME}:latest"
 
       - name: Push additional tag
         if: ${{ ! inputs.docker_multiplatform && inputs.additional_docker_tag != '' }}
         shell: bash
         run: |
-          docker tag "${IMAGE_NAME}:${{ inputs.app_version }}" "${IMAGE_NAME}:${{ inputs.additional_docker_tag }}"
-          docker push "${IMAGE_NAME}:${{ inputs.additional_docker_tag }}"
+          docker tag "${IMAGE_NAME}:${APP_VERSION}" "${IMAGE_NAME}:${ADDITIONAL_DOCKER_TAG}"
+          docker push "${IMAGE_NAME}:${ADDITIONAL_DOCKER_TAG}"
 
       - name: Ensure skopeo is available
         shell: bash
@@ -123,55 +126,55 @@ jobs:
         shell: bash
         run: |
           # Convert each docker-archive tarball to an OCI layout
-          mkdir -p "$RUNNER_TEMP/oci-amd64" "$RUNNER_TEMP/oci-arm64"
-          skopeo copy "docker-archive:$RUNNER_TEMP/images/image-linux-amd64/image.tar" "oci:$RUNNER_TEMP/oci-amd64:amd64"
-          skopeo copy "docker-archive:$RUNNER_TEMP/images/image-linux-arm64/image.tar" "oci:$RUNNER_TEMP/oci-arm64:arm64"
+          mkdir -p "${RUNNER_TEMP}/oci-amd64" "${RUNNER_TEMP}/oci-arm64"
+          skopeo copy "docker-archive:${RUNNER_TEMP}/images/image-linux-amd64/image.tar" "oci:${RUNNER_TEMP}/oci-amd64:amd64"
+          skopeo copy "docker-archive:${RUNNER_TEMP}/images/image-linux-arm64/image.tar" "oci:${RUNNER_TEMP}/oci-arm64:arm64"
 
           # Create combined OCI layout with blobs from both platforms
-          mkdir -p "$RUNNER_TEMP/oci/blobs/sha256"
-          echo '{"imageLayoutVersion":"1.0.0"}' > "$RUNNER_TEMP/oci/oci-layout"
-          cp --update=none "$RUNNER_TEMP"/oci-amd64/blobs/sha256/* "$RUNNER_TEMP/oci/blobs/sha256/"
-          cp --update=none "$RUNNER_TEMP"/oci-arm64/blobs/sha256/* "$RUNNER_TEMP/oci/blobs/sha256/"
+          mkdir -p "${RUNNER_TEMP}/oci/blobs/sha256"
+          echo '{"imageLayoutVersion":"1.0.0"}' > "${RUNNER_TEMP}/oci/oci-layout"
+          cp --update=none "${RUNNER_TEMP}"/oci-amd64/blobs/sha256/* "${RUNNER_TEMP}/oci/blobs/sha256/"
+          cp --update=none "${RUNNER_TEMP}"/oci-arm64/blobs/sha256/* "${RUNNER_TEMP}/oci/blobs/sha256/"
 
           # Build OCI image index (manifest list) from both platform manifests
-          AMD64_MANIFEST=$(jq -c '.manifests[0] | del(.annotations) | .platform={"os":"linux","architecture":"amd64"}' "$RUNNER_TEMP/oci-amd64/index.json")
-          ARM64_MANIFEST=$(jq -c '.manifests[0] | del(.annotations) | .platform={"os":"linux","architecture":"arm64"}' "$RUNNER_TEMP/oci-arm64/index.json")
-          OCI_IMAGE_INDEX_PATH="$RUNNER_TEMP/oci/image-index.json"
+          AMD64_MANIFEST=$(jq -c '.manifests[0] | del(.annotations) | .platform={"os":"linux","architecture":"amd64"}' "${RUNNER_TEMP}/oci-amd64/index.json")
+          ARM64_MANIFEST=$(jq -c '.manifests[0] | del(.annotations) | .platform={"os":"linux","architecture":"arm64"}' "${RUNNER_TEMP}/oci-arm64/index.json")
+          OCI_IMAGE_INDEX_PATH="${RUNNER_TEMP}/oci/image-index.json"
           OCI_SOURCE_REF="multiarch"
-          jq -n --argjson amd64 "$AMD64_MANIFEST" --argjson arm64 "$ARM64_MANIFEST" \
+          jq -n --argjson amd64 "${AMD64_MANIFEST}" --argjson arm64 "${ARM64_MANIFEST}" \
             '{"schemaVersion":2,"mediaType":"application/vnd.oci.image.index.v1+json","manifests":[$amd64,$arm64]}' \
-            > "$OCI_IMAGE_INDEX_PATH"
+            > "${OCI_IMAGE_INDEX_PATH}"
 
-          OCI_IMAGE_INDEX_SHA=$(sha256sum "$OCI_IMAGE_INDEX_PATH" | awk '{print $1}')
-          OCI_IMAGE_INDEX_SIZE=$(wc -c < "$OCI_IMAGE_INDEX_PATH")
-          cp "$OCI_IMAGE_INDEX_PATH" "$RUNNER_TEMP/oci/blobs/sha256/$OCI_IMAGE_INDEX_SHA"
+          OCI_IMAGE_INDEX_SHA=$(sha256sum "${OCI_IMAGE_INDEX_PATH}" | awk '{print $1}')
+          OCI_IMAGE_INDEX_SIZE=$(wc -c < "${OCI_IMAGE_INDEX_PATH}")
+          cp "${OCI_IMAGE_INDEX_PATH}" "${RUNNER_TEMP}/oci/blobs/sha256/${OCI_IMAGE_INDEX_SHA}"
 
           # Point the OCI layout index to the image index blob using a named reference.
           jq -n \
             --arg digest "sha256:${OCI_IMAGE_INDEX_SHA}" \
-            --argjson size "$OCI_IMAGE_INDEX_SIZE" \
-            --arg ref "$OCI_SOURCE_REF" \
+            --argjson size "${OCI_IMAGE_INDEX_SIZE}" \
+            --arg ref "${OCI_SOURCE_REF}" \
             '{"schemaVersion":2,"manifests":[{"mediaType":"application/vnd.oci.image.index.v1+json","digest":$digest,"size":$size,"annotations":{"org.opencontainers.image.ref.name":$ref}}]}' \
-            > "$RUNNER_TEMP/oci/index.json"
+            > "${RUNNER_TEMP}/oci/index.json"
 
           # Push combined multi-arch image
-          skopeo copy --all "oci:$RUNNER_TEMP/oci:$OCI_SOURCE_REF" "docker://${IMAGE_NAME}:${{ inputs.app_version }}"
+          skopeo copy --all "oci:${RUNNER_TEMP}/oci:${OCI_SOURCE_REF}" "docker://${IMAGE_NAME}:${APP_VERSION}"
 
-          if [[ "${{ inputs.tag_latest }}" == "true" ]]; then
-            skopeo copy --all "oci:$RUNNER_TEMP/oci:$OCI_SOURCE_REF" "docker://${IMAGE_NAME}:latest"
+          if [[ "${TAG_LATEST}" == "true" ]]; then
+            skopeo copy --all "oci:${RUNNER_TEMP}/oci:${OCI_SOURCE_REF}" "docker://${IMAGE_NAME}:latest"
           fi
 
-          if [[ -n "${{ inputs.additional_docker_tag }}" ]]; then
-            skopeo copy --all "oci:$RUNNER_TEMP/oci:$OCI_SOURCE_REF" "docker://${IMAGE_NAME}:${{ inputs.additional_docker_tag }}"
+          if [[ -n "${ADDITIONAL_DOCKER_TAG}" ]]; then
+            skopeo copy --all "oci:${RUNNER_TEMP}/oci:${OCI_SOURCE_REF}" "docker://${IMAGE_NAME}:${ADDITIONAL_DOCKER_TAG}"
           fi
 
       - name: Resolve pushed image digest
         id: resolve_image_digest
         shell: bash
         run: |
-          DIGEST=$(skopeo inspect --format '{{ .Digest }}' "docker://${IMAGE_NAME}:${{ inputs.app_version }}")
-          if [[ -z "$DIGEST" ]]; then
-            echo "Failed to resolve digest for ${IMAGE_NAME}:${{ inputs.app_version }}" >&2
+          DIGEST=$(skopeo inspect --format '{{ .Digest }}' "docker://${IMAGE_NAME}:${APP_VERSION}")
+          if [[ -z "${DIGEST}" ]]; then
+            echo "Failed to resolve digest for ${IMAGE_NAME}:${APP_VERSION}" >&2
             exit 1
           fi
-          echo "image_digest=${DIGEST}" >> "$GITHUB_OUTPUT"
+          echo "image_digest=${DIGEST}" >> "${GITHUB_OUTPUT}"

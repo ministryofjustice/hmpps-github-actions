@@ -63,7 +63,15 @@ jobs:
         java-version: '${{ inputs.java_version }}'
     - name: Run gradle OWASP Dependency Check Analyse
       id: owasp-analyse
-      run: ./gradlew ${{ inputs.subproject }}:dependencyCheckAnalyze -Pdatafeed.url='file:///opt/vulnz/cache'
+      env:
+        SUBPROJECT: ${{ inputs.subproject }}
+      run: |
+        if [[ -n "${SUBPROJECT}" ]]; then
+          TASK="${SUBPROJECT}:dependencyCheckAnalyze"
+        else
+          TASK="dependencyCheckAnalyze"
+        fi
+        ./gradlew "${TASK}" -Pdatafeed.url='file:///opt/vulnz/cache'
       continue-on-error: true
     # Extra sanitisation of SARIF files:
     # - remove newlines from rules ID and reduce them to less than 15 characters
@@ -111,7 +119,7 @@ jobs:
                 .
               end
           )
-        ' "$SARIF_FILE" > "$SARIF_MOD_FILE"
+        ' "${SARIF_FILE}" > "${SARIF_MOD_FILE}"
       env:
         SARIF_FILE: ${{ inputs.subproject == '' && '.' || inputs.subproject }}/build/reports/dependency-check-report.sarif
         SARIF_MOD_FILE: ${{ inputs.subproject == '' && '.' || inputs.subproject }}/build/reports/dependency-check-report-mod.sarif
@@ -142,8 +150,10 @@ jobs:
         path: ${{ inputs.subproject == '' && '.' || inputs.subproject }}/build/reports/dependency-check-report-mod.sarif
     - name: Prepare OWASP summary
       id: owasp-summary
+      env:
+        SARIF_MOD_FILE: ${{ inputs.subproject == '' && '.' || inputs.subproject }}/build/reports/dependency-check-report-mod.sarif
       run: |
-        formatted_output=$(jq -r '.runs[0].tool.driver.rules[] | [.id, .shortDescription.text, .properties.cvss_score, .properties.cvss_severity] | @tsv' ${{ inputs.subproject == '' && '.' || inputs.subproject }}/build/reports/dependency-check-report-mod.sarif \
+        formatted_output=$(jq -r '.runs[0].tool.driver.rules[] | [.id, .shortDescription.text, .properties.cvss_score, .properties.cvss_severity] | @tsv' "${SARIF_MOD_FILE}" \
         | awk -F'\t' '{print $1" - "$NF" ("$(NF-1)") - "$2}' \
         | awk '{printf "%s\\n", $0}') 
         echo "Vulnerability Summary"
@@ -181,7 +191,15 @@ jobs:
         distribution: 'temurin'
     - name: Run gradle OWASP Dependency Check Analyse
       id: owasp-analyse
-      run: ./gradlew ${{ inputs.subproject }}:dependencyCheckAnalyze --info
+      env:
+        SUBPROJECT: ${{ inputs.subproject }}
+      run: |
+        if [[ -n "${SUBPROJECT}" ]]; then
+          TASK="${SUBPROJECT}:dependencyCheckAnalyze"
+        else
+          TASK="dependencyCheckAnalyze"
+        fi
+        ./gradlew "${TASK}" --info
       continue-on-error: true
     # Extra sanitisation of SARIF files:
     # - remove newlines from rules ID and reduce them to less than 15 characters
@@ -229,7 +247,7 @@ jobs:
                 .
               end
           )
-        ' "$SARIF_FILE" > "$SARIF_MOD_FILE"
+        ' "${SARIF_FILE}" > "${SARIF_MOD_FILE}"
       env:
         SARIF_FILE: ${{ inputs.subproject == '' && '.' || inputs.subproject }}/build/reports/dependency-check-report.sarif
         SARIF_MOD_FILE: ${{ inputs.subproject == '' && '.' || inputs.subproject }}/build/reports/dependency-check-report-mod.sarif
@@ -254,8 +272,10 @@ jobs:
         path: ${{ inputs.subproject == '' && '.' || inputs.subproject }}/build/reports/dependency-check-report-mod.sarif
     - name: Prepare OWASP summary
       id: owasp-summary
+      env:
+        SARIF_MOD_FILE: ${{ inputs.subproject == '' && '.' || inputs.subproject }}/build/reports/dependency-check-report-mod.sarif
       run: |
-        formatted_output=$(jq -r '.runs[0].tool.driver.rules[] | [.id, .shortDescription.text, .properties.cvss_score, .properties.cvss_severity] | @tsv' ${{ inputs.subproject == '' && '.' || inputs.subproject }}/build/reports/dependency-check-report-mod.sarif \
+        formatted_output=$(jq -r '.runs[0].tool.driver.rules[] | [.id, .shortDescription.text, .properties.cvss_score, .properties.cvss_severity] | @tsv' "${SARIF_MOD_FILE}" \
         | awk -F'\t' '{print $1" - "$NF" ("$(NF-1)") - "$2}' \
         | awk '{printf "%s\\n", $0}') 
         echo "Vulnerability Summary"

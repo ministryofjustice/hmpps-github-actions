@@ -92,9 +92,11 @@ jobs:
         uses: gradle/actions/setup-gradle@3f131e8634966bd73d06cc69884922b02e6faf92 # v6
       - name: Run checks with gradle
         shell: bash
+        env:
+          JAVA_OPTS: ${{ inputs.java-options }}
+          GRADLE_COMMAND: ${{ inputs.gradle-command }}
         run: |
-          export JAVA_OPTS="${{ inputs.java-options }}"
-          ${{ inputs.gradle-command }}
+          bash -lc "${GRADLE_COMMAND}"
       - name: Upload the test artifacts
         if: ${{ inputs.upload-test-artifacts && !cancelled() }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7

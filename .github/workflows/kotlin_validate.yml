@@ -43,8 +43,9 @@ jobs:
           **/gradle-wrapper.properties
     - name: gradlew check
       shell: bash
+      env:
+        JAVA_OPTS: ${{ inputs.java_options }}
       run: |
-        export JAVA_OPTS="${{ inputs.java_options }}"
         ./gradlew check
     - name: upload the artifacts
       if: always()

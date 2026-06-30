@@ -29,20 +29,22 @@ jobs:
     steps:
       - name: Validate docker registry
         shell: bash
+        env:
+          REGISTRY: ${{ inputs.docker_registry }}
         run: |
-          REGISTRY='${{ inputs.docker_registry }}'
-          if [[ "$REGISTRY" != "ghcr.io" ]]; then
-            echo "Unsupported docker_registry: $REGISTRY" >&2
+          if [[ "${REGISTRY}" != "ghcr.io" ]]; then
+            echo "Unsupported docker_registry: ${REGISTRY}" >&2
             echo "This workflow currently supports only ghcr.io for keyless signing." >&2
             exit 1
           fi
 
       - name: Validate image digest
         shell: bash
+        env:
+          IMAGE_DIGEST: ${{ inputs.image_digest }}
         run: |
-          DIGEST='${{ inputs.image_digest }}'
-          if [[ ! "$DIGEST" =~ ^sha256:[0-9a-f]{64}$ ]]; then
-            echo "Invalid digest format: $DIGEST (expected sha256:<64 hex chars>)" >&2
+          if [[ ! "${IMAGE_DIGEST}" =~ ^sha256:[0-9a-f]{64}$ ]]; then
+            echo "Invalid digest format: ${IMAGE_DIGEST} (expected sha256:<64 hex chars>)" >&2
             exit 1
           fi
 
@@ -58,5 +60,7 @@ jobs:
 
       - name: Sign image with cosign keyless
         shell: bash
+        env:
+          IMAGE_DIGEST: ${{ inputs.image_digest }}
         run: |
-          cosign sign --yes "${IMAGE_NAME}@${{ inputs.image_digest }}"
+          cosign sign --yes "${IMAGE_NAME}@${IMAGE_DIGEST}"

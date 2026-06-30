@@ -171,7 +171,7 @@ jobs:
         id: prepare
         shell: bash
         run: |
-          echo "platform_pair=${platform//\//-}" >> "$GITHUB_OUTPUT"
+            echo "platform_pair=${platform//\//-}" >> "${GITHUB_OUTPUT}"
         env:
           platform: ${{ matrix.platform }}
 

@@ -41,7 +41,20 @@ jobs:
     - uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/tool-installers/setup-helm@c241b9febb7a4fc11e88d0e781cbdfcf8abd84a5 # v1.0.17
     - name: 'Run helm lint commands'
       shell: bash
+      env:
+        HELM_DIR: ${{ inputs.helm_dir }}
+        CHART_NAME: ${{ inputs.chart_name }}
+        ENVIRONMENT: ${{ inputs.environment }}
+        HELM_ADDITIONAL_ARGS: ${{ inputs.helm_additional_args }}
       run: | 
-          cd ${{ inputs.helm_dir }}
-          helm dependency update "${{ inputs.chart_name }}"
-          helm lint "${{ inputs.chart_name }}" --values=values-"${{ inputs.environment }}".yaml ${{ inputs.helm_additional_args }}
+          set -euo pipefail
+
+          cd "${HELM_DIR}"
+          helm dependency update "${CHART_NAME}"
+
+          extra_args=()
+          if [[ -n "${HELM_ADDITIONAL_ARGS}" ]]; then
+            read -r -a extra_args <<< "${HELM_ADDITIONAL_ARGS}"
+          fi
+
+          helm lint "${CHART_NAME}" --values "values-${ENVIRONMENT}.yaml" "${extra_args[@]}"
