@@ -13,6 +13,15 @@ on:
         required: false
         type: string
         default: 'npm_unit_test_artifacts'
+      test_results_artifact_path:
+        description: "The paths to the test results artifacts"
+        required: false
+        type: string
+        default: "test_results"
+      download_path:
+        description: 'Destination path for download-artifact action. If not provided, input is not used'
+        required: false
+        type: string
       node_version_file:
         description: "Passed to setup-node action to specify where to source the version of node from"
         required: false
@@ -58,7 +67,14 @@ jobs:
             ./node_modules
             ~/.cache/Cypress
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json', '!**/node_modules/**') }}
-      - name: download the artifacts
+      - name: download the artifacts to a custom path if provided
+        if: ${{ inputs.download_path != '' }}
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        with:
+          name: npm_build_artifacts
+          path: ${{ inputs.download_path }}
+      - name: download the artifacts to default path if custom path not provided
+        if: ${{ inputs.download_path == '' }}
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
         with:
           name: npm_build_artifacts
@@ -74,7 +90,7 @@ jobs:
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: ${{ inputs.test_results_artifact_name }}
-          path: test_results
+          path: ${{ inputs.test_results_artifact_path }}
       - name: publish test report
         if: ${{ !cancelled() && github.event.repository.visibility == 'public' }}
         uses: dorny/test-reporter@a43b3a5f7366b97d083190328d2c652e1a8b6aa2 # v3

@@ -13,6 +13,14 @@ on:
         required: false
         type: string
         default: "npm ci --no-audit"
+      artifact_path:
+        description: "The paths to the build artifacts"
+        required: false
+        type: string
+        default: |
+          build/
+          dist/
+          assets/stylesheets/
 
 permissions:
   contents: read
@@ -59,10 +67,7 @@ jobs:
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
       with: 
         name: npm_build_artifacts
-        path: |
-          build/
-          dist/
-          assets/stylesheets/
+        path: "${{ inputs.artifact_path }}"
     - name: save cache
       id: save-cache
       uses: actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
