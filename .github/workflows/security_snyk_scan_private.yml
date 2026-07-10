@@ -1,4 +1,4 @@
-name: Security Snyk dependency check (for privately hosted docker images)```
+name: Security Snyk dependency check (for privately hosted docker images)
 
 on:
   workflow_call:
@@ -38,6 +38,11 @@ on:
         required: false
         default: ''
         type: string
+      image_ref:
+        description: Full image reference to scan (eg. ghcr.io/org/name:sha)
+        required: false
+        default: ''
+        type: string
     secrets:
       HMPPS_SRE_SLACK_BOT_TOKEN:
         description: 'Slack bot token'
@@ -72,7 +77,7 @@ jobs:
           persist-credentials: false
       - name: Run Snyk Security Scan
         id: snyk-scan
-        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/snyk-scan@8814948063257e87e324381e273af464243de470 # v1.0.18
+        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/snyk-scan@c89a206b6b32888d13f6aec01af0f7694df6b42f # v1.0.19
         with:
           subproject: ${{ inputs.subproject }}
           severity: ${{ inputs.severity }}
@@ -83,9 +88,10 @@ jobs:
           client_secret: ${{ secrets.HMPPS_SNYK_CLIENT_SECRET }}
           snyk_token: ${{ secrets.HMPPS_SNYK_API_KEY }}
           snyk_policy_path: ${{ inputs.snyk_policy_path }}
+          image_ref: ${{ inputs.image_ref }}
 
       - name: Snyk slack notification
-        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/slack_snyk_scan_notification@8814948063257e87e324381e273af464243de470 # v1.0.18
+        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/slack_snyk_scan_notification@c89a206b6b32888d13f6aec01af0f7694df6b42f # v1.0.19
         if: (failure() || steps.snyk-scan.outcome == 'failure' || steps.snyk-scan.outputs.results_count > 0) && inputs.channel_id != 'NO_SLACK'
         with:
           title: 'Snyk'
@@ -95,3 +101,4 @@ jobs:
           subproject: ${{ inputs.subproject }}
           scan_context: ${{ inputs.scan_type }}
           summary: ${{ inputs.slack_include_summary && steps.snyk-scan.outputs.summary || '' }}
+          image_ref: ${{ inputs.image_ref }}
