@@ -36,6 +36,15 @@ jobs:
     name: ${{ inputs.npm_script == 'int-test' && 'Run the integration tests' || format('Run the integration tests – {0}', inputs.npm_script) }}
     runs-on: ubuntu-latest
     services:
+      wiremock:
+        image: wiremock/wiremock:3.13.2
+        ports:
+          - ${{ inputs.wiremock_port }}:8080
+        options: >-
+          --health-cmd "curl -f http://localhost:8080/__admin/health"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
       redis:
         image: ${{ inputs.redis_tag && format('redis:{0}', inputs.redis_tag) || '' }}
         ports:
@@ -69,15 +78,12 @@ jobs:
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json', '!**/node_modules/**') }}
       - name: Init testing framework if necessary
         run: npm run int-test-init:ci --if-present
-      - uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/tool-installers/setup-wiremock@c89a206b6b32888d13f6aec01af0f7694df6b42f # v1.0.19
       - name: Prepare and run integration tests
         id: integration-tests
         shell: bash
         env:
-          WIREMOCK_PORT: ${{ inputs.wiremock_port }}
           NPM_SCRIPT: ${{ inputs.npm_script }}
         run: |
-          nohup java -jar wiremock.jar --port "${WIREMOCK_PORT}" &
           nohup npm run start-feature &
           sleep 5
           npm run "${NPM_SCRIPT}"
