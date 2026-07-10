@@ -115,12 +115,19 @@ git rev-list -n 1 v2.16
 git rev-list -n 1 v2.16.0
 ```
 
+If you create a draft release `v2.16.0`, make sure the moving tags are also updated to the same SHA:
+
+- `v2.16` (`<major>.<minor>`)
+- `v2` (`<major>`)
+
+For patch releases (for example `v2.16.1`), continue to update both `v2.16` and `v2` to the new release SHA.
+
 5. Move tags to the target commit.
 
 ```sh
-COMMIT=57c5abe47a8ebc9b1caa28ac601472a77036ab4d
-git tag -f v2.16 "$COMMIT"
-git tag -f v2.16.0 "$COMMIT"
+RELEASE_SHA=57c5abe47a8ebc9b1caa28ac601472a77036ab4d
+git tag -f v2.16 "$RELEASE_SHA"
+git tag -f v2.16.0 "$RELEASE_SHA"
 ```
 
 6. Push updated tags to remote.
