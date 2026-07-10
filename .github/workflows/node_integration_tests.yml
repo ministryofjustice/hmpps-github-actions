@@ -37,7 +37,7 @@ jobs:
     runs-on: ubuntu-latest
     services:
       wiremock:
-        image: wiremock/wiremock
+        image: wiremock/wiremock:3.13.2
         ports:
           - ${{ inputs.wiremock_port }}:8080
         options: >-
