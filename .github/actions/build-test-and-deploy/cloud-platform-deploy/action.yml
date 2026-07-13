@@ -150,6 +150,32 @@ runs:
           echo "helm_release_name=${{ inputs.helm_release_name }}" >> "$GITHUB_OUTPUT"
         fi
 
+    - name: Check ephemeral values for changes
+      if: ${{ inputs.ephemeral == 'true' }}
+      id: ephemeral-values
+      shell: bash
+      run: |
+        values_files=("${{ inputs.helm_dir }}/values-${{ inputs.environment }}.yaml")
+        if [[ -f ./ip-allowlist-groups.yaml ]]; then
+          values_files+=(./ip-allowlist-groups.yaml)
+        fi
+        if [[ -f ./helm-values-decoded.yaml ]]; then
+          values_files+=(./helm-values-decoded.yaml)
+        fi
+
+        current_hash=$(cat "${values_files[@]}" | sha256sum | awk '{print $1}')
+        previous_hash=$(helm get values "${{ steps.set-helm-release-name.outputs.helm_release_name }}" -o json 2>/dev/null | jq -r '.deployedValuesHash // empty' || true)
+
+        if [[ -n "$previous_hash" && "$current_hash" == "$previous_hash" ]]; then
+          echo "Values files unchanged since last deploy - stored release values (including ad-hoc overrides) will be reused"
+          echo "reuse=true" >> "$GITHUB_OUTPUT"
+        else
+          echo "First deploy or values files changed - performing full values deployment"
+          echo "reuse=false" >> "$GITHUB_OUTPUT"
+        fi
+
+        echo "hash=$current_hash" >> "$GITHUB_OUTPUT"
+
     - name: Deploy
       shell: bash
       run: |
@@ -171,20 +197,31 @@ runs:
           helm_args+=(--set "generic-service.scheduledDowntime.shutdown=${shutdown_cron}")
         fi
 
+        # Ephemeral releases with unchanged values files reuse the release's stored
+        # values so ad-hoc overrides (helm upgrade --reuse-values --set ...) survive
+        # redeploys. Any change to the values files resets the release to committed state.
+        if [[ "${{ steps.ephemeral-values.outputs.reuse }}" == "true" ]]; then
+          values_args=(--reuse-values)
+        else
+          values_args=(--reset-values --values '${{ inputs.helm_dir }}/values-${{ inputs.environment }}.yaml')
+          values_args+=(${{ steps.check-ip-allowlists.outputs.ALLOWLIST_GROUPS }})
+          values_args+=(${{ steps.decode-values-file.outputs.VALUES_FILE }})
+          if [[ "${{ inputs.ephemeral }}" == "true" ]]; then
+            values_args+=(--set "deployedValuesHash=${{ steps.ephemeral-values.outputs.hash }}")
+          fi
+        fi
+
         exec helm upgrade \
           "${{ steps.set-helm-release-name.outputs.helm_release_name }}" \
           "${{ inputs.helm_dir }}/${{ inputs.helm_chart_name }}" \
           --rollback-on-failure \
           --history-max 10 \
           --install \
-          --reset-values \
           --set 'generic-service.image.tag=${{ inputs.version }}' \
           --set 'version=${{ inputs.version }}' \
           --set 'global.environment=${{ inputs.environment }}' \
           --timeout ${{ inputs.helm_timeout }} \
-          --values '${{ inputs.helm_dir }}/values-${{ inputs.environment }}.yaml' \
+          "${values_args[@]}" \
           "${helm_args[@]}" \
-          ${{ steps.check-ip-allowlists.outputs.ALLOWLIST_GROUPS }} \
           ${{ steps.check-ip-allowlists-version.outputs.ALLOWLIST_VERSION }} \
-          ${{ steps.decode-values-file.outputs.VALUES_FILE }} \
           --wait
