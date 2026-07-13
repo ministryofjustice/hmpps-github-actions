@@ -36,6 +36,12 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+    env:
+      SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+      SENTRY_ORG: ${{ inputs.sentry_org }}
+      SENTRY_PROJECT: ${{ inputs.sentry_project }}
+      APP_VERSION: ${{ inputs.app_version }}
+      SENTRY_ENVIRONMENT: ${{ inputs.sentry_environment }}
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
@@ -43,22 +49,15 @@ jobs:
       - name: Sentry - Setup environment
         shell: bash
         run: |
-          export SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }}
-          export SENTRY_ORG=${{ inputs.sentry_org }}
-          export SENTRY_PROJECT=${{ inputs.sentry_project }}
-          echo "SENTRY_ORG=$SENTRY_ORG" >> $GITHUB_ENV
-          echo "SENTRY_PROJECT=$SENTRY_PROJECT" >> $GITHUB_ENV
           curl -sL https://sentry.io/get-cli/ | bash
       - name: Create release
         if: ${{ inputs.sentry_create_release == 'true' }}
         shell: bash
         run: |
-          export SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }}
-          sentry-cli releases new ${{ inputs.app_version }} --project ${{ inputs.sentry_project}}
-          sentry-cli releases set-commits ${{ inputs.app_version }} --auto
-          sentry-cli releases finalize ${{ inputs.app_version }}
+          sentry-cli releases new "${APP_VERSION}" --project "${SENTRY_PROJECT}"
+          sentry-cli releases set-commits "${APP_VERSION}" --auto
+          sentry-cli releases finalize "${APP_VERSION}"
       - name: Sentry - Record deployment
         shell: bash
         run: |
-          export SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }}
-          sentry-cli releases deploys ${{ inputs.app_version }} new -e ${{ inputs.sentry_environment }}
+          sentry-cli releases deploys "${APP_VERSION}" new -e "${SENTRY_ENVIRONMENT}"

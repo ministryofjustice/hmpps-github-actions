@@ -37,7 +37,7 @@ jobs:
           name: npm_build_artifacts
       - name: restore cache
         id: restore-cache
-        uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         env:
           cache-name: node-modules
         with:
@@ -45,7 +45,7 @@ jobs:
             ./node_modules
             ~/.cache/Cypress
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json', '!**/node_modules/**') }}
-      - uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/tool-installers/setup-wiremock@c241b9febb7a4fc11e88d0e781cbdfcf8abd84a5 # v1.0.17
+      - uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/tool-installers/setup-wiremock@c89a206b6b32888d13f6aec01af0f7694df6b42f # v1.0.19
       - name: Prepare and run integration tests
         id: integration-tests
         shell: bash

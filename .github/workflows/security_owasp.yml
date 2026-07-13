@@ -57,13 +57,21 @@ jobs:
       with:
         persist-credentials: false
     - name: Set up java
-      uses: actions/setup-java@ad2b38190b15e4d6bdf0c97fb4fca8412226d287 # v5
+      uses: actions/setup-java@0f481fcb613427c0f801b606911222b5b6f3083a # v5.5.0
       with:
         distribution: 'temurin'
         java-version: '${{ inputs.java_version }}'
     - name: Run gradle OWASP Dependency Check Analyse
       id: owasp-analyse
-      run: ./gradlew ${{ inputs.subproject }}:dependencyCheckAnalyze -Pdatafeed.url='https://ministryofjustice.github.io/hmpps-nvd-cache/nvd_cache'
+      env:
+        SUBPROJECT: ${{ inputs.subproject }}
+      run: |
+        if [[ -n "${SUBPROJECT}" ]]; then
+          TASK="${SUBPROJECT}:dependencyCheckAnalyze"
+        else
+          TASK="dependencyCheckAnalyze"
+        fi
+        ./gradlew "${TASK}" -Pdatafeed.url='https://ministryofjustice.github.io/hmpps-nvd-cache/nvd_cache'
       continue-on-error: true
     # Extra sanitisation of SARIF files:
     # - remove newlines from rules ID and reduce them to less than 15 characters
@@ -111,7 +119,7 @@ jobs:
                 .
               end
           )
-        ' "$SARIF_FILE" > "$SARIF_MOD_FILE"
+        ' "${SARIF_FILE}" > "${SARIF_MOD_FILE}"
       env:
         SARIF_FILE: ${{ inputs.subproject == '' && '.' || inputs.subproject }}/build/reports/dependency-check-report.sarif
         SARIF_MOD_FILE: ${{ inputs.subproject == '' && '.' || inputs.subproject }}/build/reports/dependency-check-report-mod.sarif
@@ -119,7 +127,7 @@ jobs:
     # Upload Sarif file: this will attempt to upload the sarif file for private/internal repositories as well
     - name: OWASP upload sarif
       id: owasp-upload-sarif
-      uses: github/codeql-action/upload-sarif@8aad20d150bbac5944a9f9d289da16a4b0d87c1e # v4
+      uses: github/codeql-action/upload-sarif@99df26d4f13ea111d4ec1a7dddef6063f76b97e9 # v4.37.0
       with:
         sarif_file: ${{ inputs.subproject == '' && '.' || inputs.subproject }}/build/reports/dependency-check-report-mod.sarif
         category: gradle-owasp-dependency-check
@@ -142,8 +150,10 @@ jobs:
         path: ${{ inputs.subproject == '' && '.' || inputs.subproject }}/build/reports/dependency-check-report-mod.sarif
     - name: Prepare OWASP summary
       id: owasp-summary
+      env:
+        SARIF_MOD_FILE: ${{ inputs.subproject == '' && '.' || inputs.subproject }}/build/reports/dependency-check-report-mod.sarif
       run: |
-        formatted_output=$(jq -r '.runs[0].tool.driver.rules[] | [.id, .shortDescription.text, .properties.cvss_score, .properties.cvss_severity] | @tsv' ${{ inputs.subproject == '' && '.' || inputs.subproject }}/build/reports/dependency-check-report-mod.sarif \
+        formatted_output=$(jq -r '.runs[0].tool.driver.rules[] | [.id, .shortDescription.text, .properties.cvss_score, .properties.cvss_severity] | @tsv' "${SARIF_MOD_FILE}" \
         | awk -F'\t' '{print $1" - "$NF" ("$(NF-1)") - "$2}' \
         | awk '{printf "%s\\n", $0}') 
         echo "Vulnerability Summary"
@@ -152,7 +162,7 @@ jobs:
         slack_summary="$(echo "${formatted_output}" | awk '{s=s $0} END {if (length(s) >= 3000) print substr(s, 1, 2997) "..."; else print s}')"
         echo "summary=${slack_summary}" >> $GITHUB_OUTPUT
     - name: Gradle OWASP slack notification
-      uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/slack_codescan_notification@c241b9febb7a4fc11e88d0e781cbdfcf8abd84a5 # v1.0.17
+      uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/slack_codescan_notification@c89a206b6b32888d13f6aec01af0f7694df6b42f # v1.0.19
       if: (failure() || steps.owasp-analyse.outcome == 'failure') && inputs.channel_id != 'NO_SLACK'
       with:
         title: "Gradle OWASP"

@@ -116,7 +116,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Setup Java
-        uses: actions/setup-java@ad2b38190b15e4d6bdf0c97fb4fca8412226d287 # v5
+        uses: actions/setup-java@0f481fcb613427c0f801b606911222b5b6f3083a # v5.5.0
         with:
           distribution: 'temurin'
           java-version: '${{ inputs.java-version }}'
@@ -126,9 +126,11 @@ jobs:
           cache-encryption-key: ${{ secrets.GRADLE_CACHE_ENCRYPTION_KEY }}
       - name: Run checks with gradle
         shell: bash
+        env:
+          JAVA_OPTS: ${{ inputs.java-options }}
+          GRADLE_COMMAND: ${{ inputs.gradle-command }}
         run: |
-          export JAVA_OPTS="${{ inputs.java-options }}"
-          ${{ inputs.gradle-command }}
+          bash -lc "${GRADLE_COMMAND}"
       - name: Upload the test artifacts
         if: ${{ inputs.upload-test-artifacts && !cancelled() }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7

@@ -38,6 +38,11 @@ on:
         required: false
         default: ''
         type: string
+      image_ref:
+        description: Full image reference to scan (eg. ghcr.io/org/name:sha)
+        required: false
+        default: ''
+        type: string
     secrets:
       HMPPS_SRE_SLACK_BOT_TOKEN:
         description: 'Slack bot token'
@@ -74,7 +79,7 @@ jobs:
           persist-credentials: false
       - name: Run Snyk Security Scan
         id: snyk-scan
-        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/snyk-scan@c241b9febb7a4fc11e88d0e781cbdfcf8abd84a5 # v1.0.17
+        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/snyk-scan@c89a206b6b32888d13f6aec01af0f7694df6b42f # v1.0.19
         with:
           subproject: ${{ inputs.subproject }}
           severity: ${{ inputs.severity }}
@@ -86,9 +91,10 @@ jobs:
           snyk_token: ${{ secrets.HMPPS_SNYK_API_KEY }}
           ECR_ROLE_TO_ASSUME: ${{ secrets.ECR_ROLE_TO_ASSUME }}
           snyk_policy_path: ${{ inputs.snyk_policy_path }}
+          image_ref: ${{ inputs.image_ref }}
 
       - name: Snyk slack notification
-        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/slack_snyk_scan_notification@c241b9febb7a4fc11e88d0e781cbdfcf8abd84a5 # v1.0.17
+        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/slack_snyk_scan_notification@c89a206b6b32888d13f6aec01af0f7694df6b42f # v1.0.19
         if: (failure() || steps.snyk-scan.outcome == 'failure' || steps.snyk-scan.outputs.results_count > 0) && inputs.channel_id != 'NO_SLACK'
         with:
           title: 'Snyk'
@@ -98,3 +104,4 @@ jobs:
           subproject: ${{ inputs.subproject }}
           scan_context: ${{ inputs.scan_type }}
           summary: ${{ inputs.slack_include_summary && steps.snyk-scan.outputs.summary || '' }}
+          image_ref: ${{ inputs.image_ref }}
