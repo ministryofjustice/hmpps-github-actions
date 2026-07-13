@@ -25,19 +25,22 @@ jobs:
       - name: Run cancel script
         id: cancel-script
         shell: bash
+        env:
+          REPOSITORY: ${{ github.repository }}
+          PIPELINE: ${{ inputs.pipeline }}
+          BRANCH: ${{ inputs.branch }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           FOUND_FINISHED=false
-          OUTPUT=$(gh run list --repo "${{ github.repository }}" --workflow "${{ inputs.pipeline }}" --branch "${{ inputs.branch }}" --limit 100 --json status,conclusion,databaseId | jq -r '.[] | [ .databaseId, .status, .conclusion ] | join(" ")')
-          echo "$OUTPUT" | while read -r DATABASE_ID STATUS CONCLUSION;do
-            if [[ "$FOUND_FINISHED" == "false" && "$STATUS" == "completed" && "$CONCLUSION" == "success" ]]; then
+          OUTPUT=$(gh run list --repo "${REPOSITORY}" --workflow "${PIPELINE}" --branch "${BRANCH}" --limit 100 --json status,conclusion,databaseId | jq -r '.[] | [ .databaseId, .status, .conclusion ] | join(" ")')
+          echo "${OUTPUT}" | while read -r DATABASE_ID STATUS CONCLUSION;do
+            if [[ "${FOUND_FINISHED}" == "false" && "${STATUS}" == "completed" && "${CONCLUSION}" == "success" ]]; then
               FOUND_FINISHED=true
-              echo "Found completed job of $DATABASE_ID"
+              echo "Found completed job of ${DATABASE_ID}"
             fi
 
-            if [[ "$FOUND_FINISHED" == "true" && "$STATUS" == "waiting" && "$CONCLUSION" == "" ]]; then
-              echo "Attempting to cancel waiting job of $DATABASE_ID"
-              gh run cancel --repo "${{ github.repository }}" "$DATABASE_ID"
+            if [[ "${FOUND_FINISHED}" == "true" && "${STATUS}" == "waiting" && "${CONCLUSION}" == "" ]]; then
+              echo "Attempting to cancel waiting job of ${DATABASE_ID}"
+              gh run cancel --repo "${REPOSITORY}" "${DATABASE_ID}"
             fi
           done
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

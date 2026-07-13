@@ -31,8 +31,11 @@ runs:
   steps:
     - uses: actions/checkout@v4
 
+    - uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/tool-installers/setup-helm@c89a206b6b32888d13f6aec01af0f7694df6b42f # v1.0.19
+    - uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/tool-installers/setup-kubectl@c89a206b6b32888d13f6aec01af0f7694df6b42f # v1.0.19
+
     - name: Authenticate
-      uses: ministryofjustice/hmpps-github-actions/.github/actions/build-test-and-deploy/cloud-platform-auth@v2 # WORKFLOW_VERSION
+      uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/cloud-platform-auth@c89a206b6b32888d13f6aec01af0f7694df6b42f # v1.0.19
       with:
         api: ${{ inputs.api }}
         cert: ${{ inputs.cert }}
@@ -46,6 +49,4 @@ runs:
         RELEASE_NAME: ${{ inputs.release_name }}
         HELM_TIMEOUT: ${{ inputs.helm_timeout }}
       run: |
-        eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
-        brew install helm
         helm uninstall "$RELEASE_NAME" --timeout "$HELM_TIMEOUT" || echo "Helm release not found"

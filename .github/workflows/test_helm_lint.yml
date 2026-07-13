@@ -22,10 +22,6 @@ on:
         required: false
         default: ''
         type: string
-      helm_version:
-        required: false
-        default: 'v3.4.2'
-        type: string
     secrets:
       HMPPS_SRE_SLACK_BOT_TOKEN:
         description: 'Slack bot token'
@@ -39,14 +35,26 @@ jobs:
     name: Helm lint
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v6
-    - uses: azure/setup-helm@v4.3.1
+    - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       with:
-        version: ${{ inputs.helm_version }} 
-      id: install_helm
+        persist-credentials: false
+    - uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/tool-installers/setup-helm@c89a206b6b32888d13f6aec01af0f7694df6b42f # v1.0.19
     - name: 'Run helm lint commands'
       shell: bash
+      env:
+        HELM_DIR: ${{ inputs.helm_dir }}
+        CHART_NAME: ${{ inputs.chart_name }}
+        ENVIRONMENT: ${{ inputs.environment }}
+        HELM_ADDITIONAL_ARGS: ${{ inputs.helm_additional_args }}
       run: | 
-          cd ${{ inputs.helm_dir }}
-          helm dependency update "${{ inputs.chart_name }}"
-          helm lint "${{ inputs.chart_name }}" --values=values-"${{ inputs.environment }}".yaml ${{ inputs.helm_additional_args }}
+          set -euo pipefail
+
+          cd "${HELM_DIR}"
+          helm dependency update "${CHART_NAME}"
+
+          extra_args=()
+          if [[ -n "${HELM_ADDITIONAL_ARGS}" ]]; then
+            read -r -a extra_args <<< "${HELM_ADDITIONAL_ARGS}"
+          fi
+
+          helm lint "${CHART_NAME}" --values "values-${ENVIRONMENT}.yaml" "${extra_args[@]}"

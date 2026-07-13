@@ -78,20 +78,22 @@ jobs:
       java_options: "-Xmx1024m -XX:ParallelGCThreads=2 -XX:ConcGCThreads=2 -Djava.util.concurrent.ForkJoinPool.common.parallelism=2 -Dorg.gradle.daemon=false -Dkotlin.compiler.execution.strategy=in-process"
 
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      with:
+        persist-credentials: false
     - name: Set up java
-      uses: actions/setup-java@v5
+      uses: actions/setup-java@0f481fcb613427c0f801b606911222b5b6f3083a # v5.5.0
       with:
         distribution: 'temurin'
         java-version: '${{ inputs.java_version }}'
     - name: prepare assets
       if: inputs.veracode_package_artifact_name == ''
-      uses: ministryofjustice/hmpps-github-actions/.github/actions/security_veracode_prepare_artifacts@v2 # WORKFLOW_VERSION
+      uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/security_veracode_prepare_artifacts@c89a206b6b32888d13f6aec01af0f7694df6b42f # v1.0.19
       with:
         docker_image_app_dir: ${{ inputs.docker_image_app_dir }}
     - name: download assets artifact
       if: inputs.veracode_package_artifact_name != ''
-      uses: actions/download-artifact@v8
+      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
       with:
         name: ${{ inputs.veracode_package_artifact_name }}
     - name: "Download/Extract pipeline scanner"
@@ -127,6 +129,18 @@ jobs:
     - name: "Scan the project"
       id: veracode-pipeline-scan
       shell: bash
+      env:
+        VERACODE_ARTIFACT_NAME: ${{ inputs.veracode_artifact_name }}
+        VERACODE_API_ID_0: ${{ secrets.HMPPS_VERACODE_API_ID_0 }}
+        VERACODE_API_ID_1: ${{ secrets.HMPPS_VERACODE_API_ID_1 }}
+        VERACODE_API_ID_2: ${{ secrets.HMPPS_VERACODE_API_ID_2 }}
+        VERACODE_API_ID_3: ${{ secrets.HMPPS_VERACODE_API_ID_3 }}
+        VERACODE_API_ID_4: ${{ secrets.HMPPS_VERACODE_API_ID_4 }}
+        VERACODE_API_KEY_0: ${{ secrets.HMPPS_VERACODE_API_KEY_0 }}
+        VERACODE_API_KEY_1: ${{ secrets.HMPPS_VERACODE_API_KEY_1 }}
+        VERACODE_API_KEY_2: ${{ secrets.HMPPS_VERACODE_API_KEY_2 }}
+        VERACODE_API_KEY_3: ${{ secrets.HMPPS_VERACODE_API_KEY_3 }}
+        VERACODE_API_KEY_4: ${{ secrets.HMPPS_VERACODE_API_KEY_4 }}
       run: |
           echo "Randomly picking 1 of 5 api keys, to help avoid veracode API rate limits."
           X=$(( RANDOM % 4 ))
@@ -138,7 +152,7 @@ jobs:
           java -jar pipeline-scan.jar \
           $(test -f results.json && echo "--baseline_file results.json") \
           --json_output true \
-          --file ${{ inputs.veracode_artifact_name }} \
+          --file "${VERACODE_ARTIFACT_NAME}" \
           --policy_file Ministry_of_Justice.json \
           --veracode_api_id "${VERACODE_API_ID}" \
           --veracode_api_key "${VERACODE_API_KEY}" \
@@ -146,18 +160,7 @@ jobs:
           --issue_details false \
           --summary_output true
       continue-on-error: true
-      env:
-        VERACODE_API_ID_0: ${{ secrets.HMPPS_VERACODE_API_ID_0 }}
-        VERACODE_API_ID_1: ${{ secrets.HMPPS_VERACODE_API_ID_1 }}
-        VERACODE_API_ID_2: ${{ secrets.HMPPS_VERACODE_API_ID_2 }}
-        VERACODE_API_ID_3: ${{ secrets.HMPPS_VERACODE_API_ID_3 }}
-        VERACODE_API_ID_4: ${{ secrets.HMPPS_VERACODE_API_ID_4 }}
-        VERACODE_API_KEY_0: ${{ secrets.HMPPS_VERACODE_API_KEY_0 }}
-        VERACODE_API_KEY_1: ${{ secrets.HMPPS_VERACODE_API_KEY_1 }}
-        VERACODE_API_KEY_2: ${{ secrets.HMPPS_VERACODE_API_KEY_2 }}
-        VERACODE_API_KEY_3: ${{ secrets.HMPPS_VERACODE_API_KEY_3 }}
-        VERACODE_API_KEY_4: ${{ secrets.HMPPS_VERACODE_API_KEY_4 }}
-    - uses: actions/upload-artifact@v7
+    - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
       id: veracode-artifact-upload
       if: success() 
       continue-on-error: true
@@ -166,13 +169,13 @@ jobs:
         path: results.txt
     - name: send a failure slack message
       if: steps.veracode-pipeline-scan.outcome == 'failure' && inputs.channel_id != 'NO_SLACK'
-      uses: ministryofjustice/hmpps-github-actions/.github/actions/slack_failure_results@v2 # WORKFLOW_VERSION
+      uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/slack_failure_results@c89a206b6b32888d13f6aec01af0f7694df6b42f # v1.0.19
       with:
         SLACK_BOT_TOKEN: ${{ secrets.HMPPS_SRE_SLACK_BOT_TOKEN }}
         channel_id: ${{ inputs.channel_id }}
         input_file: results.txt
 
-    - uses: slackapi/slack-github-action@91efab103c0de0a537f72a35f6b8cda0ee76bf0a # v2.1.1
+    - uses: slackapi/slack-github-action@45a88b9581bfab2566dc881e2cd66d334e621e2c # v3.0.3
       if: steps.veracode-artifact-upload.conclusion == 'failure' && inputs.channel_id != 'NO_SLACK'
       with:
         method: chat.postMessage

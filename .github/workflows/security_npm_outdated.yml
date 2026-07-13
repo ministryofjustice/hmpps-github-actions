@@ -44,8 +44,10 @@ jobs:
     env:
       parent_directory: ${{ github.event.repository.name == '' && '.' || github.event.repository.name}}
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
           node-version-file: ${{ inputs.node_version_file }}
       - id: npm-version
@@ -56,18 +58,24 @@ jobs:
         run: "node -v"
       - id: npm-ci
         name: run npm ci
-        run: "${{ inputs.install_command }}"
+        env:
+          INSTALL_COMMAND: ${{ inputs.install_command }}
+        run: |
+          bash -lc "${INSTALL_COMMAND}"
       - name: Audit for vulnerabilities
         id: npm
-        run: npm outdated ${{ inputs.dependencies_to_check }} > npm-outdated-reports.txt
+        env:
+          DEPENDENCIES_TO_CHECK: ${{ inputs.dependencies_to_check }}
+        run: |
+          bash -lc "npm outdated ${DEPENDENCIES_TO_CHECK} > npm-outdated-reports.txt"
         continue-on-error: true
-      - uses: ministryofjustice/hmpps-github-actions/.github/actions/security_npm_outdated@v2 # WORKFLOW_VERSION
+      - uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/security_npm_outdated@c89a206b6b32888d13f6aec01af0f7694df6b42f # v1.0.19
         name: run the security_npm_outdated action to send a slack message
         if: steps.npm.outcome == 'failure'
         with:
           channel_id: ${{ inputs.channel_id }}
           SLACK_BOT_TOKEN: ${{ secrets.HMPPS_SRE_SLACK_BOT_TOKEN }}
-      - uses: slackapi/slack-github-action@91efab103c0de0a537f72a35f6b8cda0ee76bf0a # v2.1.1
+      - uses: slackapi/slack-github-action@45a88b9581bfab2566dc881e2cd66d334e621e2c # v3.0.3
         if: steps.npm.conclusion == 'failure' && inputs.channel_id != 'NO_SLACK'
         with:
           method: chat.postMessage
