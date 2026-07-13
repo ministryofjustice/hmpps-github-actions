@@ -45,7 +45,7 @@ jobs:
     name: Build docker image
     needs:
       - prepare_deployment_context
-    uses: ministryofjustice/hmpps-github-actions/.github/workflows/docker_build.yml@v2
+    uses: ministryofjustice/hmpps-github-actions/.github/workflows/docker_build.yml@ephemeral-deployment
     with:
       docker_registry: 'ghcr.io'
       registry_org: 'ministryofjustice'
