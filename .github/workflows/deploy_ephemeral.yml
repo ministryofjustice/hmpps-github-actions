@@ -67,3 +67,44 @@ jobs:
       helm_release_name: ${{ needs.prepare_deployment_context.outputs.release_name }}
       helm_values_file_b64: ${{ needs.prepare_deployment_context.outputs.processed_yaml_b64 }}
       ephemeral: true
+
+  comment_pr:
+    name: Post environment details on PR
+    needs:
+      - prepare_deployment_context
+      - deploy_ephemeral
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    env:
+      PR_NUMBER: ${{ inputs.pr_number || github.event.pull_request.number }}
+      RELEASE_NAME: ${{ needs.prepare_deployment_context.outputs.release_name }}
+      INGRESS_HOST: ${{ needs.prepare_deployment_context.outputs.ingress_host }}
+      CHART_PATH: helm_deploy/${{ github.event.repository.name }}
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - name: Create or update environment comment
+        run: |
+          body="$(cat <<EOF
+          <!-- ephemeral-env -->
+          **Ephemeral environment is live:** https://$INGRESS_HOST
+
+          Change an env var for this deployment (persists across pushes):
+          \`\`\`bash
+          helm upgrade $RELEASE_NAME ./$CHART_PATH --reuse-values --set generic-service.env.KEY=value
+          \`\`\`
+
+          See current overrides: \`helm get values $RELEASE_NAME\`
+          Reset to committed values: push a change to \`helm_deploy/values-pr.yaml\`
+          EOF
+          )"
+
+          comment_id=$(gh api "repos/$GH_REPO/issues/$PR_NUMBER/comments" --paginate \
+            --jq '.[] | select(.user.login == "github-actions[bot]") | select(.body | startswith("<!-- ephemeral-env -->")) | .id' | head -n1)
+
+          if [[ -n "$comment_id" ]]; then
+            gh api -X PATCH "repos/$GH_REPO/issues/comments/$comment_id" -f body="$body"
+          else
+            gh api "repos/$GH_REPO/issues/$PR_NUMBER/comments" -f body="$body"
+          fi
