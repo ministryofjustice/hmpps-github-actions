@@ -7,6 +7,11 @@ on:
         description: "PR number (required for issue_comment events where github.event.pull_request is unavailable)"
         required: false
         type: string
+      namespace:
+        description: "Kubernetes namespace - included in the PR comment's helm commands so they work without a namespace-defaulted kube context"
+        required: false
+        type: string
+        default: ""
 
 jobs:
   prepare_deployment_context:
@@ -78,6 +83,7 @@ jobs:
       pull-requests: write
     env:
       PR_NUMBER: ${{ inputs.pr_number || github.event.pull_request.number }}
+      NAMESPACE: ${{ inputs.namespace }}
       RELEASE_NAME: ${{ needs.prepare_deployment_context.outputs.release_name }}
       INGRESS_HOST: ${{ needs.prepare_deployment_context.outputs.ingress_host }}
       CHART_PATH: helm_deploy/${{ github.event.repository.name }}
@@ -86,16 +92,21 @@ jobs:
     steps:
       - name: Create or update environment comment
         run: |
+          ns_flag=""
+          if [[ -n "$NAMESPACE" ]]; then
+            ns_flag=" -n $NAMESPACE"
+          fi
+
           body="$(cat <<EOF
           <!-- ephemeral-env -->
           **Ephemeral environment is live:** https://$INGRESS_HOST
 
           Change an env var for this deployment (persists across pushes):
           \`\`\`bash
-          helm upgrade $RELEASE_NAME ./$CHART_PATH --reuse-values --set generic-service.env.KEY=value
+          helm upgrade $RELEASE_NAME ./$CHART_PATH$ns_flag --reuse-values --set-string generic-service.env.KEY=value
           \`\`\`
 
-          See current overrides: \`helm get values $RELEASE_NAME\`
+          See current overrides: \`helm get values $RELEASE_NAME$ns_flag\`
           Reset to committed values: push a change to \`helm_deploy/values-pr.yaml\`
           EOF
           )"
