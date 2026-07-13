@@ -7,11 +7,6 @@ on:
         description: "PR number (required for issue_comment events where github.event.pull_request is unavailable)"
         required: false
         type: string
-      namespace:
-        description: "Kubernetes namespace - included in the PR comment's helm commands so they work without a namespace-defaulted kube context"
-        required: false
-        type: string
-        default: ""
 
 jobs:
   prepare_deployment_context:
@@ -81,9 +76,13 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       pull-requests: write
+    # Joins the dev environment purely to read KUBE_NAMESPACE - the namespace isn't
+    # sensitive (it's public in cloud-platform-environments) but only exists as an
+    # environment-scoped secret, and repos shouldn't have to restate it as config
+    environment: 'dev'
     env:
       PR_NUMBER: ${{ inputs.pr_number || github.event.pull_request.number }}
-      NAMESPACE: ${{ inputs.namespace }}
+      NAMESPACE: ${{ secrets.KUBE_NAMESPACE }}
       RELEASE_NAME: ${{ needs.prepare_deployment_context.outputs.release_name }}
       INGRESS_HOST: ${{ needs.prepare_deployment_context.outputs.ingress_host }}
       CHART_PATH: helm_deploy/${{ github.event.repository.name }}
