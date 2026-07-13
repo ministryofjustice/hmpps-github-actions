@@ -42,9 +42,10 @@ runs:
 
     - name: Uninstall
       shell: bash
+      env:
+        RELEASE_NAME: ${{ inputs.release_name }}
+        HELM_TIMEOUT: ${{ inputs.helm_timeout }}
       run: |
         eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
         brew install helm
-        exec helm uninstall ${{ inputs.release_name }} \
-          --timeout ${{ inputs.helm_timeout }}
-        || echo "Helm release not found"
+        helm uninstall "$RELEASE_NAME" --timeout "$HELM_TIMEOUT" || echo "Helm release not found"
