@@ -44,8 +44,10 @@ jobs:
         node-version-file: ${{ inputs.node_version_file }}
     - name: update npm
       shell: bash
+      env:
+        NPM_VERSION: ${{ inputs.npm_version }}
       run: |
-        npm install -g npm@${{ inputs.npm_version }}
+        npm install -g "npm@$NPM_VERSION"
     - name: restore cache
       id: restore-cache
       uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
