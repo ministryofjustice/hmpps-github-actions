@@ -7,10 +7,6 @@ on:
         description: "PR number (required for issue_comment events where github.event.pull_request is unavailable)"
         required: false
         type: string
-      helm_substitutions:
-        description: "Multi-line key-value pairs for env var overrides"
-        required: false
-        type: string
 
 jobs:
   prepare_deployment_context:
@@ -35,16 +31,6 @@ jobs:
           yq -i "(.generic-service.env.INGRESS_URL | select(contains(\"\$PR_NUMBER\"))) |= sub(\"\\\$PR_NUMBER\", \"$PR_NUMBER\")" helm_deploy/values-pr.yaml
           yq -i "(.generic-service.env.DEPLOYMENT_NAME | select(contains(\"\$PR_NUMBER\"))) |= sub(\"\\\$PR_NUMBER\", \"$PR_NUMBER\")" helm_deploy/values-pr.yaml
           yq -i "(.generic-prometheus-alerts.targetApplication | select(. == \"\$RELEASE_NAME\")) = \"$RELEASE_NAME\"" helm_deploy/values-pr.yaml
-
-          # Apply any env var overrides from helm_substitutions
-          if [ -n "${{ inputs.helm_substitutions }}" ]; then
-            echo "${{ inputs.helm_substitutions }}" | while IFS='=' read -r key value; do
-              if [ -n "$key" ] && [ -n "$value" ]; then
-                echo "Overriding $key with $value"
-                yq -i ".generic-service.env.$key = \"$value\"" helm_deploy/values-pr.yaml
-              fi
-            done
-          fi
 
           cat helm_deploy/values-pr.yaml
 
