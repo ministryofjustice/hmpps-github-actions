@@ -127,7 +127,7 @@ jobs:
     # Upload Sarif file: this will attempt to upload the sarif file for private/internal repositories as well
     - name: OWASP upload sarif
       id: owasp-upload-sarif
-      uses: github/codeql-action/upload-sarif@99df26d4f13ea111d4ec1a7dddef6063f76b97e9 # v4
+      uses: github/codeql-action/upload-sarif@99df26d4f13ea111d4ec1a7dddef6063f76b97e9 # v4.37.0
       with:
         sarif_file: ${{ inputs.subproject == '' && '.' || inputs.subproject }}/build/reports/dependency-check-report-mod.sarif
         category: gradle-owasp-dependency-check
@@ -254,7 +254,7 @@ jobs:
     # Upload Sarif file: this will attempt to upload the sarif file for private/internal repositories as well
     - name: OWASP upload sarif
       id: owasp-upload-sarif
-      uses: github/codeql-action/upload-sarif@99df26d4f13ea111d4ec1a7dddef6063f76b97e9 # v4
+      uses: github/codeql-action/upload-sarif@99df26d4f13ea111d4ec1a7dddef6063f76b97e9 # v4.37.0
       with:
         sarif_file: ${{ inputs.subproject == '' && '.' || inputs.subproject }}/build/reports/dependency-check-report-mod.sarif
         category: gradle-owasp-dependency-check
