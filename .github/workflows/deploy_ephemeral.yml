@@ -96,13 +96,24 @@ jobs:
             ns_flag=" -n $NAMESPACE"
           fi
 
+          upgrade_cmd="helm upgrade $RELEASE_NAME \\
+            ./$CHART_PATH \\"
+          if [[ -n "$NAMESPACE" ]]; then
+            upgrade_cmd+="
+            -n $NAMESPACE \\"
+          fi
+          upgrade_cmd+="
+            --reuse-values \\
+            --set-string generic-service.env.KEY=value \\
+            --set-string generic-service.env.OTHER_KEY=value"
+
           body="$(cat <<EOF
           <!-- ephemeral-env -->
-          **Ephemeral environment is live:** https://$INGRESS_HOST
+          **🚀 Ephemeral environment is live:** https://$INGRESS_HOST
 
-          Change an env var for this deployment (persists across pushes):
+          Change env vars for this deployment (persists across pushes, one \`--set-string\` per var):
           \`\`\`bash
-          helm upgrade $RELEASE_NAME ./$CHART_PATH$ns_flag --reuse-values --set-string generic-service.env.KEY=value
+          $upgrade_cmd
           \`\`\`
 
           See current overrides: \`helm get values $RELEASE_NAME$ns_flag\`
