@@ -63,7 +63,7 @@ jobs:
         if: ${{ ! inputs.docker_multiplatform }}
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
-          name: build_image
+          name: image-linux-amd64
           path: ${{ runner.temp }}
 
       - name: Download multi-platform image tarballs
@@ -76,7 +76,7 @@ jobs:
       - name: Load image
         if: ${{ ! inputs.docker_multiplatform }}
         run: |
-          docker load --input "${RUNNER_TEMP}/build_image.tar"
+          docker load --input "${RUNNER_TEMP}/image.tar"
 
       - name: Docker login if Docker registry is quay.io
         if: ${{ inputs.docker_registry  == 'quay.io' }}
