@@ -3,6 +3,10 @@ name: Build & push docker image and deploy to environment
 on:
   workflow_call:
     inputs:
+      dryrun:
+        default: false
+        required: false
+        type: boolean
       environment:
         description: Environment
         required: true
@@ -115,6 +119,7 @@ jobs:
       - uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/cloud-platform-deploy@122496e475fb4a2a5a808c9677f10de010737984 # v1.0.20
         id: deploy
         with:
+          dryrun: ${{ inputs.dryrun }}
           environment: ${{ inputs.environment }}
           version: ${{ inputs.app_version }}
           k8s_deployment_name: ${{ inputs.k8s_deployment_name }}
