@@ -45,7 +45,7 @@ jobs:
             ./node_modules
             ~/.cache/Cypress
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json', '!**/node_modules/**') }}
-      - uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/tool-installers/setup-wiremock@122496e475fb4a2a5a808c9677f10de010737984 # v1.0.20
+      - uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/tool-installers/setup-wiremock@35bb5e74a025299cddf50909c1968444d966c1dc # v1.0.21
       - name: Prepare and run integration tests
         id: integration-tests
         shell: bash
