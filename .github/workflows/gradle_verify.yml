@@ -73,6 +73,12 @@ on:
         type: boolean
         default: false
         required: false
+      debug-gradle-runner:
+        description: Whether to stop the job to allow access to the runner of the gradle step
+        type: boolean
+        default: false
+        required: false
+
 permissions:
   contents: read
 jobs:
@@ -124,6 +130,9 @@ jobs:
         uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
         with:
           cache-encryption-key: ${{ secrets.GRADLE_CACHE_ENCRYPTION_KEY }}
+      - name: Setup Debug Session
+        if: inputs.debug-gradle-runner
+        uses: csexton/debugger-action@0de54ee5b983a6f5a84a5a0c1e708422059837e0 # master
       - name: Run checks with gradle
         shell: bash
         env:
