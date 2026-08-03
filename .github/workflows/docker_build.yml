@@ -52,6 +52,11 @@ on:
         description: Name of the image
         required: false
         type: string
+      image_version:
+        description: Version tag of the image. Generated when not provided
+        required: false
+        type: string
+        default: ''
       file:
         description: "Path to the Dockerfile"
         required: false
@@ -92,11 +97,14 @@ jobs:
     name: Create app version
     runs-on: ubuntu-latest
     outputs:
-      version: ${{ steps.app_version.outputs.version }}
+      version: ${{ steps.image_version.outputs.version }}
     steps:
       - id: app_version
         name: Create application version
-        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/create_app_version@122496e475fb4a2a5a808c9677f10de010737984 # v1.0.20
+        if: inputs.image_version == ''
+        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/create_app_version@35bb5e74a025299cddf50909c1968444d966c1dc # v1.0.21
+      - id: image_version
+        run: echo "version=${{ inputs.image_version || steps.app_version.outputs.version }}" >> $GITHUB_OUTPUT
 
   docker_build:
     name: Build linux/amd64 (single)
@@ -107,7 +115,7 @@ jobs:
       image_digest: ${{ steps.build_docker_step.outputs.digest }}
     steps:
       - id: build_docker_step
-        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/build_docker@122496e475fb4a2a5a808c9677f10de010737984 # v1.0.20
+        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/build_docker@35bb5e74a025299cddf50909c1968444d966c1dc # v1.0.21
         if: ${{ inputs.docker_registry == 'ghcr.io' }}
         with:
           image_name: ${{ inputs.image_name || github.event.repository.name }}
@@ -124,7 +132,7 @@ jobs:
           file: ${{ inputs.file }}
           download_build_artifacts: ${{ inputs.download_build_artifacts }}
 
-      - uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/build_docker@122496e475fb4a2a5a808c9677f10de010737984 # v1.0.20
+      - uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/build_docker@35bb5e74a025299cddf50909c1968444d966c1dc # v1.0.21
         if: ${{ inputs.docker_registry == 'quay.io' }}
         with:
           image_name: ${{ inputs.image_name || github.event.repository.name }}

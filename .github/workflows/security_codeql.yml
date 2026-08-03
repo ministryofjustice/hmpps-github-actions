@@ -48,7 +48,7 @@ jobs:
       id: codeql_analysis
       uses: github/codeql-action/analyze@e4fba868fa4b1b91e1fdab776edc8cfbe6e9fb81 # v4.37.3
     - name: CodeQL slack notification
-      uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/slack_codescan_notification@122496e475fb4a2a5a808c9677f10de010737984 # v1.0.20
+      uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/slack_codescan_notification@35bb5e74a025299cddf50909c1968444d966c1dc # v1.0.21
       if: (failure() || steps.codeql_analysis.outcome == 'failure') && inputs.channel_id != 'NO_SLACK'
       with:
         title: "CodeQL ${{ inputs.languages }} check"
