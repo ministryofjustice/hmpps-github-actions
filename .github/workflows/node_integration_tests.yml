@@ -27,16 +27,6 @@ on:
         required: false
         type: number
         default: 9091
-      runner_timezone:
-        description: 'Set the runners timezone'
-        required: false
-        type: string
-        default: ''
-      debug-node-runner:
-        description: 'Whether to pause the job to allow runner attachment'
-        required: false
-        type: boolean
-        default: false
 
 permissions:
   contents: read
@@ -88,16 +78,12 @@ jobs:
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json', '!**/node_modules/**') }}
       - name: Init testing framework if necessary
         run: npm run int-test-init:ci --if-present
-      - name: Setup Debug Session
-        if: inputs.debug-node-runner
-        uses: csexton/debugger-action@0de54ee5b983a6f5a84a5a0c1e708422059837e0 # master
       - name: Prepare and run integration tests
         id: integration-tests
         shell: bash
         env:
           NPM_SCRIPT: ${{ inputs.npm_script }}
         run: |
-          export TZ="${{ inputs.runner_timezone }}"
           nohup npm run start-feature &
           sleep 5
           npm run "${NPM_SCRIPT}"
