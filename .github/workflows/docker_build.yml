@@ -115,7 +115,7 @@ jobs:
       image_digest: ${{ steps.build_docker_step.outputs.digest }}
     steps:
       - id: build_docker_step
-        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/build_docker@35bb5e74a025299cddf50909c1968444d966c1dc # v1.0.21
+        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/build_docker@17bd21fb55d6cfc93961bf6167a251e20d96ce19 # v1.0.21
         if: ${{ inputs.docker_registry == 'ghcr.io' }}
         with:
           image_name: ${{ inputs.image_name || github.event.repository.name }}
@@ -132,7 +132,7 @@ jobs:
           file: ${{ inputs.file }}
           download_build_artifacts: ${{ inputs.download_build_artifacts }}
 
-      - uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/build_docker@35bb5e74a025299cddf50909c1968444d966c1dc # v1.0.21
+      - uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/build_docker@17bd21fb55d6cfc93961bf6167a251e20d96ce19 # v1.0.21
         if: ${{ inputs.docker_registry == 'quay.io' }}
         with:
           image_name: ${{ inputs.image_name || github.event.repository.name }}
