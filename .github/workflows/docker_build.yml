@@ -104,7 +104,11 @@ jobs:
         if: inputs.image_version == ''
         uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/create_app_version@860f18498f2263bb888da24cafc3c47cc87e3543 # v1.1.0
       - id: image_version
-        run: echo "version=${{ inputs.image_version || steps.app_version.outputs.version }}" >> $GITHUB_OUTPUT
+        shell: bash
+        env:
+          IMAGE_VERSION: ${{ inputs.image_version || steps.app_version.outputs.version }}
+        run: |
+          echo "version=${IMAGE_VERSION}" >> $GITHUB_OUTPUT
 
   docker_build:
     name: Build linux/amd64 (single)
