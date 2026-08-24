@@ -76,7 +76,7 @@ jobs:
           persist-credentials: false
       - name: Run Snyk Security Scan
         id: snyk-scan
-        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/snyk-scan@860f18498f2263bb888da24cafc3c47cc87e3543 # v1.1.0
+        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/snyk-scan@feat/HEAT-1480
         with:
           subproject: ${{ inputs.subproject }}
           severity: ${{ inputs.severity }}
