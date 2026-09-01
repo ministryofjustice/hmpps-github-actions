@@ -132,6 +132,7 @@ jobs:
           helm_allowlist_groups: ${{ vars.HMPPS_IP_ALLOWLIST_GROUPS_YAML }}
           helm_allowlist_version: ${{ vars.HMPPS_IP_ALLOWLIST_GROUPS_VERSION }}
           autogenerate_scheduled_downtime_cron: ${{inputs.autogenerate_scheduled_downtime_cron }}
+          eventmanager_private_key: ${{ secrets.HMPPS_SRE_EVENTMANAGER_PRIVATE_KEY }}
 
       # Notification bit - always send prod releases to dps-releases - CVA3MKDTR
       - if: ${{ always() && ( inputs.environment == 'prod' || inputs.environment == 'production' ) }}
