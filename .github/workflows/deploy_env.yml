@@ -119,7 +119,7 @@ jobs:
           k8s_deployment_name: ${{ inputs.k8s_deployment_name }}
           changelog_git_paths: ${{ inputs.changelog_git_paths }}
 
-      - uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/cloud-platform-deploy@feat/HEAT-1346-notify-sre-event-workflow-on-deploy # Temp hard-branch version
+      - uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/cloud-platform-deploy@feat/HEAT-1537-use-octo-sts-not-privatekey # Temp hard-branch version
         id: deploy
         with:
           dryrun: ${{ inputs.dryrun }}
