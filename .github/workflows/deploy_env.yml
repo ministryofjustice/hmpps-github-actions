@@ -72,6 +72,9 @@ permissions:
 jobs:
 
   deploy_env:
+    permissions:
+      contents: read
+      id-token: write
     name: Deploy to ${{ inputs.environment }}
     runs-on: ubuntu-latest
     strategy:
