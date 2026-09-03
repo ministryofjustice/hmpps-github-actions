@@ -80,7 +80,7 @@ jobs:
         name: Application version creators
         uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/create_app_version@1061afed0f02c82850314e2fc29711523139e574 # v1.1.2
 
-      - uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/build_docker@1061afed0f02c82850314e2fc29711523139e574 # v1.1.2
+      - uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/build_docker@0eb8b5d4bcb20a3ecb3125b2748d57c69a286832 # v1.1.2
         if: ${{ inputs.docker_registry == 'ecr' && ( ! inputs.docker_multiplatform )}}
         with:
           image_name: ${{ inputs.image_name || github.event.repository.name }}
