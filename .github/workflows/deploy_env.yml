@@ -119,7 +119,7 @@ jobs:
           k8s_deployment_name: ${{ inputs.k8s_deployment_name }}
           changelog_git_paths: ${{ inputs.changelog_git_paths }}
 
-      - uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/cloud-platform-deploy@feat/HEAT-1537-use-octo-sts-not-privatekey # Temp hard-branch version
+      - uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/cloud-platform-deploy@1061afed0f02c82850314e2fc29711523139e574 # v1.1.2
         id: deploy
         with:
           dryrun: ${{ inputs.dryrun }}
@@ -136,6 +136,17 @@ jobs:
           helm_allowlist_version: ${{ vars.HMPPS_IP_ALLOWLIST_GROUPS_VERSION }}
           autogenerate_scheduled_downtime_cron: ${{inputs.autogenerate_scheduled_downtime_cron }}
           eventmanager_private_key: ${{ secrets.HMPPS_SRE_EVENTMANAGER_PRIVATE_KEY }}
+
+      # SRE Notification of deployment, runs workflows in the hmpps-eventmanager repo:
+      - uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/sre-events/notify-on-deploy@feat/HEAT-1537-use-octo-sts-not-privatekey # Temp hard-branch version
+        id: notify-on-deploy
+        if: ${{ steps.deploy.outcome == 'success' }}
+        with:
+          environment: ${{ inputs.environment }}
+          version: ${{ inputs.app_version }}
+          k8s_deployment_name: ${{ inputs.k8s_deployment_name }}
+          eventmanager_private_key: ${{ secrets.HMPPS_SRE_EVENTMANAGER_PRIVATE_KEY }}
+          dryrun: ${{ inputs.dryrun }}
 
       # Notification bit - always send prod releases to dps-releases - CVA3MKDTR
       - if: ${{ always() && ( inputs.environment == 'prod' || inputs.environment == 'production' ) }}
