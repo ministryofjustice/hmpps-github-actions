@@ -135,7 +135,6 @@ jobs:
           helm_allowlist_groups: ${{ vars.HMPPS_IP_ALLOWLIST_GROUPS_YAML }}
           helm_allowlist_version: ${{ vars.HMPPS_IP_ALLOWLIST_GROUPS_VERSION }}
           autogenerate_scheduled_downtime_cron: ${{inputs.autogenerate_scheduled_downtime_cron }}
-          eventmanager_private_key: ${{ secrets.HMPPS_SRE_EVENTMANAGER_PRIVATE_KEY }}
 
       # SRE Notification of deployment, runs workflows in the hmpps-eventmanager repo:
       - uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/sre-events/notify-on-deploy@feat/HEAT-1537-use-octo-sts-not-privatekey # Temp hard-branch version
@@ -145,7 +144,6 @@ jobs:
           environment: ${{ inputs.environment }}
           version: ${{ inputs.app_version }}
           k8s_deployment_name: ${{ inputs.k8s_deployment_name }}
-          eventmanager_private_key: ${{ secrets.HMPPS_SRE_EVENTMANAGER_PRIVATE_KEY }}
           dryrun: ${{ inputs.dryrun }}
 
       # Notification bit - always send prod releases to dps-releases - CVA3MKDTR
