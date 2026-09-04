@@ -79,7 +79,7 @@ jobs:
           persist-credentials: false
       - name: Run Snyk Security Scan
         id: snyk-scan
-        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/snyk-scan@1061afed0f02c82850314e2fc29711523139e574 # v1.1.2
+        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/snyk-scan@feat/HEAT-1479
         with:
           subproject: ${{ inputs.subproject }}
           severity: ${{ inputs.severity }}
@@ -94,7 +94,7 @@ jobs:
           image_ref: ${{ inputs.image_ref }}
 
       - name: Snyk slack notification
-        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/slack_snyk_scan_notification@1061afed0f02c82850314e2fc29711523139e574 # v1.1.2
+        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/slack_snyk_scan_notification@feat/HEAT-1479
         if: (failure() || steps.snyk-scan.outcome == 'failure' || steps.snyk-scan.outputs.results_count > 0) && inputs.channel_id != 'NO_SLACK'
         with:
           title: 'Snyk'
