@@ -18,9 +18,8 @@ on:
         description: 'Slack bot token'
         required: false
 
-permissions:
-  contents: read
-  security-events: write
+permissions: {}
+
 
 jobs:
   security-codeql-scan:
