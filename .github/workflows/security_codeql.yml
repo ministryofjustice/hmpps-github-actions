@@ -40,13 +40,13 @@ jobs:
       with:
         persist-credentials: false
     - name: Initialize CodeQL
-      uses: github/codeql-action/init@cdf488f595d80d6e07e03d4674febd5ab45fa938 # v4.37.9
+      uses: github/codeql-action/init@b96794f015dfd88f77b49b1c93e0fa7110f94c63 # v4.38.0
       with:
         languages: ${{ inputs.languages }}
         build-mode: ${{ inputs.build_mode }}
     - name: Perform CodeQL Analysis
       id: codeql_analysis
-      uses: github/codeql-action/analyze@cdf488f595d80d6e07e03d4674febd5ab45fa938 # v4.37.9
+      uses: github/codeql-action/analyze@b96794f015dfd88f77b49b1c93e0fa7110f94c63 # v4.38.0
     - name: CodeQL slack notification
       uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/slack_codescan_notification@accf37e936517ed39e7a888cf74f0277dab3310e # v1.1.4
       if: (failure() || steps.codeql_analysis.outcome == 'failure') && inputs.channel_id != 'NO_SLACK'
