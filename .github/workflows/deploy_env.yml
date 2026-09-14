@@ -66,15 +66,9 @@ on:
         default: true
         type: boolean
 
-permissions:
-  contents: read
-
 jobs:
 
   deploy_env:
-    permissions:
-      contents: read
-      id-token: write
     name: Deploy to ${{ inputs.environment }}
     runs-on: ubuntu-latest
     strategy:
@@ -139,7 +133,7 @@ jobs:
       # SRE Notification of deployment, runs workflows in the hmpps-eventmanager repo:
       - uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/sre-events/notify-on-deploy@feat/HEAT-1537-use-octo-sts-not-privatekey # Temp hard-branch version
         id: notify-on-deploy
-        if: ${{ steps.deploy.outcome == 'success' }}
+        if: ${{ steps.deploy.outcome == 'success' && env.ACTIONS_ID_TOKEN_REQUEST_TOKEN != '' }} #Only call this if we have access to id token requests (i.e. we have id-token: write permission) in order to use octo-sts
         with:
           environment: ${{ inputs.environment }}
           version: ${{ inputs.app_version }}
