@@ -65,6 +65,15 @@ on:
         required: false
         default: true
         type: boolean
+    secrets:
+      KUBE_CLUSTER:
+        required: false
+      KUBE_NAMESPACE:
+        required: false
+      KUBE_CERT:
+        required: false
+      KUBE_TOKEN:
+        required: false
 
 permissions:
   contents: read
