@@ -74,6 +74,8 @@ on:
         required: false
       KUBE_TOKEN:
         required: false
+      HMPPS_SRE_SLACK_BOT_TOKEN:
+        required: false
 
 permissions:
   contents: read
