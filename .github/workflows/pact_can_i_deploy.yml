@@ -21,22 +21,6 @@ env:
   PACT_CLI_VERSION: '18.1.1'
 
 on:
-  workflow_dispatch:
-    inputs:
-      pacticipant:
-        description: The name of the pacticipant (consumer or provider) to check, as registered in the Pact Broker
-        required: true
-        type: string
-      version:
-        description: The version of the pacticipant to check (typically the git commit SHA)
-        required: false
-        type: string
-      to_environment:
-        description: The target deployment environment to check compatibility against
-        required: false
-        type: string
-        default: 'dev'
-
   workflow_call:
     inputs:
       pacticipant:

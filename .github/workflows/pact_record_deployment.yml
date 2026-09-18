@@ -22,7 +22,7 @@ env:
 
 on:
   workflow_call:
-    inputs: &record_deployment_inputs
+    inputs:
       app_version:
         description: Deployment version from the pipeline, used for logging and traceability only
         required: true
@@ -53,8 +53,6 @@ on:
         required: true
       HMPPS_PACT_BROKER_PASSWORD:
         required: true
-  workflow_dispatch:
-    inputs: *record_deployment_inputs
 
 permissions:
   contents: read
