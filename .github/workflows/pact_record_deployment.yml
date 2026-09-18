@@ -1,0 +1,107 @@
+name: Record Pact Broker deployment
+
+# Reusable workflow that records a deployment against a Pact Broker
+# environment, so that provider verification / can-i-deploy checks have an
+# accurate picture of what is currently deployed where.
+#
+# Example usage from a consumer repo:
+#
+# jobs:
+#   record-deployment:
+#     uses: ministryofjustice/hmpps-github-actions/.github/workflows/pact_record_deployment.yml@v2
+#     with:
+#       app_version: ${{ needs.build.outputs.app_version }}
+#       environment: production
+#     secrets:
+#       PACT_BROKER_URL: ${{ secrets.PACT_BROKER_URL }}
+#       HMPPS_PACT_BROKER_USERNAME: ${{ secrets.HMPPS_PACT_BROKER_USERNAME }}
+#       HMPPS_PACT_BROKER_PASSWORD: ${{ secrets.HMPPS_PACT_BROKER_PASSWORD }}
+
+env:
+  PACT_CLI_VERSION: '18.1.1'
+
+on:
+  workflow_call:
+    inputs: &record_deployment_inputs
+      app_version:
+        description: Deployment version from the pipeline, used for logging and traceability only
+        required: true
+        type: string
+      environment:
+        description: Pact Broker environment name to record the deployment against
+        required: true
+        type: string
+      pacticipant:
+        description: Optional Pact Broker pacticipant name override; defaults to the repository name
+        required: false
+        default: ''
+        type: string
+      pacticipant_version:
+        description: Optional Pact Broker pacticipant version to record as deployed; defaults to github.sha so it matches published provider verification results
+        required: false
+        default: ''
+        type: string
+      application_instance:
+        description: Optional Pact Broker application instance name, used only to distinguish multiple deployments in the same environment
+        required: false
+        default: ''
+        type: string
+    secrets:
+      PACT_BROKER_URL:
+        required: true
+      HMPPS_PACT_BROKER_USERNAME:
+        required: true
+      HMPPS_PACT_BROKER_PASSWORD:
+        required: true
+  workflow_dispatch:
+    inputs: *record_deployment_inputs
+
+permissions:
+  contents: read
+
+jobs:
+  record_deployment:
+    name: Record deployment in Pact Broker
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '24'
+
+      - name: Record deployment
+        shell: bash
+        env:
+          INPUT_APP_VERSION: ${{ inputs.app_version }}
+          INPUT_ENVIRONMENT: ${{ inputs.environment }}
+          INPUT_PACTICIPANT: ${{ inputs.pacticipant }}
+          INPUT_PACTICIPANT_VERSION: ${{ inputs.pacticipant_version }}
+          INPUT_APPLICATION_INSTANCE: ${{ inputs.application_instance }}
+          PACT_BROKER_BASE_URL: ${{ secrets.PACT_BROKER_URL }}
+          PACT_BROKER_USERNAME: ${{ secrets.HMPPS_PACT_BROKER_USERNAME }}
+          PACT_BROKER_PASSWORD: ${{ secrets.HMPPS_PACT_BROKER_PASSWORD }}
+        run: |
+          set -euo pipefail
+
+          pacticipant="${INPUT_PACTICIPANT:-${GITHUB_REPOSITORY#*/}}"
+          pacticipant_version="${INPUT_PACTICIPANT_VERSION:-$GITHUB_SHA}"
+
+          command=(
+            pact-broker
+            record-deployment
+            --environment "$INPUT_ENVIRONMENT"
+            --pacticipant "$pacticipant"
+            --version "$pacticipant_version"
+          )
+
+          if [[ -n "$INPUT_APPLICATION_INSTANCE" ]]; then
+            command+=(--application-instance "$INPUT_APPLICATION_INSTANCE")
+          fi
+
+          echo "Recording Pact Broker deployment"
+          echo "  pacticipant: $pacticipant"
+          echo "  pacticipant version: $pacticipant_version"
+          echo "  environment: $INPUT_ENVIRONMENT"
+          echo "  app version: $INPUT_APP_VERSION"
+
+          npx --yes --package "@pact-foundation/pact-cli@${PACT_CLI_VERSION}" "${command[@]}"
