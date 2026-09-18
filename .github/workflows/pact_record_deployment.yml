@@ -62,10 +62,10 @@ jobs:
     name: Record deployment in Pact Broker
     runs-on: ubuntu-latest
     steps:
-      - name: Set up Node.js
+      - name: Use Node.js ${{ inputs.node_version_file }}
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
-          node-version: '24'
+          node-version-file: ${{ inputs.node_version_file }}
 
       - name: Record deployment
         shell: bash
