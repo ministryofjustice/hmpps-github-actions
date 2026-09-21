@@ -37,6 +37,11 @@ on:
         required: false
         type: string
         default: 'dev'
+      node_version:
+        description: Node.js version used to run the Pact CLI
+        required: false
+        type: string
+        default: '24'
     secrets:
       PACT_BROKER_URL:
         required: true
@@ -53,10 +58,10 @@ jobs:
     name: Can I deploy ${{ inputs.pacticipant }} to ${{ inputs.to_environment }}?
     runs-on: ubuntu-latest
     steps:
-      - name: Use Node.js ${{ inputs.node_version_file }}
+      - name: Use Node.js ${{ inputs.node_version }}
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
-          node-version-file: ${{ inputs.node_version_file }}
+          node-version: ${{ inputs.node_version }}
 
       - name: Can I deploy?
         shell: bash
