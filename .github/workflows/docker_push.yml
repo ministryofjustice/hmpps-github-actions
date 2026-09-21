@@ -32,12 +32,16 @@ on:
         required: false
         type: boolean
         default: false
-
     secrets:
       HMPPS_QUAYIO_USER:
         required: false 
       HMPPS_QUAYIO_TOKEN:
         required: false
+      ECR_ROLE_TO_ASSUME:
+        required: false
+      ECR_REGISTRY_URL:
+        required: false
+
     outputs:
       image_digest:
         description: Pushed image digest
@@ -94,6 +98,17 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ github.token }}
 
+      - name: Configure AWS credentials if Docker registry is ecr
+        if: ${{ inputs.docker_registry == 'ecr' }}
+        uses: aws-actions/configure-aws-credentials@8df5847569e6427dd6c4fb1cf565c83acfa8afa7 # v6.0.0
+        with:
+          role-to-assume: ${{ inputs.ECR_ROLE_TO_ASSUME }}
+          aws-region: ${{ inputs.ECR_REGION }}
+
+      - name: Login to Amazon ECR if Docker registry is ecr
+        if: ${{ inputs.docker_registry == 'ecr'}}
+        uses: aws-actions/amazon-ecr-login@183a1442edf41672e66566b7fc560e297a290896 # v2.1.1
+   
       - name: Push image
         if: ${{ ! inputs.docker_multiplatform }}
         shell: bash

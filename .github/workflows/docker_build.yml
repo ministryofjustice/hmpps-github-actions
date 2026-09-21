@@ -9,7 +9,8 @@ on:
         type: string
       registry_org:
         description: Docker registry organisation
-        required: true
+        required: false
+        default: 'hmpps'
         type: string
       additional_docker_tag:
         description: Additional docker tag that can be used to specify stable tags
@@ -86,6 +87,10 @@ on:
         required: false
       HMPPS_QUAYIO_TOKEN:
         required: false
+      ECR_ROLE_TO_ASSUME:
+        required: false
+      ECR_REGISTRY_URL:
+        required: false
 
     outputs:
       app_version:
@@ -154,6 +159,24 @@ jobs:
           additional_docker_build_args: ${{ inputs.additional_docker_build_args }}
           download_build_artifacts: ${{ inputs.download_build_artifacts }}
 
+      - uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/build_docker@accf37e936517ed39e7a888cf74f0277dab3310e # v1.1.4
+        if: ${{ inputs.docker_registry == 'ecr' && ( ! inputs.docker_multiplatform )}}
+        with:
+          image_name: ${{ inputs.image_name || github.event.repository.name }}
+          docker_registry: ${{ inputs.docker_registry }}
+          registry_org: ${{ inputs.registry_org }}
+          additional_docker_tag: ${{ inputs.additional_docker_tag }}
+          tag_latest: ${{ inputs.tag_latest }}
+          upload_image_artifact: ${{ inputs.upload_image_artifact }}
+          image_artifact_retention_days: ${{ inputs.image_artifact_retention_days }}
+          push: ${{ inputs.push }}
+          load: ${{ inputs.load }}
+          app_version: ${{ needs.create_version.outputs.version }}
+          additional_docker_build_args: ${{ inputs.additional_docker_build_args }}
+          download_build_artifacts: ${{ inputs.download_build_artifacts }}
+          ECR_ROLE_TO_ASSUME: ${{ secrets.ECR_ROLE_TO_ASSUME }}
+          ECR_REGISTRY_URL: ${{ secrets.ECR_REGISTRY_URL }}
+
   docker_build_platform:
     name: Build ${{ matrix.platform }} (parallel)
     if: ${{ inputs.docker_multiplatform }}
@@ -220,6 +243,8 @@ jobs:
     secrets:
       HMPPS_QUAYIO_USER: ${{ secrets.HMPPS_QUAYIO_USER }}
       HMPPS_QUAYIO_TOKEN: ${{ secrets.HMPPS_QUAYIO_TOKEN }}
+      ECR_ROLE_TO_ASSUME: ${{ secrets.ECR_ROLE_TO_ASSUME }}
+      ECR_REGISTRY_URL: ${{ secrets.ECR_REGISTRY_URL }}
     with:
       docker_registry: ${{ inputs.docker_registry }}
       registry_org: ${{ inputs.registry_org }}
