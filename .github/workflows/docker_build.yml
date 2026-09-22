@@ -34,6 +34,10 @@ on:
         description: Additional docker build arguments
         required: false
         type: string
+      additional_secrets_args: 
+        description: Additional docker build secrets arguments
+        required: false
+        type: string
       push:
         description: Push docker image to registry flag
         required: true
@@ -119,7 +123,7 @@ jobs:
       image_digest: ${{ steps.build_docker_step.outputs.digest }}
     steps:
       - id: build_docker_step
-        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/build_docker@accf37e936517ed39e7a888cf74f0277dab3310e # v1.1.4
+        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/build_docker@f-add-secrets-build-support # v1.1.4
         if: ${{ inputs.docker_registry == 'ghcr.io' }}
         with:
           image_name: ${{ inputs.image_name || github.event.repository.name }}
@@ -133,6 +137,7 @@ jobs:
           load: ${{ inputs.load }}
           app_version: ${{ needs.create_version.outputs.version }}
           additional_docker_build_args: ${{ inputs.additional_docker_build_args }}
+          additional_secrets_args: ${{ inputs.additional_secrets_args }}
           file: ${{ inputs.file }}
           download_build_artifacts: ${{ inputs.download_build_artifacts }}
 
