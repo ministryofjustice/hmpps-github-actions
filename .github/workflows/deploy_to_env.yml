@@ -1,4 +1,77 @@
 # This workflow wraps deploy_env.yml, with additional permissions and integrations.
+name: Deploy container image to environment
+
+on:
+  workflow_call:
+    inputs:
+      dryrun:
+        default: false
+        required: false
+        type: boolean
+      environment:
+        description: Environment
+        required: true
+        type: string
+      app_version:
+        description: App version
+        required: true
+        type: string
+      k8s_deployment_name:
+        description: Kubernetes deployment name
+        required: false
+        default: ${{ github.event.repository.name }}
+        type: string
+      changelog_git_paths:
+        description: Changelog git paths
+        required: false
+        default: ""
+        type: string
+      show_changelog:
+        description: Show changelog
+        default: true
+        required: false
+        type: boolean
+      slack_notification:
+        description: Slack notification
+        default: "false"
+        required: false
+        type: string
+      helm_additional_args:
+        description: Helm additional args
+        default: ""
+        required: false
+        type: string
+      helm_timeout:
+        description: Helm timeout
+        default: "5m"
+        required: false
+        type: string
+      helm_dir:
+        description: Helm dir
+        default: "helm_deploy"
+        required: false
+        type: string
+      helm_chart_name:
+        description: Name of the helm chart - defaults to the repo name
+        required: false
+        default: ${{ github.event.repository.name }}
+        type: string
+      autogenerate_scheduled_downtime_cron:
+        description: |
+          Whether to autogenerate scheduled downtime cron values.
+          For services that have enabled "scheduledDowntime".
+          This will override the "startup" and "shutdown" cron values and set them during Helm install/upgrade.
+          Ensures startups and shutdowns are randomly spaced out to avoid cluster scheduling issues.
+          Startup times are between 6am-7am. Shutdown times are between 9pm-10pm.
+        required: false
+        default: true
+        type: boolean
+
+    outputs:
+      deploy_outcome:
+        description: Deployment job outcome
+        value: ${{ jobs.deploy.outputs.deploy_outcome }}
+
 permissions:
   contents: read
   id-token: write #Used for octo-sts cross-org authentication
