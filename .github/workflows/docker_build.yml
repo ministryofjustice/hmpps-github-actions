@@ -34,6 +34,11 @@ on:
         description: Additional docker build arguments
         required: false
         type: string
+      github_token_build_arg_name:
+        description: Optional Docker build argument name to receive the GitHub job token, for example GITHUB_TOKEN
+        required: false
+        type: string
+        default: ''
       push:
         description: Push docker image to registry flag
         required: true
@@ -132,7 +137,7 @@ jobs:
           push: ${{ inputs.push }}
           load: ${{ inputs.load }}
           app_version: ${{ needs.create_version.outputs.version }}
-          additional_docker_build_args: ${{ inputs.additional_docker_build_args }}
+          additional_docker_build_args: ${{ inputs.github_token_build_arg_name != '' && format('{0}={1}', inputs.github_token_build_arg_name, github.token) || inputs.additional_docker_build_args }}
           file: ${{ inputs.file }}
           download_build_artifacts: ${{ inputs.download_build_artifacts }}
 
@@ -151,7 +156,7 @@ jobs:
           app_version: ${{ needs.create_version.outputs.version }}
           HMPPS_QUAYIO_USER: ${{ secrets.HMPPS_QUAYIO_USER }}
           HMPPS_QUAYIO_TOKEN: ${{ secrets.HMPPS_QUAYIO_TOKEN}}
-          additional_docker_build_args: ${{ inputs.additional_docker_build_args }}
+          additional_docker_build_args: ${{ inputs.github_token_build_arg_name != '' && format('{0}={1}', inputs.github_token_build_arg_name, github.token) || inputs.additional_docker_build_args }}
           download_build_artifacts: ${{ inputs.download_build_artifacts }}
 
   docker_build_platform:
@@ -198,6 +203,7 @@ jobs:
             "GIT_REF=${{ github.sha }}"
             "GIT_BRANCH=${{ github.ref_name }}"
             "${{ inputs.additional_docker_build_args }}"
+            "${{ inputs.github_token_build_arg_name != '' && format('{0}={1}', inputs.github_token_build_arg_name, github.token) || '' }}"
           outputs: type=docker,name=${{ inputs.docker_registry }}/${{ inputs.registry_org }}/${{ inputs.image_name || github.event.repository.name }}:${{ needs.create_version.outputs.version }},dest=${{ runner.temp }}/image.tar
           cache-from: type=gha,scope=build-${{ steps.prepare.outputs.platform_pair }}
           cache-to: type=gha,scope=build-${{ steps.prepare.outputs.platform_pair }},mode=max
