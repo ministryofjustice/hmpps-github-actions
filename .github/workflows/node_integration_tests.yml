@@ -27,6 +27,11 @@ on:
         required: false
         type: number
         default: 9091
+      runner_timezone:
+        description: 'Set the runners timezone'
+        required: false
+        type: string
+        default: ''
 
 permissions:
   contents: read
@@ -84,6 +89,7 @@ jobs:
         env:
           NPM_SCRIPT: ${{ inputs.npm_script }}
         run: |
+          export TZ="${{ inputs.runner_timezone }}"
           nohup npm run start-feature &
           sleep 5
           npm run "${NPM_SCRIPT}"
