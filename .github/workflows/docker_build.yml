@@ -123,7 +123,8 @@ jobs:
     outputs:
       image_digest: ${{ steps.build_docker_step.outputs.digest }}
     steps:
-      - id: build_docker_step
+      - id: build_docker_step_ghcr
+        name: Build (and push) Docker (ghcr.io)
         uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/build_docker@accf37e936517ed39e7a888cf74f0277dab3310e # v1.1.4
         if: ${{ inputs.docker_registry == 'ghcr.io' }}
         with:
@@ -141,7 +142,9 @@ jobs:
           file: ${{ inputs.file }}
           download_build_artifacts: ${{ inputs.download_build_artifacts }}
 
-      - uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/build_docker@accf37e936517ed39e7a888cf74f0277dab3310e # v1.1.4
+      - id: build_docker_step_quay
+        name: Build (and push) Docker (quay.io)
+        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/build_docker@accf37e936517ed39e7a888cf74f0277dab3310e # v1.1.4
         if: ${{ inputs.docker_registry == 'quay.io' }}
         with:
           image_name: ${{ inputs.image_name || github.event.repository.name }}
@@ -159,7 +162,10 @@ jobs:
           additional_docker_build_args: ${{ inputs.additional_docker_build_args }}
           download_build_artifacts: ${{ inputs.download_build_artifacts }}
 
-      - uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/build_docker@accf37e936517ed39e7a888cf74f0277dab3310e # v1.1.4
+      - id: build_docker_step_ecr
+        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/build_docker@90bdfa991e9944e4997eba4c1f2709d21ec807ea # v1.1.5
+        # uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/build_docker@accf37e936517ed39e7a888cf74f0277dab3310e # v1.1.4
+        name: Build (and push) Docker (ecr)
         if: ${{ inputs.docker_registry == 'ecr' && ( ! inputs.docker_multiplatform )}}
         with:
           image_name: ${{ inputs.image_name || github.event.repository.name }}
