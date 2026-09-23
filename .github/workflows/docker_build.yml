@@ -168,6 +168,8 @@ jobs:
     name: Build ${{ matrix.platform }} (parallel)
     if: ${{ inputs.docker_multiplatform }}
     needs: [create_version]
+    env:
+      GITHUB_TOKEN: ${{ github.token }}
     strategy:
       fail-fast: true
       matrix:
