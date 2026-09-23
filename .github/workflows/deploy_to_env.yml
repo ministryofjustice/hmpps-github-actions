@@ -97,12 +97,11 @@ jobs:
   notify-on-deploy:
     needs: deploy
     if: ${{ needs.deploy.outputs.deploy_outcome == 'success' }}
-    runs-on: ubuntu-latest
-    steps:
-      - uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/sre-events/notify-on-deploy@feat/HEAT-1537-use-octo-sts-not-privatekey # Temp hard-branch version
-        with:
-          environment: ${{ inputs.environment }}
-          version: ${{ inputs.app_version }}
-          k8s_deployment_name: ${{ inputs.k8s_deployment_name }}
-          dryrun: ${{ inputs.dryrun }}
+    uses: ./.github/workflows/notify_on_deploy.yml
+    with:
+      environment: ${{ inputs.environment }}
+      app_version: ${{ inputs.app_version }}
+      k8s_deployment_name: ${{ inputs.k8s_deployment_name }}
+      dryrun: ${{ inputs.dryrun }}
+    secrets: inherit
 
