@@ -141,7 +141,7 @@ jobs:
           file: ${{ inputs.file }}
           download_build_artifacts: ${{ inputs.download_build_artifacts }}
 
-      - uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/build_docker@accf37e936517ed39e7a888cf74f0277dab3310e # v1.1.4
+      - uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/build_docker@f-add-secrets-build-support # v1.1.4
         if: ${{ inputs.docker_registry == 'quay.io' }}
         with:
           image_name: ${{ inputs.image_name || github.event.repository.name }}
@@ -157,6 +157,7 @@ jobs:
           HMPPS_QUAYIO_USER: ${{ secrets.HMPPS_QUAYIO_USER }}
           HMPPS_QUAYIO_TOKEN: ${{ secrets.HMPPS_QUAYIO_TOKEN}}
           additional_docker_build_args: ${{ inputs.additional_docker_build_args }}
+          additional_secrets_args: ${{ inputs.additional_secrets_args }}
           download_build_artifacts: ${{ inputs.download_build_artifacts }}
 
   docker_build_platform:
@@ -203,6 +204,7 @@ jobs:
             "GIT_REF=${{ github.sha }}"
             "GIT_BRANCH=${{ github.ref_name }}"
             "${{ inputs.additional_docker_build_args }}"
+          secrets-env: ${{ inputs.additional_secrets_args }}
           outputs: type=docker,name=${{ inputs.docker_registry }}/${{ inputs.registry_org }}/${{ inputs.image_name || github.event.repository.name }}:${{ needs.create_version.outputs.version }},dest=${{ runner.temp }}/image.tar
           cache-from: type=gha,scope=build-${{ steps.prepare.outputs.platform_pair }}
           cache-to: type=gha,scope=build-${{ steps.prepare.outputs.platform_pair }},mode=max
