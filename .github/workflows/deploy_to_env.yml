@@ -98,7 +98,6 @@ jobs:
     needs: deploy
     if: ${{ needs.deploy.outputs.deploy_outcome == 'success' }}
     runs-on: ubuntu-latest
-    environment: ${{ inputs.environment }}
     steps:
       - uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/sre-events/notify-on-deploy@feat/HEAT-1537-use-octo-sts-not-privatekey # Temp hard-branch version
         with:
