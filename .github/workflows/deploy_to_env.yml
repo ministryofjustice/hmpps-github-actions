@@ -1,0 +1,36 @@
+# This workflow wraps deploy_env.yml, with additional permissions and integrations.
+permissions:
+  contents: read
+  id-token: write #Used for octo-sts cross-org authentication
+
+jobs:
+  deploy:
+    uses: ./.github/workflows/deploy_env.yml
+    with:
+      dryrun: ${{ inputs.dryrun }}
+      environment: ${{ inputs.environment }}
+      app_version: ${{ inputs.app_version }}
+      k8s_deployment_name: ${{ inputs.k8s_deployment_name }}
+      changelog_git_paths: ${{ inputs.changelog_git_paths }}
+      show_changelog: ${{ inputs.show_changelog }}
+      slack_notification: ${{ inputs.slack_notification }}
+      helm_additional_args: ${{ inputs.helm_additional_args }}
+      helm_timeout: ${{ inputs.helm_timeout }}
+      helm_dir: ${{ inputs.helm_dir }}
+      helm_chart_name: ${{ inputs.helm_chart_name }}
+      autogenerate_scheduled_downtime_cron: ${{ inputs.autogenerate_scheduled_downtime_cron }}
+    secrets: inherit
+
+  notify-on-deploy:
+    needs: deploy
+    if: ${{ needs.deploy.outputs.deploy_outcome == 'success' }}
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    steps:
+      - uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/sre-events/notify-on-deploy@feat/HEAT-1537-use-octo-sts-not-privatekey # Temp hard-branch version
+        with:
+          environment: ${{ inputs.environment }}
+          version: ${{ inputs.app_version }}
+          k8s_deployment_name: ${{ inputs.k8s_deployment_name }}
+          dryrun: ${{ inputs.dryrun }}
+
