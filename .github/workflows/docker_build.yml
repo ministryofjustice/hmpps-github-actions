@@ -119,12 +119,16 @@ jobs:
     if: ${{ ! inputs.docker_multiplatform }}
     needs: [create_version]
     runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     outputs:
       image_digest: ${{ steps.build_docker_step.outputs.digest }}
     steps:
       - id: build_docker_step
         uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/build_docker@f-add-secrets-build-support # v1.1.4
         if: ${{ inputs.docker_registry == 'ghcr.io' }}
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         with:
           image_name: ${{ inputs.image_name || github.event.repository.name }}
           docker_registry: ${{ inputs.docker_registry }}
