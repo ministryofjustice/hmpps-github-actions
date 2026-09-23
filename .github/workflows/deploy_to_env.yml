@@ -1,0 +1,7 @@
+name: Stub workflow
+on: workflow_call
+jobs:
+  stub:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Placeholder for development in-branch"
