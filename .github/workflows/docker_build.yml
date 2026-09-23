@@ -119,8 +119,6 @@ jobs:
     if: ${{ ! inputs.docker_multiplatform }}
     needs: [create_version]
     runs-on: ubuntu-latest
-    env:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     outputs:
       image_digest: ${{ steps.build_docker_step.outputs.digest }}
     steps:
