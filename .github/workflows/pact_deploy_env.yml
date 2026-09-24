@@ -1,0 +1,58 @@
+name: Run
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        description: Target environment
+        required: true
+        default: dev
+        type: string
+      app_version:
+        description: App version
+        required: true
+        type: string
+      pact_consumer_deployment:
+        description: Run Pact can-i-deploy before deployment
+        required: false
+        default: false
+        type: boolean
+      slack_notification:
+        description: Slack notification
+        default: "false"
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  can_i_deploy:
+    name: Check Pact can-i-deploy
+    if: ${{ inputs.pact_consumer_deployment }}
+    uses: ./.github/workflows/pact_can_i_deploy.yml
+    secrets: inherit
+    with:
+      to_environment: ${{ inputs.environment }}
+      app_version: ${{ inputs.app_version }}
+
+  deploy_env:
+    name: Deploy to ${{ inputs.environment }}
+    needs: can_i_deploy
+    if: ${{ always() && (!inputs.pact_consumer_deployment || needs.can_i_deploy.result == 'success') }}
+    uses: ./.github/workflows/deploy_env.yml
+    secrets: inherit
+    with:
+      environment: ${{ inputs.environment }}
+      app_version: ${{ inputs.app_version }}
+      slack_notification: ${{ inputs.slack_notification }}
+
+  record_deployment:
+    name: Record successful deployment in Pact Broker
+    needs: deploy_env
+    if: ${{ always() && needs.deploy_env.result == 'success' }}
+    uses: ./.github/workflows/pact_record_deployment.yml
+    secrets: inherit
+    with:
+      environment: ${{ inputs.environment }}
+      app_version: ${{ inputs.app_version }}
