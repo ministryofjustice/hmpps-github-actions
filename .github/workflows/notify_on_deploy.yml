@@ -1,0 +1,37 @@
+name: Notify on deployment
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        description: Environment
+        required: true
+        type: string
+      app_version:
+        description: App version
+        required: true
+        type: string
+      k8s_deployment_name:
+        description: Kubernetes deployment name
+        required: false
+        default: ${{ github.event.repository.name }}
+        type: string
+      dryrun:
+        default: false
+        required: false
+        type: boolean
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  notify-on-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/sre-events/notify-on-deploy@feat/HEAT-1537-use-octo-sts-not-privatekey # Temp hard-branch version
+        with:
+          environment: ${{ inputs.environment }}
+          version: ${{ inputs.app_version }}
+          k8s_deployment_name: ${{ inputs.k8s_deployment_name }}
+          dryrun: ${{ inputs.dryrun }}
