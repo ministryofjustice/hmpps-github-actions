@@ -17,6 +17,11 @@ on:
         required: false
         default: false
         type: boolean
+      slack_notification:
+        description: Slack notification
+        default: "false"
+        required: false
+        type: string
 
 permissions:
   contents: read
@@ -40,6 +45,7 @@ jobs:
     with:
       environment: ${{ inputs.environment }}
       app_version: ${{ inputs.app_version }}
+      slack_notification: ${{ inputs.slack_notification }}
 
   record_deployment:
     name: Record successful deployment in Pact Broker
