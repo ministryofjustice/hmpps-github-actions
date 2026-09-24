@@ -50,6 +50,9 @@ on:
 permissions:
   contents: read
   packages: write
+  # id-token: write
+  # This is required to write to ECR repositories
+  # But will require elevated permissions in calling workflows
 
 jobs:
   docker_push:
@@ -98,17 +101,20 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ github.token }}
 
+
+      ### ECR PUSH NOT YET FUNCTIONAL - REQUIRES ID-TOKEN WRITE PERMISSION ###
       - name: Configure AWS credentials if Docker registry is ecr
         if: ${{ inputs.docker_registry == 'ecr' }}
         uses: aws-actions/configure-aws-credentials@8df5847569e6427dd6c4fb1cf565c83acfa8afa7 # v6.0.0
         with:
-          role-to-assume: ${{ inputs.ECR_ROLE_TO_ASSUME }}
-          aws-region: ${{ inputs.ECR_REGION }}
+          role-to-assume: ${{ secrets.ECR_ROLE_TO_ASSUME }}
+          aws-region: ${{ secrets.ECR_REGION }}
 
       - name: Login to Amazon ECR if Docker registry is ecr
         if: ${{ inputs.docker_registry == 'ecr'}}
         uses: aws-actions/amazon-ecr-login@183a1442edf41672e66566b7fc560e297a290896 # v2.1.1
-   
+      ### ECR PUSH NOT YET FUNCTIONAL - REQUIRES ID-TOKEN WRITE PERMISSION ###
+
       - name: Push image
         if: ${{ ! inputs.docker_multiplatform }}
         shell: bash

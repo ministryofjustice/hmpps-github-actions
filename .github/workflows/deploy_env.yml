@@ -66,6 +66,8 @@ on:
         default: true
         type: boolean
 
+    # Required when secrets are explicitly mentioned (best practice)
+    # Ignored when they're inherited
     secrets:
       KUBE_CLUSTER:
         required: false
