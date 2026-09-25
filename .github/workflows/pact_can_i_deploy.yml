@@ -49,7 +49,7 @@ jobs:
     name: Can I deploy to ${{ inputs.to_environment }}?
     runs-on: ubuntu-latest
     container:
-      image: pactfoundation/pact-cli:1.5.0.5
+      image: pactfoundation/pact-cli:1.5.0.5@sha256:77b98079e5be279353f61e116a0b9b3af19e55b215532b30d430ff5df66e5ac9
     steps:
       - name: Can I deploy?
         shell: sh
