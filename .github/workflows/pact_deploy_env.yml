@@ -9,7 +9,10 @@ on:
         default: dev
         type: string
       app_version:
-        description: App version
+        description: |
+          App version used for the Docker image tag / Helm deploy.
+          Not used for Pact Broker lookups - those always use github.sha,
+          matching the version published during provider verification.
         required: true
         type: string
       pact_consumer_deployment:
@@ -34,7 +37,7 @@ jobs:
     secrets: inherit
     with:
       to_environment: ${{ inputs.environment }}
-      app_version: ${{ inputs.app_version }}
+      app_version: ${{ github.sha }}
 
   deploy_env:
     name: Deploy to ${{ inputs.environment }}
@@ -55,4 +58,4 @@ jobs:
     secrets: inherit
     with:
       environment: ${{ inputs.environment }}
-      app_version: ${{ inputs.app_version }}
+      app_version: ${{ github.sha }}
