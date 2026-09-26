@@ -66,6 +66,7 @@ jobs:
           path: |
             ./node_modules
             ~/.cache/Cypress
+            ~/.cache/ms-playwright
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json', '!**/node_modules/**') }}
       - name: download the artifacts to a custom path if provided
         if: ${{ inputs.download_path != '' }}
