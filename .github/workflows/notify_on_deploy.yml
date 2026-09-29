@@ -38,6 +38,6 @@ jobs:
         with:
           environment: ${{ inputs.environment }}
           version: ${{ inputs.app_version }}
-          k8s_deployment_name: ${{ inputs.k8s_deployment_name }}
-          application: ${{ inputs.application }}
+          k8s_deployment_name: 
+          application: 
           dryrun: ${{ inputs.dryrun }}
