@@ -37,7 +37,7 @@ jobs:
     secrets: inherit
     with:
       to_environment: ${{ inputs.environment }}
-      app_version: ${{ github.sha }}
+      app_version: ${{ inputs.app_version }}
 
   deploy_env:
     name: Deploy to ${{ inputs.environment }}
@@ -58,4 +58,4 @@ jobs:
     secrets: inherit
     with:
       environment: ${{ inputs.environment }}
-      app_version: ${{ github.sha }}
+      app_version: ${{ inputs.app_version }}
