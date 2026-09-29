@@ -16,6 +16,11 @@ on:
         required: false
         default: ${{ github.event.repository.name }}
         type: string
+      application:
+        description: Name of the application being delpoyed
+        required: false
+        default: ${{ github.event.repository.name }}
+        type: string
       dryrun:
         default: false
         required: false
@@ -34,4 +39,5 @@ jobs:
           environment: ${{ inputs.environment }}
           version: ${{ inputs.app_version }}
           k8s_deployment_name: ${{ inputs.k8s_deployment_name }}
+          application: ${{ inputs.application }}
           dryrun: ${{ inputs.dryrun }}
