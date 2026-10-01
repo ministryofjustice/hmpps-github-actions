@@ -53,9 +53,11 @@ jobs:
 
           pact-broker can-i-deploy \
             --pacticipant "$pacticipant" \
-            --version "${{ inputs.app_version }}" \
-            --to-environment "${{ inputs.to_environment }}"
+            --version "$APP_VERSION" \
+            --to-environment "$TO_ENVIRONMENT"
         env:
+          APP_VERSION: ${{ inputs.app_version }}
+          TO_ENVIRONMENT: ${{ inputs.to_environment }}
           PACT_BROKER_BASE_URL: ${{ secrets.PACT_BROKER_URL }}
           PACT_BROKER_USERNAME: ${{ secrets.HMPPS_PACT_BROKER_USERNAME }}
           PACT_BROKER_PASSWORD: ${{ secrets.HMPPS_PACT_BROKER_PASSWORD }}
