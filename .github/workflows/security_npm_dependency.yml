@@ -57,12 +57,12 @@ jobs:
       id: sarif-format
       # While we're paying for advanced security, we can scan all repos...
       # if: ${{ github.event.repository.visibility != 'private' && github.event.repository.visibility != 'internal' }}
-      uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/auditjson_to_sarif@1061afed0f02c82850314e2fc29711523139e574 # v1.1.2
+      uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/auditjson_to_sarif@90bdfa991e9944e4997eba4c1f2709d21ec807ea # v1.1.5
       with:
         input-file: 'npm-security-check-reports.json'
     # Upload Sarif file: this will attempt to upload the sarif file for private/internal repositories as well
     - name: npm upload sarif
-      uses: github/codeql-action/upload-sarif@db488ddef3bf6cb639b32c2e9a7c0a7ea8271d28 # v4.37.8
+      uses: github/codeql-action/upload-sarif@2892aa5e19bbd11bc0cff5427e3b750a04d9e3c2 # v4.38.2
       id: npm-upload-sarif
       # if: ${{ github.event.repository.visibility != 'private' && github.event.repository.visibility != 'internal' }}
       with:
@@ -73,12 +73,12 @@ jobs:
     - name:  Run translator to convert to a Slack-compatible table # returns SLACK_TXT
       id: slack-format
       if: steps.npm.outcome == 'failure' && inputs.channel_id != 'NO_SLACK'
-      uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/auditjson_to_slack@1061afed0f02c82850314e2fc29711523139e574 # v1.1.2
+      uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/auditjson_to_slack@90bdfa991e9944e4997eba4c1f2709d21ec807ea # v1.1.5
       with:
         input_file: 'npm-security-check-reports.json'
       # Slack notification if there either of the two audits fail
     - name: npm audit slack notification
-      uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/slack_codescan_notification@1061afed0f02c82850314e2fc29711523139e574 # v1.1.2
+      uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/slack_codescan_notification@90bdfa991e9944e4997eba4c1f2709d21ec807ea # v1.1.5
       if: (failure() || steps.npm.outcome == 'failure' || steps.npm.outcome == 'failure') && inputs.channel_id != 'NO_SLACK'
       with:
         title: "npm dependency scan"

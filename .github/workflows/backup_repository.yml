@@ -40,6 +40,6 @@ jobs:
       AZ_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
     steps:
       - name: Backup repository to SharePoint
-        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/sharepoint_repository_backup@1061afed0f02c82850314e2fc29711523139e574 # v1.1.2
+        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/sharepoint_repository_backup@90bdfa991e9944e4997eba4c1f2709d21ec807ea # v1.1.5
         with:
           retention_count: ${{ inputs.retention_count || 5 }}
