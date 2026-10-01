@@ -17,7 +17,7 @@ on:
         default: ${{ github.event.repository.name }}
         type: string
       application:
-        description: Name of the application being delpoyed
+        description: Name of the application being deployed
         required: false
         default: ""
         type: string
