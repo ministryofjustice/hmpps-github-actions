@@ -34,7 +34,7 @@ jobs:
   notify-on-deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/sre-events/notify-on-deploy@feat/HEAT-1346-notify-sre-event-workflow-on-deploy # Temp hard-branch version
+      - uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/sre-events/notify-on-deploy@cd6fbead3223fc36e047987f45af2ffacfd41c70 # v1.1.6
         with:
           environment: ${{ inputs.environment }}
           version: ${{ inputs.app_version }}
