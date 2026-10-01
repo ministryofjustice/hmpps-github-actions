@@ -106,7 +106,7 @@ jobs:
       - id: app_version
         name: Create application version
         if: inputs.image_version == ''
-        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/create_app_version@90bdfa991e9944e4997eba4c1f2709d21ec807ea # v1.1.5
+        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/create_app_version@cd6fbead3223fc36e047987f45af2ffacfd41c70 # v1.1.6
       - id: image_version
         shell: bash
         env:
@@ -123,7 +123,7 @@ jobs:
       image_digest: ${{ steps.build_docker_step.outputs.digest }}
     steps:
       - id: build_docker_step
-        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/build_docker@90bdfa991e9944e4997eba4c1f2709d21ec807ea # v1.1.5
+        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/build_docker@cd6fbead3223fc36e047987f45af2ffacfd41c70 # v1.1.6
         if: ${{ inputs.docker_registry == 'ghcr.io' }}
         env:
           GITHUB_TOKEN: ${{ github.token }}
@@ -143,7 +143,7 @@ jobs:
           file: ${{ inputs.file }}
           download_build_artifacts: ${{ inputs.download_build_artifacts }}
 
-      - uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/build_docker@90bdfa991e9944e4997eba4c1f2709d21ec807ea # v1.1.5
+      - uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/build_docker@cd6fbead3223fc36e047987f45af2ffacfd41c70 # v1.1.6
         if: ${{ inputs.docker_registry == 'quay.io' }}
         with:
           image_name: ${{ inputs.image_name || github.event.repository.name }}
