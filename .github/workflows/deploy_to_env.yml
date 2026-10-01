@@ -96,7 +96,7 @@ jobs:
 
   notify-on-deploy:
     needs: deploy
-    if: ${{ needs.deploy.outputs.deploy_outcome == 'success' }}
+    if: ${{ always() && needs.deploy.outputs.deploy_outcome == 'success' }}
     uses: ./.github/workflows/notify_on_deploy.yml
     with:
       environment: ${{ inputs.environment }}
