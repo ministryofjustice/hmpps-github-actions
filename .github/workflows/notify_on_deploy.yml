@@ -19,7 +19,7 @@ on:
       application:
         description: Name of the application being delpoyed
         required: false
-        default: ${{ github.event.repository.name }}
+        default: ""
         type: string
       dryrun:
         default: false
