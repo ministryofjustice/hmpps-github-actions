@@ -66,12 +66,19 @@ on:
         default: true
         type: boolean
 
+    outputs:
+      deploy_outcome:
+        description: Deployment job outcome
+        value: ${{ jobs.deploy_env.outputs.deploy_outcome }}
+
 permissions:
   contents: read
 
 jobs:
 
   deploy_env:
+    outputs:
+      deploy_outcome: ${{ steps.deploy.outcome }}
     name: Deploy to ${{ inputs.environment }}
     runs-on: ubuntu-latest
     strategy:
