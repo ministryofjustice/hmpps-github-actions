@@ -99,7 +99,7 @@ on:
 jobs:
   create_version:
     name: Create app version
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       version: ${{ steps.image_version.outputs.version }}
     steps:
@@ -118,7 +118,7 @@ jobs:
     name: Build linux/amd64 (single)
     if: ${{ ! inputs.docker_multiplatform }}
     needs: [create_version]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       image_digest: ${{ steps.build_docker_step.outputs.digest }}
     steps:
@@ -173,7 +173,7 @@ jobs:
       matrix:
         include:
           - platform: linux/amd64
-            runner: ubuntu-latest
+            runner: ubuntu-24.04
           - platform: linux/arm64
             runner: ubuntu-24.04-arm
     runs-on: ${{ matrix.runner }}

@@ -78,7 +78,7 @@ permissions:
 jobs:
   gradle-verify:
     name: Verify the gradle app
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     services:
       localstack:
         image: ${{ inputs.localstack-tag && format('localstack/localstack:{0}', inputs.localstack-tag) || '' }}

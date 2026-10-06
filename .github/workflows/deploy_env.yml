@@ -73,7 +73,7 @@ jobs:
 
   deploy_env:
     name: Deploy to ${{ inputs.environment }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
     environment: ${{ inputs.environment }}

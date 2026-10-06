@@ -33,7 +33,7 @@ permissions:
 jobs:
   backup:
     name: Backup to SharePoint
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     env:
       SP_CLIENT_ID: ${{ secrets.SHAREPOINT_CLIENT_ID }}
       SP_CLIENT_SECRET: ${{ secrets.SHAREPOINT_CLIENT_SECRET }}

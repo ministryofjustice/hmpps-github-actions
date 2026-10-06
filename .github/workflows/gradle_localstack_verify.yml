@@ -56,7 +56,7 @@ permissions:
 jobs:
   gradle-localstack-verify:
     name: Verify the gradle app with localstack running
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     services:
       localstack:
         image: localstack/localstack:${{ inputs.localstack-tag }}
