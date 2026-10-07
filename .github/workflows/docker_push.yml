@@ -50,7 +50,7 @@ permissions:
 jobs:
   docker_push:
     name: Push docker image
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       image_digest: ${{ steps.resolve_image_digest.outputs.image_digest }}
     env:

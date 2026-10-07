@@ -99,14 +99,14 @@ on:
 jobs:
   create_version:
     name: Create app version
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       version: ${{ steps.image_version.outputs.version }}
     steps:
       - id: app_version
         name: Create application version
         if: inputs.image_version == ''
-        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/create_app_version@cd6fbead3223fc36e047987f45af2ffacfd41c70 # v1.1.6
+        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/create_app_version@2848496f6e2f4144b17fd3f23519c851789e4b87 # v1.1.7
       - id: image_version
         shell: bash
         env:
@@ -118,12 +118,12 @@ jobs:
     name: Build linux/amd64 (single)
     if: ${{ ! inputs.docker_multiplatform }}
     needs: [create_version]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       image_digest: ${{ steps.build_docker_step.outputs.digest }}
     steps:
       - id: build_docker_step
-        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/build_docker@cd6fbead3223fc36e047987f45af2ffacfd41c70 # v1.1.6
+        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/build_docker@2848496f6e2f4144b17fd3f23519c851789e4b87 # v1.1.7
         if: ${{ inputs.docker_registry == 'ghcr.io' }}
         env:
           GITHUB_TOKEN: ${{ github.token }}
@@ -143,7 +143,7 @@ jobs:
           file: ${{ inputs.file }}
           download_build_artifacts: ${{ inputs.download_build_artifacts }}
 
-      - uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/build_docker@cd6fbead3223fc36e047987f45af2ffacfd41c70 # v1.1.6
+      - uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/build_docker@2848496f6e2f4144b17fd3f23519c851789e4b87 # v1.1.7
         if: ${{ inputs.docker_registry == 'quay.io' }}
         with:
           image_name: ${{ inputs.image_name || github.event.repository.name }}
@@ -173,7 +173,7 @@ jobs:
       matrix:
         include:
           - platform: linux/amd64
-            runner: ubuntu-latest
+            runner: ubuntu-24.04
           - platform: linux/arm64
             runner: ubuntu-24.04-arm
     runs-on: ${{ matrix.runner }}

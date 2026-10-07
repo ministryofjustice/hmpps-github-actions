@@ -67,7 +67,7 @@ permissions:
 jobs:
   security-veracode-pipeline-scan:
     name: Security veracode pipeline scan
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       security-events: write
       contents: read
@@ -88,7 +88,7 @@ jobs:
         java-version: '${{ inputs.java_version }}'
     - name: prepare assets
       if: inputs.veracode_package_artifact_name == ''
-      uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/security_veracode_prepare_artifacts@cd6fbead3223fc36e047987f45af2ffacfd41c70 # v1.1.6
+      uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/security_veracode_prepare_artifacts@2848496f6e2f4144b17fd3f23519c851789e4b87 # v1.1.7
       with:
         docker_image_app_dir: ${{ inputs.docker_image_app_dir }}
     - name: download assets artifact
@@ -169,7 +169,7 @@ jobs:
         path: results.txt
     - name: send a failure slack message
       if: steps.veracode-pipeline-scan.outcome == 'failure' && inputs.channel_id != 'NO_SLACK'
-      uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/slack_failure_results@cd6fbead3223fc36e047987f45af2ffacfd41c70 # v1.1.6
+      uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/slack_failure_results@2848496f6e2f4144b17fd3f23519c851789e4b87 # v1.1.7
       with:
         SLACK_BOT_TOKEN: ${{ secrets.HMPPS_SRE_SLACK_BOT_TOKEN }}
         channel_id: ${{ inputs.channel_id }}

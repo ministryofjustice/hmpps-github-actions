@@ -46,7 +46,7 @@ jobs:
   # This uses the NVD API v2
   security-owasp-check:
     name: Security OWASP dependency check
-    runs-on:  ubuntu-latest
+    runs-on:  ubuntu-24.04
     if: github.repository_owner == 'ministryofjustice'
     permissions:  
       security-events: write
@@ -162,7 +162,7 @@ jobs:
         slack_summary="$(echo "${formatted_output}" | awk '{s=s $0} END {if (length(s) >= 3000) print substr(s, 1, 2997) "..."; else print s}')"
         echo "summary=${slack_summary}" >> $GITHUB_OUTPUT
     - name: Gradle OWASP slack notification
-      uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/slack_codescan_notification@cd6fbead3223fc36e047987f45af2ffacfd41c70 # v1.1.6
+      uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/slack_codescan_notification@2848496f6e2f4144b17fd3f23519c851789e4b87 # v1.1.7
       if: (failure() || steps.owasp-analyse.outcome == 'failure') && inputs.channel_id != 'NO_SLACK'
       with:
         title: "Gradle OWASP"

@@ -25,7 +25,7 @@ permissions:
 jobs:
   security-npm-check:
     name: Security npm dependency check
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       security-events: write
       contents: read
@@ -57,7 +57,7 @@ jobs:
       id: sarif-format
       # While we're paying for advanced security, we can scan all repos...
       # if: ${{ github.event.repository.visibility != 'private' && github.event.repository.visibility != 'internal' }}
-      uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/auditjson_to_sarif@cd6fbead3223fc36e047987f45af2ffacfd41c70 # v1.1.6
+      uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/auditjson_to_sarif@2848496f6e2f4144b17fd3f23519c851789e4b87 # v1.1.7
       with:
         input-file: 'npm-security-check-reports.json'
     # Upload Sarif file: this will attempt to upload the sarif file for private/internal repositories as well
@@ -73,12 +73,12 @@ jobs:
     - name:  Run translator to convert to a Slack-compatible table # returns SLACK_TXT
       id: slack-format
       if: steps.npm.outcome == 'failure' && inputs.channel_id != 'NO_SLACK'
-      uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/auditjson_to_slack@cd6fbead3223fc36e047987f45af2ffacfd41c70 # v1.1.6
+      uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/auditjson_to_slack@2848496f6e2f4144b17fd3f23519c851789e4b87 # v1.1.7
       with:
         input_file: 'npm-security-check-reports.json'
       # Slack notification if there either of the two audits fail
     - name: npm audit slack notification
-      uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/slack_codescan_notification@cd6fbead3223fc36e047987f45af2ffacfd41c70 # v1.1.6
+      uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/slack_codescan_notification@2848496f6e2f4144b17fd3f23519c851789e4b87 # v1.1.7
       if: (failure() || steps.npm.outcome == 'failure' || steps.npm.outcome == 'failure') && inputs.channel_id != 'NO_SLACK'
       with:
         title: "npm dependency scan"
