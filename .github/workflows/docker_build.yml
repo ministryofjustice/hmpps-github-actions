@@ -179,6 +179,7 @@ jobs:
           load: ${{ inputs.load }}
           app_version: ${{ needs.create_version.outputs.version }}
           additional_docker_build_args: ${{ inputs.additional_docker_build_args }}
+          file: ${{ inputs.file }}
           download_build_artifacts: ${{ inputs.download_build_artifacts }}
           ECR_ROLE_TO_ASSUME: ${{ secrets.ECR_ROLE_TO_ASSUME }}
           ECR_REGISTRY_URL: ${{ secrets.ECR_REGISTRY_URL }}
