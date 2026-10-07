@@ -32,7 +32,7 @@ on:
 jobs:
   generate_sbom:
     name: Generate SBOM
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     env:
       IMAGE_REF: ${{ inputs.docker_registry }}/${{ inputs.registry_org }}/${{ inputs.image_name || github.event.repository.name }}:${{ inputs.app_version }}
     steps:

@@ -29,7 +29,7 @@ permissions:
 jobs:
   security-codeql-scan:
     name: Security CodeQL scan
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     permissions:
       security-events: write
       contents: read

@@ -13,7 +13,7 @@ permissions:
   contents: read
 jobs:
   integration_test:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     services:
       redis:
         image: redis:7.4@sha256:71da9275c5f3fcb97d0fa0c8c5b36cc995327265420f17a04bfd544f458059f7

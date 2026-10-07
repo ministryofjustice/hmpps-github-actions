@@ -77,7 +77,7 @@ permissions:
 jobs:
   security-veracode-policy-scan:
     name: Security veracode policy scan
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     permissions:
       security-events: write
       contents: read
