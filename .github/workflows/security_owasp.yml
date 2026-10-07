@@ -46,7 +46,7 @@ jobs:
   # This uses the NVD API v2
   security-owasp-check:
     name: Security OWASP dependency check
-    runs-on:  ubuntu-24.04
+    runs-on:  ubuntu-26.04
     if: github.repository_owner == 'ministryofjustice'
     permissions:  
       security-events: write

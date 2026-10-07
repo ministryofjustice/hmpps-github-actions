@@ -42,7 +42,7 @@ permissions:
 jobs:
   record_deployment:
     name: Record deployment in Pact Broker
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     container:
       image: pactfoundation/pact-cli:1.5.0.5@sha256:77b98079e5be279353f61e116a0b9b3af19e55b215532b30d430ff5df66e5ac9
     steps:
