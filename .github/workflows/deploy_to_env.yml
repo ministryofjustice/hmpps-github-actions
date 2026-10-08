@@ -66,6 +66,11 @@ on:
         required: false
         default: true
         type: boolean
+      notify_on_deploy:
+        description: Whether to notify the hmpps-eventmanager after a successful deployment
+        required: false
+        default: true
+        type: boolean
 
     outputs:
       deploy_outcome:
@@ -94,9 +99,9 @@ jobs:
       autogenerate_scheduled_downtime_cron: ${{ inputs.autogenerate_scheduled_downtime_cron }}
     secrets: inherit
 
-  notify-on-deploy:
+  notify_on_deploy:
     needs: deploy
-    if: ${{ always() && needs.deploy.outputs.deploy_outcome == 'success' }}
+    if: ${{ always() && inputs.notify_on_deploy && needs.deploy.outputs.deploy_outcome == 'success' }}
     uses: ./.github/workflows/notify_on_deploy.yml
     with:
       environment: ${{ inputs.environment }}
