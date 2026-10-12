@@ -102,6 +102,8 @@ on:
         value: ${{ jobs.create_version.outputs.version }}
 
 jobs:
+  ## Always create an app_version
+  ###############################
   create_version:
     name: Create app version
     runs-on: ubuntu-24.04
@@ -119,13 +121,20 @@ jobs:
         run: |
           echo "version=${IMAGE_VERSION}" >> $GITHUB_OUTPUT
 
+##################################### SINGLE PLATFORM ##########################################
+# Single platform builds have a combined build / push, since it can do both in one step
+# There is a separate step for each destination repository (only one can be chosen)
+
+  ## Section for building single platform docker image files
+  ##########################################################
   docker_build:
     name: Build linux/amd64 (single)
     if: ${{ ! inputs.docker_multiplatform }}
     needs: [create_version]
     runs-on: ubuntu-24.04
     outputs:
-      image_digest: ${{ steps.build_docker_step_ghcr.outputs.digest }}
+      image_digest_ghcr: ${{ steps.build_docker_step_ghcr.outputs.digest }}
+      image_digest_ecr: ${{ steps.build_docker_step_ecr.outputs.digest }}
     steps:
       - id: build_docker_step_ghcr
         name: Build (and push) Docker (ghcr.io)
@@ -172,7 +181,7 @@ jobs:
 
       - id: build_docker_step_ecr
         uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/build_docker@2848496f6e2f4144b17fd3f23519c851789e4b87 # v1.1.7
-        name: Build (and push) Docker (ecr)
+        name: Build (and push) Docker (ECR)
         if: ${{ inputs.docker_registry == 'ecr' && ( ! inputs.docker_multiplatform )}}
         with:
           image_name: ${{ inputs.image_name || github.event.repository.name }}
@@ -191,7 +200,13 @@ jobs:
           ECR_ROLE_TO_ASSUME: ${{ secrets.ECR_ROLE_TO_ASSUME }}
           ECR_REGISTRY_URL: ${{ secrets.ECR_REGISTRY_URL }}
 
-  docker_build_platform:
+##################################### MULTIPLATFORM ############################################
+# Multiplatform builds have separate build / push processes.
+# There is a separate push step for each destination repository (only one can be chosen)
+
+  ## Section for building multiplatform docker image files
+  ########################################################
+  docker_build_multiplatform:
     name: Build ${{ matrix.platform }} (parallel)
     if: ${{ inputs.docker_multiplatform }}
     needs: [create_version]
@@ -252,10 +267,12 @@ jobs:
           if-no-files-found: error
           retention-days: ${{ inputs.upload_image_artifact && inputs.image_artifact_retention_days || 1 }}
 
-  docker_build_merge_ghcr_quay:
-    name: Push multi-platform image to GHCR or QUAY
+  ## Push multiplatform image to either ghcr.io or quay.io
+  ########################################################
+  docker_build_merge:
+    name: Push multi-platform image to ghcr or quay
     if: ${{ inputs.docker_multiplatform && inputs.push && inputs.docker_registry != 'ecr' }}
-    needs: [create_version, docker_build_platform]
+    needs: [create_version, docker_build_multiplatform]
     uses: ./.github/workflows/docker_push.yml
     secrets:
       HMPPS_QUAYIO_USER: ${{ secrets.HMPPS_QUAYIO_USER }}
@@ -269,10 +286,12 @@ jobs:
       additional_docker_tag: ${{ inputs.additional_docker_tag }}
       docker_multiplatform: true
 
-  docker_build_merge_ghcr:
-    name: Push multi-platform image
+  ## Push multiplatform image to ecr
+  ##################################
+  docker_build_merge_ecr:
+    name: Push multi-platform image to ecr
     if: ${{ inputs.docker_multiplatform && inputs.push && inputs.docker_registry == 'ecr' }}
-    needs: [create_version, docker_build_platform]
+    needs: [create_version, docker_build_multiplatform]
     uses: ./.github/workflows/docker_push_ecr.yml
     secrets:
       ECR_ROLE_TO_ASSUME: ${{ secrets.ECR_ROLE_TO_ASSUME }}
@@ -286,7 +305,13 @@ jobs:
       additional_docker_tag: ${{ inputs.additional_docker_tag }}
       docker_multiplatform: true
 
-  sign_image_single_platform:
+##################################### IMAGE SIGNING ############################################
+## This has separate workflow calls depending on whether it's single or multiplatform, and
+## the destination repository (since it depends which build process was used)
+
+  ## Single platform ghcr
+  #######################
+  sign_image_single_platform_ghcr:
     name: Sign image (single-platform)
     if: ${{ inputs.sign_image && !inputs.docker_multiplatform && inputs.push && inputs.docker_registry == 'ghcr.io' }}
     needs: [create_version, docker_build]
@@ -295,9 +320,11 @@ jobs:
       docker_registry: ${{ inputs.docker_registry }}
       registry_org: ${{ inputs.registry_org }}
       image_name: ${{ inputs.image_name }}
-      image_digest: ${{ needs.docker_build.outputs.image_digest }}
+      image_digest: ${{ needs.docker_build.outputs.image_digest_ghcr }}
 
-  sign_image_multi_platform:
+  ## Multiplatform ghcr
+  #######################
+  sign_image_multi_platform_ghcr:
     name: Sign image (multi-platform)
     if: ${{ inputs.sign_image && inputs.docker_multiplatform && inputs.push && inputs.docker_registry == 'ghcr.io' }}
     needs: [create_version, docker_build_merge]
@@ -308,8 +335,41 @@ jobs:
       image_name: ${{ inputs.image_name }}
       image_digest: ${{ needs.docker_build_merge.outputs.image_digest }}
 
-  generate_sbom_single_platform:
-    name: Generate SBOM (single-platform image)
+  ## Single platform ecr
+  ######################
+  sign_image_single_platform_ecr:
+    name: Sign image (single-platform)
+    if: ${{ inputs.sign_image && !inputs.docker_multiplatform && inputs.push && inputs.docker_registry == 'ecr' }}
+    needs: [create_version, docker_build]
+    uses: ./.github/workflows/docker_sign.yml
+    with:
+      docker_registry: ${{ inputs.docker_registry }}
+      registry_org: ${{ inputs.registry_org }}
+      image_name: ${{ inputs.image_name }}
+      image_digest: ${{ needs.docker_build.outputs.image_digest_ecr }}
+
+  ## Multiplatform ecr
+  ######################
+  sign_image_multi_platform_ecr:
+    name: Sign image (multi-platform)
+    if: ${{ inputs.sign_image && inputs.docker_multiplatform && inputs.push && inputs.docker_registry == 'ecr' }}
+    needs: [create_version, docker_build_merge]
+    uses: ./.github/workflows/docker_sign.yml
+    with:
+      docker_registry: ${{ inputs.docker_registry }}
+      registry_org: ${{ inputs.registry_org }}
+      image_name: ${{ inputs.image_name }}
+      image_digest: ${{ needs.docker_build_merge_ecr.outputs.image_digest }}
+
+
+##################################### SBOM GENERATION########################################
+## Again this has separate workflow calls depending on whether it's single or multiplatform
+## and the destination repository
+
+  ## Single platform GHCR
+  #######################
+  generate_sbom_single_platform_ghcr:
+    name: Generate SBOM (single-platform image) - GHCR
     if: ${{ inputs.generate_sbom && !inputs.docker_multiplatform && inputs.push && inputs.docker_registry == 'ghcr.io' }}
     needs: [create_version, docker_build]
     uses: ./.github/workflows/docker_sbom.yml
@@ -318,11 +378,13 @@ jobs:
       registry_org: ${{ inputs.registry_org }}
       image_name: ${{ inputs.image_name }}
       app_version: ${{ needs.create_version.outputs.version }}
-      image_digest: ${{ needs.docker_build.outputs.image_digest }}
+      image_digest: ${{ needs.docker_build.outputs.image_digest_ghcr }}
       attach_sbom_to_registry: ${{ inputs.attach_sbom_to_registry }}
 
+  ## Multiplatform GHCR
+  #####################
   generate_sbom_multi_platform:
-    name: Generate SBOM (multi-platform image)
+    name: Generate SBOM (multi-platform image) - GHCR
     if: ${{ inputs.generate_sbom && inputs.docker_multiplatform && inputs.push && inputs.docker_registry == 'ghcr.io' }}
     needs: [create_version, docker_build_merge]
     uses: ./.github/workflows/docker_sbom.yml
@@ -332,4 +394,34 @@ jobs:
       image_name: ${{ inputs.image_name }}
       app_version: ${{ needs.create_version.outputs.version }}
       image_digest: ${{ needs.docker_build_merge.outputs.image_digest }}
+      attach_sbom_to_registry: ${{ inputs.attach_sbom_to_registry }}
+
+  ## Single platform ECR
+  ######################
+  generate_sbom_single_platform_ecr:
+    name: Generate SBOM (single-platform image) - ECR
+    if: ${{ inputs.generate_sbom && !inputs.docker_multiplatform && inputs.push && inputs.docker_registry == 'ecr' }}
+    needs: [create_version, docker_build]
+    uses: ./.github/workflows/docker_sbom.yml
+    with:
+      docker_registry: ${{ inputs.docker_registry }}
+      registry_org: ${{ inputs.registry_org }}
+      image_name: ${{ inputs.image_name }}
+      app_version: ${{ needs.create_version.outputs.version }}
+      image_digest: ${{ needs.docker_build.outputs.image_digest_ecr }}
+      attach_sbom_to_registry: ${{ inputs.attach_sbom_to_registry }}
+
+  ## Multiplatform ghcr
+  #######################
+  generate_sbom_multi_platform_ecr:
+    name: Generate SBOM (multi-platform image) - ECR
+    if: ${{ inputs.generate_sbom && inputs.docker_multiplatform && inputs.push && inputs.docker_registry == 'ecr' }}
+    needs: [create_version, docker_build_merge]
+    uses: ./.github/workflows/docker_sbom.yml
+    with:
+      docker_registry: ${{ inputs.docker_registry }}
+      registry_org: ${{ inputs.registry_org }}
+      image_name: ${{ inputs.image_name }}
+      app_version: ${{ needs.create_version.outputs.version }}
+      image_digest: ${{ needs.docker_build_merge_ecr.outputs.image_digest }}
       attach_sbom_to_registry: ${{ inputs.attach_sbom_to_registry }}
