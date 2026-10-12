@@ -76,15 +76,15 @@ permissions:
 jobs:
   docker_build:
     name: Build docker image
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       version: ${{ steps.app_version.outputs.version }}
     steps:
       - id: app_version
         name: Application version creators
-        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/create_app_version@accf37e936517ed39e7a888cf74f0277dab3310e # v1.1.4
+        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/create_app_version@2848496f6e2f4144b17fd3f23519c851789e4b87 # v1.1.7
 
-      - uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/build_docker@accf37e936517ed39e7a888cf74f0277dab3310e # v1.1.4
+      - uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/build_docker@2848496f6e2f4144b17fd3f23519c851789e4b87 # v1.1.7
         if: ${{ inputs.docker_registry == 'ecr' && ( ! inputs.docker_multiplatform )}}
         with:
           image_name: ${{ inputs.image_name || github.event.repository.name }}

@@ -20,6 +20,7 @@ This repository contains a library of reusable GitHub workflows for use by other
 - `docker_sbom`: generates software bill of materials data for container images
 - `docker_sign`: signs Docker images
 - `pact_can_i_deploy`: gates a deployment on Pact Broker verification results for a target environment
+- `pact_deploy_env`: orchestrates a Pact-gated deployment to a Cloud Platforms environment, recording the deployment in the Pact Broker on success
 - `pact_record_deployment`: records a deployment against a Pact Broker environment
 - `sentry_release_and_deploy`: creates and deploys Sentry releases
 

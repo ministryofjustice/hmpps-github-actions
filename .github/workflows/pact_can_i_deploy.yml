@@ -9,39 +9,25 @@ name: Pact - Can I Deploy
 #   can-i-deploy:
 #     uses: ministryofjustice/hmpps-github-actions/.github/workflows/pact_can_i_deploy.yml@v2
 #     with:
-#       pacticipant: hmpps-my-consumer-service
-#       version: ${{ github.sha }}
+#       app_version: ${{ needs.build.outputs.app_version }}
 #       to_environment: production
 #     secrets:
 #       PACT_BROKER_URL: ${{ secrets.PACT_BROKER_URL }}
 #       HMPPS_PACT_BROKER_USERNAME: ${{ secrets.HMPPS_PACT_BROKER_USERNAME }}
 #       HMPPS_PACT_BROKER_PASSWORD: ${{ secrets.HMPPS_PACT_BROKER_PASSWORD }}
 
-env:
-  PACT_CLI_VERSION: '18.1.1'
-
 on:
   workflow_call:
     inputs:
-      pacticipant:
-        description: The name of the pacticipant (consumer or provider) to check, as registered in the Pact Broker
+      app_version:
+        description: Uses the generated app version.
         required: true
         type: string
-      version:
-        description: The version of the pacticipant to check (typically the git commit SHA)
-        required: false
-        type: string
-        default: ${{ github.sha }}
       to_environment:
         description: The target deployment environment to check compatibility against
         required: false
         type: string
         default: 'dev'
-      node_version:
-        description: Node.js version used to run the Pact CLI
-        required: false
-        type: string
-        default: '24'
     secrets:
       PACT_BROKER_URL:
         required: true
@@ -55,22 +41,23 @@ permissions:
 
 jobs:
   can_i_deploy:
-    name: Can I deploy ${{ inputs.pacticipant }} to ${{ inputs.to_environment }}?
-    runs-on: ubuntu-latest
+    name: Can I deploy to ${{ inputs.to_environment }}?
+    runs-on: ubuntu-24.04
+    container:
+      image: pactfoundation/pact-cli:1.5.0.5@sha256:77b98079e5be279353f61e116a0b9b3af19e55b215532b30d430ff5df66e5ac9
     steps:
-      - name: Use Node.js ${{ inputs.node_version }}
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-        with:
-          node-version: ${{ inputs.node_version }}
-
       - name: Can I deploy?
-        shell: bash
+        shell: sh
         run: |
-          npx --yes --package "@pact-foundation/pact-cli@${PACT_CLI_VERSION}" pact-broker can-i-deploy \
-            --pacticipant "${{ inputs.pacticipant }}" \
-            --version "${{ inputs.version }}" \
-            --to-environment "${{ inputs.to_environment }}"
+          pacticipant="${GITHUB_REPOSITORY#*/}"
+
+          pact-broker can-i-deploy \
+            --pacticipant "$pacticipant" \
+            --version "$APP_VERSION" \
+            --to-environment "$TO_ENVIRONMENT"
         env:
+          APP_VERSION: ${{ inputs.app_version }}
+          TO_ENVIRONMENT: ${{ inputs.to_environment }}
           PACT_BROKER_BASE_URL: ${{ secrets.PACT_BROKER_URL }}
           PACT_BROKER_USERNAME: ${{ secrets.HMPPS_PACT_BROKER_USERNAME }}
           PACT_BROKER_PASSWORD: ${{ secrets.HMPPS_PACT_BROKER_PASSWORD }}

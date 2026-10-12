@@ -33,12 +33,12 @@ permissions:
 jobs:
   helm_lint:
     name: Helm lint
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
         persist-credentials: false
-    - uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/tool-installers/setup-helm@accf37e936517ed39e7a888cf74f0277dab3310e # v1.1.4
+    - uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/tool-installers/setup-helm@2848496f6e2f4144b17fd3f23519c851789e4b87 # v1.1.7
     - name: 'Run helm lint commands'
       shell: bash
       env:
