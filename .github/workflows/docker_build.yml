@@ -125,11 +125,11 @@ jobs:
     needs: [create_version]
     runs-on: ubuntu-24.04
     outputs:
-      image_digest: ${{ steps.build_docker_step.outputs.digest }}
+      image_digest: ${{ steps.build_docker_step_ghcr.outputs.digest }}
     steps:
       - id: build_docker_step_ghcr
         name: Build (and push) Docker (ghcr.io)
-        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/build_docker@accf37e936517ed39e7a888cf74f0277dab3310e # v1.1.4
+        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/build_docker@2848496f6e2f4144b17fd3f23519c851789e4b87 # v1.1.7
         if: ${{ inputs.docker_registry == 'ghcr.io' }}
         env:
           GITHUB_TOKEN: ${{ github.token }}
@@ -151,7 +151,7 @@ jobs:
 
       - id: build_docker_step_quay
         name: Build (and push) Docker (quay.io)
-        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/build_docker@accf37e936517ed39e7a888cf74f0277dab3310e # v1.1.4
+        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/build_docker@2848496f6e2f4144b17fd3f23519c851789e4b87 # v1.1.7
         if: ${{ inputs.docker_registry == 'quay.io' }}
         with:
           image_name: ${{ inputs.image_name || github.event.repository.name }}
@@ -171,8 +171,7 @@ jobs:
           download_build_artifacts: ${{ inputs.download_build_artifacts }}
 
       - id: build_docker_step_ecr
-        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/build_docker@90bdfa991e9944e4997eba4c1f2709d21ec807ea # v1.1.5
-        # uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/build_docker@accf37e936517ed39e7a888cf74f0277dab3310e # v1.1.4
+        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/build_docker@2848496f6e2f4144b17fd3f23519c851789e4b87 # v1.1.7
         name: Build (and push) Docker (ecr)
         if: ${{ inputs.docker_registry == 'ecr' && ( ! inputs.docker_multiplatform )}}
         with:
@@ -253,14 +252,29 @@ jobs:
           if-no-files-found: error
           retention-days: ${{ inputs.upload_image_artifact && inputs.image_artifact_retention_days || 1 }}
 
-  docker_build_merge:
-    name: Push multi-platform image
-    if: ${{ inputs.docker_multiplatform && inputs.push }}
+  docker_build_merge_ghcr_quay:
+    name: Push multi-platform image to GHCR or QUAY
+    if: ${{ inputs.docker_multiplatform && inputs.push && inputs.docker_registry != 'ecr' }}
     needs: [create_version, docker_build_platform]
     uses: ./.github/workflows/docker_push.yml
     secrets:
       HMPPS_QUAYIO_USER: ${{ secrets.HMPPS_QUAYIO_USER }}
       HMPPS_QUAYIO_TOKEN: ${{ secrets.HMPPS_QUAYIO_TOKEN }}
+    with:
+      docker_registry: ${{ inputs.docker_registry }}
+      registry_org: ${{ inputs.registry_org }}
+      image_name: ${{ inputs.image_name }}
+      app_version: ${{ needs.create_version.outputs.version }}
+      tag_latest: ${{ inputs.tag_latest }}
+      additional_docker_tag: ${{ inputs.additional_docker_tag }}
+      docker_multiplatform: true
+
+  docker_build_merge_ghcr:
+    name: Push multi-platform image
+    if: ${{ inputs.docker_multiplatform && inputs.push && inputs.docker_registry == 'ecr' }}
+    needs: [create_version, docker_build_platform]
+    uses: ./.github/workflows/docker_push_ecr.yml
+    secrets:
       ECR_ROLE_TO_ASSUME: ${{ secrets.ECR_ROLE_TO_ASSUME }}
       ECR_REGISTRY_URL: ${{ secrets.ECR_REGISTRY_URL }}
     with:
