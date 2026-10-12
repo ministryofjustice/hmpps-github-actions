@@ -79,6 +79,11 @@ on:
         required: false
       HMPPS_SRE_SLACK_BOT_TOKEN:
         required: false
+        
+    outputs:
+      deploy_outcome:
+        description: Deployment job outcome
+        value: ${{ jobs.deploy_env.outputs.deploy_outcome }}
 
 permissions:
   contents: read
@@ -86,6 +91,8 @@ permissions:
 jobs:
 
   deploy_env:
+    outputs:
+      deploy_outcome: ${{ steps.deploy.outcome }}
     name: Deploy to ${{ inputs.environment }}
     runs-on: ubuntu-24.04
     strategy:
