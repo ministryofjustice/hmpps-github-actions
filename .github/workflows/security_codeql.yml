@@ -3,6 +3,11 @@ name: Security CodeQL check
 on:
   workflow_call:
     inputs:
+      category:
+        description: 'Optional SARIF category to distinguish this scan from other CodeQL scans'
+        required: false
+        default: ''
+        type: string
       channel_id:
         description: 'The slack channel ID to send a message on failure. If this is not provided then no message is sent.'
         required: false
@@ -47,6 +52,9 @@ jobs:
     - name: Perform CodeQL Analysis
       id: codeql_analysis
       uses: github/codeql-action/analyze@2892aa5e19bbd11bc0cff5427e3b750a04d9e3c2 # v4.38.2
+      with:
+        category: ${{ inputs.category }}
+        wait-for-processing: true
     - name: CodeQL slack notification
       uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/slack_codescan_notification@2848496f6e2f4144b17fd3f23519c851789e4b87 # v1.1.7
       if: (failure() || steps.codeql_analysis.outcome == 'failure') && inputs.channel_id != 'NO_SLACK'

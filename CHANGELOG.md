@@ -64,3 +64,9 @@ Implementation of optional SBOM creation to Docker workflows (including optional
 ## v2.15.0
 
 Adding options for custom node artifacts and path (PR 285)
+
+## Unreleased
+
+Add `security.yml` to compose opt-in CodeQL source/Actions, Snyk, npm audit and OWASP scans with a security summary, optional Copilot advisory summary and environment approval gate.
+
+Add optional CodeQL SARIF categories and an opt-in strict Snyk mode while preserving existing scanner selections and Snyk's default failure policy.

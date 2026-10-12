@@ -55,6 +55,62 @@ This repository contains a library of reusable GitHub workflows for use by other
 - Veracode policy scan
 - CodeQL scan (repository code and GitHub Actions variants)
 
+### Combined Security Workflow
+
+`security.yml` runs opt-in scans in parallel, summarises findings and gates deployment on complete scans and any required human approval.
+All scan switches default to `false`; at least one supported scan must be selected.
+
+```yaml
+jobs:
+    security:
+        uses: ministryofjustice/hmpps-github-actions/.github/workflows/security.yml@<release-sha>
+        permissions:
+            contents: read
+            actions: read
+            security-events: write
+            copilot-requests: write
+        secrets: inherit
+        with:
+            codeql: true
+            languages: javascript-typescript
+            snyk: true
+            copilot_summary: false
+            review_environment: approve-security-review
+```
+
+Replace `<release-sha>` with the commit containing the released workflow. `codeql: true` enables both source and GitHub Actions scans.
+For only one, leave `codeql` unset and use `codeql_source: true` (with `languages`) or `codeql_actions: true`.
+These switches are additive, not overrides. `build_mode` supports `none` (default) and `autobuild`.
+
+Additional opt-ins are `npm_audit` (requires `audit-ci.json` and a Node version file, default `.nvmrc`)
+and `owasp` (requires a Gradle `dependencyCheckAnalyze` task; MoJ repositories only).
+Snyk defaults to filesystem scanning. Its inputs include `snyk_location`, `snyk_subproject`, `snyk_policy_path`,
+`snyk_scan_type` and `snyk_image_ref`. Image scans require an explicit published public image reference and must run after image publication.
+Private-registry and ECR scans remain available through the standalone workflows.
+`veracode_pipeline` and `veracode_policy` are reserved switches: enabling either fails configuration until reliable result adapters are implemented.
+Trivy is not included.
+
+`severity_threshold` defaults to `high`, requiring approval for high and critical findings.
+It also accepts `critical`, `medium` and `low`. Generic SARIF error/warning/note severities map to high/medium/low when no security severity is supplied.
+Only results from enabled scans with fresh analyses for the current commit and run are counted.
+The workflow retries missing analyses for up to 50 seconds to allow SARIF processing to complete.
+Missing credentials, failed jobs, API errors and missing analyses cannot be approved as findings.
+Counts represent per-tool alerts, not unique vulnerabilities.
+
+Configure the `review_environment` in the **caller repository** with required reviewers before adoption.
+An unprotected or automatically created environment does not enforce manual approval.
+`copilot_summary` defaults to `false`. When enabled, it uses the captured alert snapshot and repository code for advisory triage;
+Copilot failure cannot bypass the approval gate. The example grants the permission declared by the optional Copilot job;
+Copilot access is used only when enabled. Snyk requires inherited API-token or OAuth credentials.
+`channel_id` optionally enables existing scanner Slack notifications.
+
+Deployment jobs should include `security` in `needs` and require `needs.security.result == 'success'`,
+alongside their existing build and lint checks. Do not use an unconditional `always()` deployment.
+Outputs are `findings`, `failed_scans` and `approved` (`true` only when the final gate passes).
+
+Run the focused regression tests with `ruby tests/security_workflow_test.rb` (Ruby with Minitest, Bash and jq required).
+GitHub-hosted integration testing is still required for reviewer environments, token permissions, SARIF processing and Copilot access.
+
 ### Utility workflows
 
 - `backup_repository`: creates a repository backup workflow run

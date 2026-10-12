@@ -3,6 +3,11 @@ name: Security Snyk dependency check (for publicly hosted docker images)
 on:
   workflow_call:
     inputs:
+      fail_on_error:
+        description: 'Fail the workflow when scanning or publishing results fails'
+        required: false
+        default: false
+        type: boolean
       channel_id:
         description: 'The slack channel ID to send a message on failure. If this is not provided then no message is sent.'
         required: false
@@ -65,7 +70,7 @@ jobs:
   security-snyk-check:
     name: Security snyk dependency check
     runs-on: ubuntu-24.04
-    continue-on-error: true
+    continue-on-error: ${{ !inputs.fail_on_error }}
     permissions:
       security-events: write
       contents: read
