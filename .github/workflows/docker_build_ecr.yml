@@ -57,6 +57,12 @@ on:
         description: "Path to the Dockerfile"
         required: false
         type: string
+      registry_org:
+        description: Docker registry organisation
+        required: false
+        default: 'hmpps'
+        type: string
+        
     secrets:
       ECR_ROLE_TO_ASSUME:
         required: false
@@ -89,6 +95,7 @@ jobs:
         with:
           image_name: ${{ inputs.image_name || github.event.repository.name }}
           docker_registry: ${{ inputs.docker_registry }}
+          registry_org: ${{ inputs.registry_org }}
           file: ${{ inputs.file }}
           additional_docker_tag: ${{ inputs.additional_docker_tag }}
           tag_latest: ${{ inputs.tag_latest }}
@@ -98,7 +105,6 @@ jobs:
           load: ${{ inputs.load }}
           app_version: ${{ steps.app_version.outputs.version }}
           additional_docker_build_args: ${{ inputs.additional_docker_build_args }}
-          file: ${{ inputs.file }}
           download_build_artifacts: ${{ inputs.download_build_artifacts }}
           ECR_ROLE_TO_ASSUME: ${{ secrets.ECR_ROLE_TO_ASSUME }}
           ECR_REGISTRY_URL: ${{ secrets.ECR_REGISTRY_URL }}
