@@ -83,6 +83,7 @@ permissions:
 
 jobs:
   deploy:
+    if: ${{ github.actor != 'dependabot[bot]' && github.triggering_actor != 'dependabot[bot]' }}
     uses: ./.github/workflows/deploy_env.yml
     with:
       dryrun: ${{ inputs.dryrun }}
