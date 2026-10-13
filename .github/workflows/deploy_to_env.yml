@@ -82,8 +82,7 @@ permissions:
   id-token: write #Used for octo-sts cross-org authentication
 
 jobs:
-  deploy:
-    if: ${{ github.actor != 'dependabot[bot]' && github.triggering_actor != 'dependabot[bot]' }}
+  deploy:  
     uses: ./.github/workflows/deploy_env.yml
     with:
       dryrun: ${{ inputs.dryrun }}
