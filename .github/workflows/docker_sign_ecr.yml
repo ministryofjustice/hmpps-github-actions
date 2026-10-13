@@ -24,11 +24,6 @@ on:
       ECR_ROLE_TO_ASSUME:
         required: true
 
-# id-token: write permission is required for AWS OIDC and cosign keyless signing
-permissions:
-  contents: read
-  id-token: write
-
 jobs:
   sign_image:
     name: Sign image
