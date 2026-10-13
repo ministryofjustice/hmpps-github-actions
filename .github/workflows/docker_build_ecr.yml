@@ -66,8 +66,6 @@ on:
     secrets:
       ECR_ROLE_TO_ASSUME:
         required: false
-      ECR_REGISTRY_URL:
-        required: false
 
     outputs:
       app_version:
@@ -90,10 +88,10 @@ jobs:
         name: Application version creators
         uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/create_app_version@2848496f6e2f4144b17fd3f23519c851789e4b87 # v1.1.7
 
-      - uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/build_docker@2848496f6e2f4144b17fd3f23519c851789e4b87 # v1.1.7
+      - uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/build_docker@ab2b38dda7b99f91db1f1a1678ed028f82ea1db0 # feat/ecr_compatibility
         if: ${{ inputs.docker_registry == 'ecr' && ( ! inputs.docker_multiplatform )}}
         with:
-          image_name: ${{ inputs.image_name || github.event.repository.name }}
+          image_name: ${{ vars.ECR_REPOSITORY }}
           docker_registry: ${{ inputs.docker_registry }}
           registry_org: ${{ inputs.registry_org }}
           file: ${{ inputs.file }}
@@ -107,4 +105,4 @@ jobs:
           additional_docker_build_args: ${{ inputs.additional_docker_build_args }}
           download_build_artifacts: ${{ inputs.download_build_artifacts }}
           ECR_ROLE_TO_ASSUME: ${{ secrets.ECR_ROLE_TO_ASSUME }}
-          ECR_REGISTRY_URL: ${{ secrets.ECR_REGISTRY_URL }}
+          ECR_REGISTRY_URL: ${{ vars.CLOUD_PLATFORM_ECR_REGISTRY_URL }}

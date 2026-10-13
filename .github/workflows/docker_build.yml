@@ -138,7 +138,7 @@ jobs:
     steps:
       - id: build_docker_step_ghcr
         name: Build (and push) Docker (ghcr.io)
-        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/build_docker@2848496f6e2f4144b17fd3f23519c851789e4b87 # v1.1.7
+        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/build_docker@ab2b38dda7b99f91db1f1a1678ed028f82ea1db0 # feat/ecr_compatibility
         if: ${{ inputs.docker_registry == 'ghcr.io' }}
         env:
           GITHUB_TOKEN: ${{ github.token }}
@@ -160,7 +160,7 @@ jobs:
 
       - id: build_docker_step_quay
         name: Build (and push) Docker (quay.io)
-        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/build_docker@2848496f6e2f4144b17fd3f23519c851789e4b87 # v1.1.7
+        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/build_docker@ab2b38dda7b99f91db1f1a1678ed028f82ea1db0 # feat/ecr_compatibility
         if: ${{ inputs.docker_registry == 'quay.io' }}
         with:
           image_name: ${{ inputs.image_name || github.event.repository.name }}
@@ -180,11 +180,11 @@ jobs:
           download_build_artifacts: ${{ inputs.download_build_artifacts }}
 
       - id: build_docker_step_ecr
-        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/build_docker@2848496f6e2f4144b17fd3f23519c851789e4b87 # v1.1.7
+        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/build_docker@ab2b38dda7b99f91db1f1a1678ed028f82ea1db0 # feat/ecr_compatibility
         name: Build (and push) Docker (ECR)
         if: ${{ inputs.docker_registry == 'ecr' && ( ! inputs.docker_multiplatform )}}
         with:
-          image_name: ${{ inputs.image_name || github.event.repository.name }}
+          image_name: ${{ vars.ECR_REPOSITORY }}
           docker_registry: ${{ inputs.docker_registry }}
           registry_org: ${{ inputs.registry_org }}
           additional_docker_tag: ${{ inputs.additional_docker_tag }}
@@ -198,7 +198,7 @@ jobs:
           file: ${{ inputs.file }}
           download_build_artifacts: ${{ inputs.download_build_artifacts }}
           ECR_ROLE_TO_ASSUME: ${{ secrets.ECR_ROLE_TO_ASSUME }}
-          ECR_REGISTRY_URL: ${{ secrets.ECR_REGISTRY_URL }}
+          ECR_REGISTRY_URL: ${{ vars.CLOUD_PLATFORM_ECR_REGISTRY_URL }}
 
 ##################################### MULTIPLATFORM ############################################
 # Multiplatform builds have separate build / push processes.
@@ -295,11 +295,9 @@ jobs:
     uses: ./.github/workflows/docker_push_ecr.yml
     secrets:
       ECR_ROLE_TO_ASSUME: ${{ secrets.ECR_ROLE_TO_ASSUME }}
-      ECR_REGISTRY_URL: ${{ secrets.ECR_REGISTRY_URL }}
     with:
-      docker_registry: ${{ inputs.docker_registry }}
-      registry_org: ${{ inputs.registry_org }}
-      image_name: ${{ inputs.image_name }}
+      ecr_registry_url: ${{ vars.CLOUD_PLATFORM_ECR_REGISTRY_URL }}
+      ecr_repository: ${{ vars.ECR_REPOSITORY }}
       app_version: ${{ needs.create_version.outputs.version }}
       tag_latest: ${{ inputs.tag_latest }}
       additional_docker_tag: ${{ inputs.additional_docker_tag }}
@@ -315,7 +313,7 @@ jobs:
     name: Sign image (single-platform)
     if: ${{ inputs.sign_image && !inputs.docker_multiplatform && inputs.push && inputs.docker_registry == 'ghcr.io' }}
     needs: [create_version, docker_build]
-    uses: ./.github/workflows/docker_sign.yml
+    uses: ./.github/workflows/docker_sign_ghcr.yml
     with:
       docker_registry: ${{ inputs.docker_registry }}
       registry_org: ${{ inputs.registry_org }}
@@ -328,7 +326,7 @@ jobs:
     name: Sign image (multi-platform)
     if: ${{ inputs.sign_image && inputs.docker_multiplatform && inputs.push && inputs.docker_registry == 'ghcr.io' }}
     needs: [create_version, docker_build_merge]
-    uses: ./.github/workflows/docker_sign.yml
+    uses: ./.github/workflows/docker_sign_ghcr.yml
     with:
       docker_registry: ${{ inputs.docker_registry }}
       registry_org: ${{ inputs.registry_org }}
@@ -341,11 +339,12 @@ jobs:
     name: Sign image (single-platform)
     if: ${{ inputs.sign_image && !inputs.docker_multiplatform && inputs.push && inputs.docker_registry == 'ecr' }}
     needs: [create_version, docker_build]
-    uses: ./.github/workflows/docker_sign.yml
+    uses: ./.github/workflows/docker_sign_ecr.yml
+    secrets:
+      ECR_ROLE_TO_ASSUME: ${{ secrets.ECR_ROLE_TO_ASSUME }}
     with:
-      docker_registry: ${{ inputs.docker_registry }}
-      registry_org: ${{ inputs.registry_org }}
-      image_name: ${{ inputs.image_name }}
+      ecr_registry_url: ${{ vars.CLOUD_PLATFORM_ECR_REGISTRY_URL }}
+      ecr_repository: ${{ vars.ECR_REPOSITORY }}
       image_digest: ${{ needs.docker_build.outputs.image_digest_ecr }}
 
   ## Multiplatform ecr
@@ -353,12 +352,13 @@ jobs:
   sign_image_multi_platform_ecr:
     name: Sign image (multi-platform)
     if: ${{ inputs.sign_image && inputs.docker_multiplatform && inputs.push && inputs.docker_registry == 'ecr' }}
-    needs: [create_version, docker_build_merge]
-    uses: ./.github/workflows/docker_sign.yml
+    needs: [create_version, docker_build_merge_ecr]
+    uses: ./.github/workflows/docker_sign_ecr.yml
+    secrets:
+      ECR_ROLE_TO_ASSUME: ${{ secrets.ECR_ROLE_TO_ASSUME }}
     with:
-      docker_registry: ${{ inputs.docker_registry }}
-      registry_org: ${{ inputs.registry_org }}
-      image_name: ${{ inputs.image_name }}
+      ecr_registry_url: ${{ vars.CLOUD_PLATFORM_ECR_REGISTRY_URL }}
+      ecr_repository: ${{ vars.ECR_REPOSITORY }}
       image_digest: ${{ needs.docker_build_merge_ecr.outputs.image_digest }}
 
 
@@ -372,7 +372,7 @@ jobs:
     name: Generate SBOM (single-platform image) - GHCR
     if: ${{ inputs.generate_sbom && !inputs.docker_multiplatform && inputs.push && inputs.docker_registry == 'ghcr.io' }}
     needs: [create_version, docker_build]
-    uses: ./.github/workflows/docker_sbom.yml
+    uses: ./.github/workflows/docker_sbom_ghcr.yml
     with:
       docker_registry: ${{ inputs.docker_registry }}
       registry_org: ${{ inputs.registry_org }}
@@ -387,7 +387,7 @@ jobs:
     name: Generate SBOM (multi-platform image) - GHCR
     if: ${{ inputs.generate_sbom && inputs.docker_multiplatform && inputs.push && inputs.docker_registry == 'ghcr.io' }}
     needs: [create_version, docker_build_merge]
-    uses: ./.github/workflows/docker_sbom.yml
+    uses: ./.github/workflows/docker_sbom_ghcr.yml
     with:
       docker_registry: ${{ inputs.docker_registry }}
       registry_org: ${{ inputs.registry_org }}
@@ -402,26 +402,28 @@ jobs:
     name: Generate SBOM (single-platform image) - ECR
     if: ${{ inputs.generate_sbom && !inputs.docker_multiplatform && inputs.push && inputs.docker_registry == 'ecr' }}
     needs: [create_version, docker_build]
-    uses: ./.github/workflows/docker_sbom.yml
+    uses: ./.github/workflows/docker_sbom_ecr.yml
+    secrets:
+      ECR_ROLE_TO_ASSUME: ${{ secrets.ECR_ROLE_TO_ASSUME }}
     with:
-      docker_registry: ${{ inputs.docker_registry }}
-      registry_org: ${{ inputs.registry_org }}
-      image_name: ${{ inputs.image_name }}
+      ecr_registry_url: ${{ vars.CLOUD_PLATFORM_ECR_REGISTRY_URL }}
+      ecr_repository: ${{ vars.ECR_REPOSITORY }}
       app_version: ${{ needs.create_version.outputs.version }}
       image_digest: ${{ needs.docker_build.outputs.image_digest_ecr }}
       attach_sbom_to_registry: ${{ inputs.attach_sbom_to_registry }}
 
-  ## Multiplatform ghcr
-  #######################
+  ## Multiplatform ECR
+  #####################
   generate_sbom_multi_platform_ecr:
     name: Generate SBOM (multi-platform image) - ECR
     if: ${{ inputs.generate_sbom && inputs.docker_multiplatform && inputs.push && inputs.docker_registry == 'ecr' }}
-    needs: [create_version, docker_build_merge]
-    uses: ./.github/workflows/docker_sbom.yml
+    needs: [create_version, docker_build_merge_ecr]
+    uses: ./.github/workflows/docker_sbom_ecr.yml
+    secrets:
+      ECR_ROLE_TO_ASSUME: ${{ secrets.ECR_ROLE_TO_ASSUME }}
     with:
-      docker_registry: ${{ inputs.docker_registry }}
-      registry_org: ${{ inputs.registry_org }}
-      image_name: ${{ inputs.image_name }}
+      ecr_registry_url: ${{ vars.CLOUD_PLATFORM_ECR_REGISTRY_URL }}
+      ecr_repository: ${{ vars.ECR_REPOSITORY }}
       app_version: ${{ needs.create_version.outputs.version }}
       image_digest: ${{ needs.docker_build_merge_ecr.outputs.image_digest }}
       attach_sbom_to_registry: ${{ inputs.attach_sbom_to_registry }}
