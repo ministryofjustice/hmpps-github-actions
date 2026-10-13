@@ -111,7 +111,7 @@ jobs:
       - id: app_version
         name: Create application version
         if: inputs.image_version == ''
-        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/create_app_version@2848496f6e2f4144b17fd3f23519c851789e4b87 # v1.1.7
+        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/create_app_version@38a8e31c789777d02669f8b2de309d66ebf00f55 # v1.1.8
       - id: image_version
         shell: bash
         env:
@@ -136,7 +136,7 @@ jobs:
     steps:
       - id: build_docker_step_ghcr
         name: Build (and push) Docker (ghcr.io)
-        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/build_docker@ab2b38dda7b99f91db1f1a1678ed028f82ea1db0 # feat/ecr_compatibility
+        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/build_docker@38a8e31c789777d02669f8b2de309d66ebf00f55 # v1.1.8
         if: ${{ inputs.docker_registry == 'ghcr.io' }}
         env:
           GITHUB_TOKEN: ${{ github.token }}
@@ -158,7 +158,7 @@ jobs:
 
       - id: build_docker_step_quay
         name: Build (and push) Docker (quay.io)
-        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/build_docker@ab2b38dda7b99f91db1f1a1678ed028f82ea1db0 # feat/ecr_compatibility
+        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/build_docker@38a8e31c789777d02669f8b2de309d66ebf00f55 # v1.1.8
         if: ${{ inputs.docker_registry == 'quay.io' }}
         with:
           image_name: ${{ inputs.image_name || github.event.repository.name }}
@@ -178,7 +178,7 @@ jobs:
           download_build_artifacts: ${{ inputs.download_build_artifacts }}
 
       - id: build_docker_step_ecr
-        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/build_docker@ab2b38dda7b99f91db1f1a1678ed028f82ea1db0 # feat/ecr_compatibility
+        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/build_docker@38a8e31c789777d02669f8b2de309d66ebf00f55 # v1.1.8
         name: Build (and push) Docker (ECR)
         if: ${{ inputs.docker_registry == 'ecr' && ( ! inputs.docker_multiplatform )}}
         with:
