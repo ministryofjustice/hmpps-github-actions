@@ -54,8 +54,6 @@ on:
         required: false
       ECR_ROLE_TO_ASSUME:
         required: false
-      ECR_REGISTRY_URL:
-        required: false
 
 permissions:
   contents: read
