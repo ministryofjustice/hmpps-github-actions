@@ -28,6 +28,11 @@ on:
         required: false
         type: string
         default: 'dev'
+      override_to_environment:
+        description: Overrides the environment name for the deployment check
+        required: false
+        default: ''
+        type: string
     secrets:
       PACT_BROKER_URL:
         required: true
@@ -41,7 +46,7 @@ permissions:
 
 jobs:
   can_i_deploy:
-    name: Can I deploy to ${{ inputs.to_environment }}?
+    name: Can I deploy to ${{ inputs.override_to_environment != '' && inputs.override_to_environment || inputs.to_environment }}?
     runs-on: ubuntu-24.04
     container:
       image: pactfoundation/pact-cli:1.5.0.5@sha256:77b98079e5be279353f61e116a0b9b3af19e55b215532b30d430ff5df66e5ac9
@@ -57,7 +62,7 @@ jobs:
             --to-environment "$TO_ENVIRONMENT"
         env:
           APP_VERSION: ${{ inputs.app_version }}
-          TO_ENVIRONMENT: ${{ inputs.to_environment }}
+          TO_ENVIRONMENT: ${{ inputs.override_to_environment != '' && inputs.override_to_environment || inputs.to_environment }}
           PACT_BROKER_BASE_URL: ${{ secrets.PACT_BROKER_URL }}
           PACT_BROKER_USERNAME: ${{ secrets.HMPPS_PACT_BROKER_USERNAME }}
           PACT_BROKER_PASSWORD: ${{ secrets.HMPPS_PACT_BROKER_PASSWORD }}
