@@ -195,6 +195,7 @@ jobs:
           additional_docker_build_args: ${{ inputs.additional_docker_build_args }}
           file: ${{ inputs.file }}
           download_build_artifacts: ${{ inputs.download_build_artifacts }}
+          additional_docker_secrets_args: ${{ inputs.additional_docker_secrets_args }}
           ECR_ROLE_TO_ASSUME: ${{ secrets.ECR_ROLE_TO_ASSUME }}
           ECR_REGISTRY_URL: ${{ vars.CLOUD_PLATFORM_ECR_REGISTRY_URL }}
 
