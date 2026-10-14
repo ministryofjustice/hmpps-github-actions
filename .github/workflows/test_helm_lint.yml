@@ -38,7 +38,7 @@ jobs:
     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
         persist-credentials: false
-    - uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/tool-installers/setup-helm@2848496f6e2f4144b17fd3f23519c851789e4b87 # v1.1.7
+    - uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/tool-installers/setup-helm@38a8e31c789777d02669f8b2de309d66ebf00f55 # v1.1.8
     - name: 'Run helm lint commands'
       shell: bash
       env:
