@@ -94,6 +94,7 @@ jobs:
     outputs:
       deploy_outcome: ${{ steps.deploy.outcome }}
     name: Deploy to ${{ inputs.environment }}
+    if: ${{ github.actor != 'dependabot[bot]' && github.triggering_actor != 'dependabot[bot]' }}
     runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
