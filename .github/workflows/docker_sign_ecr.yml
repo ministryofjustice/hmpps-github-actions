@@ -4,9 +4,10 @@ on:
   workflow_call:
     inputs:
       ecr_registry_url:
-        description: ECR registry URL, e.g. 754256621582.dkr.ecr.eu-west-2.amazonaws.com
-        required: true
+        description: ECR registry URL, e.g. 754256621582.dkr.ecr.eu-west-2.amazonaws.com. Falls back to the ECR_REGISTRY_URL secret when empty
+        required: false
         type: string
+        default: ''
       ecr_repository:
         description: ECR repository name, e.g. hmpps-sre/james-typescript-test
         required: true
@@ -23,13 +24,16 @@ on:
     secrets:
       ECR_ROLE_TO_ASSUME:
         required: true
+      ECR_REGISTRY_URL:
+        description: Deprecated - used only when the ecr_registry_url input is empty
+        required: false
 
 jobs:
   sign_image:
     name: Sign image
     runs-on: ubuntu-24.04
     env:
-      IMAGE_NAME: ${{ inputs.ecr_registry_url }}/${{ inputs.ecr_repository }}
+      IMAGE_NAME: ${{ inputs.ecr_registry_url || secrets.ECR_REGISTRY_URL }}/${{ inputs.ecr_repository }}
     steps:
       - name: Validate image digest
         shell: bash

@@ -14,12 +14,13 @@ This repository contains a library of reusable GitHub workflows for use by other
 ### Build / deploy workflows
 
 - `deploy_env`: orchestrates deployment to a Cloud Platforms environment
-- `docker_build`: builds a Docker image (including options for multiplatform)
-- `docker_build_ecr`: builds and tags a Docker image for ECR workflows
-- `docker_push`: pushes a Docker image
-- `docker_sbom_ghcr`: generates software bill of materials data for container images in ghcr.io
+- `docker_build`: builds a Docker image and pushes it to ghcr.io or quay.io (including options for multiplatform, signing and SBOM generation)
+- `docker_build_ecr`: builds a Docker image and pushes it to ECR (including options for multiplatform, signing and SBOM generation). The calling workflow must grant `id-token: write` (and `attestations: write` if `attach_sbom_to_registry` is used). The ECR registry and repository are taken from the `CLOUD_PLATFORM_ECR_REGISTRY_URL` and `ECR_REPOSITORY` variables, unless `image_name` or the deprecated `ECR_REGISTRY_URL` secret are provided
+- `docker_push`: pushes a Docker image to ghcr.io or quay.io
+- `docker_push_ecr`: pushes a Docker image to ECR
+- `docker_sbom`: generates software bill of materials data for container images in ghcr.io
 - `docker_sbom_ecr`: generates software bill of materials data for container images in ECR
-- `docker_sign_ghcr`: signs Docker images in ghcr.io
+- `docker_sign`: signs Docker images in ghcr.io
 - `docker_sign_ecr`: signs Docker images in ECR
 - `pact_can_i_deploy`: gates a deployment on Pact Broker verification results for a target environment
 - `pact_deploy_env`: orchestrates a Pact-gated deployment to a Cloud Platforms environment, recording the deployment in the Pact Broker on success
