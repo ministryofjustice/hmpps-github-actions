@@ -17,10 +17,8 @@ This repository contains a library of reusable GitHub workflows for use by other
 - `docker_build`: builds a Docker image (including options for multiplatform)
 - `docker_build_ecr`: builds and tags a Docker image for ECR workflows
 - `docker_push`: pushes a Docker image
-- `docker_sbom_ghcr`: generates software bill of materials data for container images in ghcr.io
-- `docker_sbom_ecr`: generates software bill of materials data for container images in ECR
-- `docker_sign_ghcr`: signs Docker images in ghcr.io
-- `docker_sign_ecr`: signs Docker images in ECR
+- `docker_sbom`: generates software bill of materials data for container images
+- `docker_sign`: signs Docker images
 - `pact_can_i_deploy`: gates a deployment on Pact Broker verification results for a target environment
 - `pact_deploy_env`: orchestrates a Pact-gated deployment to a Cloud Platforms environment, recording the deployment in the Pact Broker on success
 - `pact_record_deployment`: records a deployment against a Pact Broker environment
