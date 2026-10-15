@@ -32,12 +32,14 @@ on:
         required: false
         type: boolean
         default: false
-
     secrets:
       HMPPS_QUAYIO_USER:
         required: false 
       HMPPS_QUAYIO_TOKEN:
         required: false
+      ECR_ROLE_TO_ASSUME:
+        required: false
+
     outputs:
       image_digest:
         description: Pushed image digest

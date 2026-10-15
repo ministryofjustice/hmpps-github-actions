@@ -1,0 +1,85 @@
+name: Generate SBOM and optionally attest image (ECR)
+
+on:
+  workflow_call:
+    inputs:
+      ecr_registry_url:
+        description: ECR registry URL, e.g. 754256621582.dkr.ecr.eu-west-2.amazonaws.com
+        required: true
+        type: string
+      ecr_repository:
+        description: ECR repository name, e.g. hmpps-sre/james-typescript-test
+        required: true
+        type: string
+      aws_region:
+        description: AWS region of the ECR registry
+        required: false
+        type: string
+        default: eu-west-2
+      app_version:
+        description: App version
+        required: true
+        type: string
+      image_digest:
+        description: Image digest (sha256:<64 hex chars>) used for attestation
+        required: false
+        type: string
+      attach_sbom_to_registry:
+        description: Create and push an SBOM attestation for the pushed image in the container registry
+        required: false
+        type: boolean
+        default: false
+    secrets:
+      ECR_ROLE_TO_ASSUME:
+        required: true
+
+jobs:
+  generate_sbom:
+    name: Generate SBOM
+    runs-on: ubuntu-24.04
+    env:
+      IMAGE_REPO: ${{ inputs.ecr_registry_url }}/${{ inputs.ecr_repository }}
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@8df5847569e6427dd6c4fb1cf565c83acfa8afa7 # v6.0.0
+        with:
+          role-to-assume: ${{ secrets.ECR_ROLE_TO_ASSUME }}
+          aws-region: ${{ inputs.aws_region }}
+
+      - name: Login to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@183a1442edf41672e66566b7fc560e297a290896 # v2.1.1
+
+      - name: Generate SBOM for pushed image
+        uses: anchore/sbom-action@66cbf4bc1f1c0d2edc94016e65bc221b6bb0ad6c # v0.24.3
+        with:
+          image: ${{ env.IMAGE_REPO }}:${{ inputs.app_version }}
+          artifact-name: sbom-${{ github.event.repository.name }}-${{ inputs.app_version }}.cdx.json
+          output-file: sbom.cdx.json
+          format: cyclonedx-json
+          upload-artifact: true
+          upload-release-assets: false
+
+      - name: Validate image digest
+        if: ${{ inputs.attach_sbom_to_registry }}
+        shell: bash
+        env:
+          IMAGE_DIGEST: ${{ inputs.image_digest }}
+        run: |
+          if [[ -z "${IMAGE_DIGEST}" ]]; then
+            echo "Missing image digest input" >&2
+            exit 1
+          fi
+          if [[ ! "${IMAGE_DIGEST}" =~ ^sha256:[0-9a-f]{64}$ ]]; then
+            echo "Invalid digest format: ${IMAGE_DIGEST} (expected sha256:<64 hex chars>)" >&2
+            exit 1
+          fi
+
+      - name: Create SBOM attestation
+        if: ${{ inputs.attach_sbom_to_registry }}
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
+        with:
+          subject-name: ${{ env.IMAGE_REPO }}
+          subject-digest: ${{ inputs.image_digest }}
+          sbom-path: sbom.cdx.json
+          push-to-registry: true
+          create-storage-record: false
