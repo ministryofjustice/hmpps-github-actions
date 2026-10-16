@@ -42,9 +42,9 @@ on:
         type: string
         default: 'ci/trigger-apply-webhooks'
     secrets:
-      INTEGRATION_TESTS_TRIGGER_APP_ID:
+      PACT_TRIGGER_APP_ID:
         required: false
-      INTEGRATION_TESTS_TRIGGER_PRIVATE_KEY:
+      PACT_TRIGGER_PRIVATE_KEY:
         required: false
       PACT_BROKER_URL:
         required: true
