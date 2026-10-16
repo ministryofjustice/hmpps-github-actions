@@ -66,6 +66,20 @@ on:
         default: true
         type: boolean
 
+    # Required when secrets are explicitly mentioned (best practice)
+    # Ignored when they're inherited
+    secrets:
+      KUBE_CLUSTER:
+        required: false
+      KUBE_NAMESPACE:
+        required: false
+      KUBE_CERT:
+        required: false
+      KUBE_TOKEN:
+        required: false
+      HMPPS_SRE_SLACK_BOT_TOKEN:
+        required: false
+        
     outputs:
       deploy_outcome:
         description: Deployment job outcome
