@@ -94,8 +94,8 @@ jobs:
       provider_repository: ${{ inputs.webhook_provider_repository }}
       webhook_definitions_ref: ${{ inputs.webhook_definitions_ref }}
     secrets:
-      INTEGRATION_TESTS_TRIGGER_APP_ID: ${{ secrets.INTEGRATION_TESTS_TRIGGER_APP_ID }}
-      INTEGRATION_TESTS_TRIGGER_PRIVATE_KEY: ${{ secrets.INTEGRATION_TESTS_TRIGGER_PRIVATE_KEY }}
+      PACT_TRIGGER_APP_ID: ${{ secrets.PACT_TRIGGER_APP_ID }}
+      PACT_TRIGGER_PRIVATE_KEY: ${{ secrets.PACT_TRIGGER_PRIVATE_KEY }}
       PACT_BROKER_URL: ${{ secrets.PACT_BROKER_URL }}
       HMPPS_PACT_BROKER_USERNAME: ${{ secrets.HMPPS_PACT_BROKER_USERNAME }}
       HMPPS_PACT_BROKER_PASSWORD: ${{ secrets.HMPPS_PACT_BROKER_PASSWORD }}
