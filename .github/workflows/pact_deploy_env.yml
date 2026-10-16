@@ -8,6 +8,13 @@ on:
         required: true
         default: dev
         type: string
+      pact_environment_override:
+        description: |
+          Optional Pact Broker environment name for can-i-deploy and deployment recording.
+          Defaults to the target environment and does not change where the application is deployed.
+        required: false
+        default: ''
+        type: string
       app_version:
         description: |
           App version used for the Docker image tag / Helm deploy.
@@ -36,7 +43,7 @@ jobs:
     uses: ./.github/workflows/pact_can_i_deploy.yml
     secrets: inherit
     with:
-      to_environment: ${{ inputs.environment }}
+      to_environment: ${{ inputs.pact_environment_override || inputs.environment }}
       app_version: ${{ inputs.app_version }}
 
   deploy_env:
@@ -57,5 +64,5 @@ jobs:
     uses: ./.github/workflows/pact_record_deployment.yml
     secrets: inherit
     with:
-      environment: ${{ inputs.environment }}
+      environment: ${{ inputs.pact_environment_override || inputs.environment }}
       app_version: ${{ inputs.app_version }}
