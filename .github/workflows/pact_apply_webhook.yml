@@ -40,7 +40,7 @@ on:
         description: Ref of ministryofjustice/hmpps-pact-broker containing the script and webhook definitions
         required: false
         type: string
-        default: 'main'
+        default: 'ci/trigger-apply-webhooks'
     secrets:
       INTEGRATION_TESTS_TRIGGER_APP_ID:
         required: false
