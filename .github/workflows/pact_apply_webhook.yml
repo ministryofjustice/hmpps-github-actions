@@ -1,0 +1,111 @@
+name: Pact - Apply webhook
+
+# Reusable workflow that creates or updates a single Pact Broker webhook.
+# The script and webhook definition (webhook-<webhook_name>.json) are read from the seed directory of
+# ministryofjustice/hmpps-pact-broker, and a GitHub App token scoped to the provider repository
+# is substituted into the token placeholder in that definition (by default ${<provider_repository>_ACCESS_TOKEN}).
+#
+# Example usage:
+#
+# jobs:
+#   apply_webhook:
+#     uses: ministryofjustice/hmpps-github-actions/.github/workflows/pact_apply_webhook.yml@v2
+#     with:
+#       webhook_name: hmpps-person-record
+#       webhook_id: ctNyAoj2Rx6pJYuJSpYChw
+#       provider_repository: hmpps-person-record
+#     secrets: inherit
+
+on:
+  workflow_call:
+    inputs:
+      webhook_name:
+        description: Name of the webhook; the definition is read from seed/webhook-<webhook_name>.json
+        required: true
+        type: string
+      webhook_id:
+        description: Pact Broker webhook ID to create or update
+        required: true
+        type: string
+      provider_repository:
+        description: Repository (within the caller's org) the generated GitHub App token is scoped to, e.g. the provider triggered by the webhook
+        required: true
+        type: string
+      token_placeholder:
+        description: Name of the token placeholder in the webhook definition, without ${}. Defaults to <provider_repository>_ACCESS_TOKEN
+        required: false
+        type: string
+        default: ''
+      webhook_definitions_ref:
+        description: Ref of ministryofjustice/hmpps-pact-broker containing the script and webhook definitions
+        required: false
+        type: string
+        default: 'main'
+    secrets:
+      PACT_TRIGGER_APP_ID:
+        required: false
+      PACT_TRIGGER_PRIVATE_KEY:
+        required: false
+      PACT_BROKER_URL:
+        required: true
+      HMPPS_PACT_BROKER_USERNAME:
+        required: true
+      HMPPS_PACT_BROKER_PASSWORD:
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  apply_webhook:
+    name: Apply Pact Broker webhook – ${{ inputs.webhook_name }}
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check webhook configuration
+        env:
+          APP_ID: ${{ secrets.PACT_TRIGGER_APP_ID }}
+          PRIVATE_KEY: ${{ secrets.PACT_TRIGGER_PRIVATE_KEY }}
+          WEBHOOK_NAME: ${{ inputs.webhook_name }}
+          WEBHOOK_ID: ${{ inputs.webhook_id }}
+          PROVIDER_REPOSITORY: ${{ inputs.provider_repository }}
+        run: |
+          if [ -z "${WEBHOOK_NAME}" ] || [ -z "${WEBHOOK_ID}" ] || [ -z "${PROVIDER_REPOSITORY}" ]; then
+            echo "::error::webhook_name, webhook_id and provider_repository must be set"
+            exit 1
+          fi
+          if [ -z "${APP_ID}" ] || [ -z "${PRIVATE_KEY}" ]; then
+            echo "::error::PACT_TRIGGER_APP_ID and PACT_TRIGGER_PRIVATE_KEY secrets are required to apply webhooks"
+            exit 1
+          fi
+      - name: Checkout webhook script and definitions
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: ministryofjustice/hmpps-pact-broker
+          ref: ${{ inputs.webhook_definitions_ref }}
+          path: hmpps-pact-broker
+          sparse-checkout: seed
+          persist-credentials: false
+      - name: Generate token
+        id: generate-token
+        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
+        with:
+          app-id: ${{ secrets.PACT_TRIGGER_APP_ID }}
+          private-key: ${{ secrets.PACT_TRIGGER_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: ${{ inputs.provider_repository }}
+          permission-contents: write
+          # The broker uses this token after this job ends. It still expires after one hour.
+          skip-token-revoke: true
+      - name: Apply webhook
+        working-directory: hmpps-pact-broker/seed
+        env:
+          WEBHOOK_NAME: ${{ inputs.webhook_name }}
+          WEBHOOK_ID: ${{ inputs.webhook_id }}
+          TOKEN_PLACEHOLDER: ${{ inputs.token_placeholder || format('{0}_ACCESS_TOKEN', inputs.provider_repository) }}
+          WEBHOOK_TOKEN: ${{ steps.generate-token.outputs.token }}
+          PACT_BROKER_URL: ${{ secrets.PACT_BROKER_URL }}
+          PACT_BROKER_USERNAME: ${{ secrets.HMPPS_PACT_BROKER_USERNAME }}
+          PACT_BROKER_PASSWORD: ${{ secrets.HMPPS_PACT_BROKER_PASSWORD }}
+        run: |
+          bash -e ./create-single-webhook.sh \
+            "${WEBHOOK_NAME}" "${WEBHOOK_ID}" "${TOKEN_PLACEHOLDER}"
