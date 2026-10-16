@@ -38,7 +38,7 @@ permissions:
 jobs:
   node-unit-test:
     name: ${{ inputs.npm_script == 'test:ci' && 'Run the node unit tests' || format('Run the node unit tests – {0}', inputs.npm_script) }}
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     services:
       redis:
         image: ${{ inputs.redis_tag && format('redis:{0}', inputs.redis_tag) || '' }}
