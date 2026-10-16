@@ -65,7 +65,7 @@ on:
         description: Broker repo ref containing the webhook script and definitions
         required: false
         type: string
-        default: 'ci/trigger-apply-webhooks'
+        default: 'main'
     secrets:
       GRADLE_CACHE_ENCRYPTION_KEY:
         required: false
