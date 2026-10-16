@@ -25,7 +25,21 @@ This repository contains a library of reusable GitHub workflows for use by other
 - `pact_can_i_deploy`: gates a deployment on Pact Broker verification results for a target environment
 - `pact_deploy_env`: orchestrates a Pact-gated deployment to a Cloud Platforms environment, recording the deployment in the Pact Broker on success
 - `pact_record_deployment`: records a deployment against a Pact Broker environment
+- `pact_apply_webhook`: creates/updates a Pact Broker webhook from a definition in `hmpps-pact-broker/seed`, injecting a GitHub App token scoped to the provider repository
+- `pact_test_publish`: runs Pact consumer tests and publishes the pacts to the Pact Broker using configurable Gradle tasks, optionally applying a Pact Broker webhook first
 - `sentry_release_and_deploy`: creates and deploys Sentry releases
+
+#### Pact webhook setup
+
+`pact_apply_webhook` runs `seed/create-single-webhook.sh` from `ministryofjustice/hmpps-pact-broker`,
+alongside its webhook JSON definitions. `pact_test_publish` can call it before running the
+consumer tests when `webhook_name`, `webhook_id`, and `webhook_provider_repository` are supplied.
+Both workflows accept `webhook_definitions_ref` (default `main`) to select the broker repo ref;
+use `ci/trigger-apply-webhooks` while the script and definition are awaiting merge.
+
+The GitHub App token is not revoked at the end of the webhook job, but expires after one hour.
+The webhook must be refreshed before publishing, and its dispatch must happen before the token
+expires. This is not a permanent credential for later broker events.
 
 ### Test workflows
 
@@ -251,4 +265,3 @@ Repositories that consume these shared workflows are upgraded through automated 
 5. Teams review and merge those PRs to adopt the newer workflow version.
 
 This keeps workflow upgrades visible, reviewable, and consistent across repositories.
-
