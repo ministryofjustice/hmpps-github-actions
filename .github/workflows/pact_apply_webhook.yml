@@ -63,8 +63,8 @@ jobs:
     steps:
       - name: Check webhook configuration
         env:
-          APP_ID: ${{ secrets.INTEGRATION_TESTS_TRIGGER_APP_ID }}
-          PRIVATE_KEY: ${{ secrets.INTEGRATION_TESTS_TRIGGER_PRIVATE_KEY }}
+          APP_ID: ${{ secrets.PACT_TRIGGER_APP_ID }}
+          PRIVATE_KEY: ${{ secrets.PACT_TRIGGER_PRIVATE_KEY }}
           WEBHOOK_NAME: ${{ inputs.webhook_name }}
           WEBHOOK_ID: ${{ inputs.webhook_id }}
           PROVIDER_REPOSITORY: ${{ inputs.provider_repository }}
@@ -74,7 +74,7 @@ jobs:
             exit 1
           fi
           if [ -z "${APP_ID}" ] || [ -z "${PRIVATE_KEY}" ]; then
-            echo "::error::INTEGRATION_TESTS_TRIGGER_APP_ID and INTEGRATION_TESTS_TRIGGER_PRIVATE_KEY secrets are required to apply webhooks"
+            echo "::error::PACT_TRIGGER_APP_ID and PACT_TRIGGER_PRIVATE_KEY secrets are required to apply webhooks"
             exit 1
           fi
       - name: Checkout webhook script and definitions
@@ -89,8 +89,8 @@ jobs:
         id: generate-token
         uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
         with:
-          app-id: ${{ secrets.INTEGRATION_TESTS_TRIGGER_APP_ID }}
-          private-key: ${{ secrets.INTEGRATION_TESTS_TRIGGER_PRIVATE_KEY }}
+          app-id: ${{ secrets.PACT_TRIGGER_APP_ID }}
+          private-key: ${{ secrets.PACT_TRIGGER_PRIVATE_KEY }}
           owner: ${{ github.repository_owner }}
           repositories: ${{ inputs.provider_repository }}
           permission-contents: write
