@@ -1,0 +1,148 @@
+name: Pact - Consumer test and publish
+
+# Reusable workflow that any Gradle consumer repo can call to run its Pact
+# consumer tests and publish the generated pacts to the Pact Broker.
+#
+# Example usage from a consumer repo:
+#
+# jobs:
+#   pact_test:
+#     name: Pact consumer tests and publish contracts
+#     needs: app_version
+#     uses: ministryofjustice/hmpps-github-actions/.github/workflows/pact_test_publish.yml@v2
+#     with:
+#       app_version: ${{ needs.app_version.outputs.version }}
+#       pact_test_task: 'pactTest'        # optional, defaults to pactTest
+#       pact_publish_task: 'pactPublish'  # optional, defaults to pactPublish
+#       # optional - applies a Pact Broker webhook (see pact_apply_webhook.yml) before running the tests
+#       webhook_name: hmpps-person-record
+#       webhook_id: ctNyAoj2Rx6pJYuJSpYChw
+#       webhook_provider_repository: hmpps-person-record
+#     secrets: inherit
+
+on:
+  workflow_call:
+    inputs:
+      app_version:
+        description: App version used as the consumer version when publishing pacts
+        required: true
+        type: string
+      pact_test_task:
+        description: The gradle task(s) used to run the pact consumer tests
+        required: false
+        type: string
+        default: 'pactTest'
+      pact_publish_task:
+        description: The gradle task(s) used to publish the pacts to the Pact Broker
+        required: false
+        type: string
+        default: 'pactPublish'
+      java-version:
+        required: false
+        type: string
+        default: '25'
+      artifact-name:
+        description: Unique name (across the pipeline) for the uploaded test results artifact
+        required: false
+        type: string
+        default: 'pact-test-results'
+      webhook_name:
+        description: Optionally, apply the Pact Broker webhook defined in hmpps-pact-broker seed/webhook-<webhook_name>.json before running the tests
+        required: false
+        type: string
+        default: ''
+      webhook_id:
+        description: Pact Broker webhook ID to create or update (required if webhook_name is set)
+        required: false
+        type: string
+        default: ''
+      webhook_provider_repository:
+        description: Repository the webhook GitHub App token is scoped to (required if webhook_name is set)
+        required: false
+        type: string
+        default: ''
+      webhook_definitions_ref:
+        description: Broker repo ref containing the webhook script and definitions
+        required: false
+        type: string
+        default: 'main'
+    secrets:
+      GRADLE_CACHE_ENCRYPTION_KEY:
+        required: false
+      PACT_TRIGGER_APP_ID:
+        required: false
+      PACT_TRIGGER_PRIVATE_KEY:
+        required: false
+      PACT_BROKER_URL:
+        required: true
+      HMPPS_PACT_BROKER_USERNAME:
+        required: true
+      HMPPS_PACT_BROKER_PASSWORD:
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  apply_webhook:
+    name: Apply Pact Broker webhook
+    if: ${{ inputs.webhook_name != '' }}
+    uses: ./.github/workflows/pact_apply_webhook.yml
+    with:
+      webhook_name: ${{ inputs.webhook_name }}
+      webhook_id: ${{ inputs.webhook_id }}
+      provider_repository: ${{ inputs.webhook_provider_repository }}
+      webhook_definitions_ref: ${{ inputs.webhook_definitions_ref }}
+    secrets:
+      PACT_TRIGGER_APP_ID: ${{ secrets.PACT_TRIGGER_APP_ID }}
+      PACT_TRIGGER_PRIVATE_KEY: ${{ secrets.PACT_TRIGGER_PRIVATE_KEY }}
+      PACT_BROKER_URL: ${{ secrets.PACT_BROKER_URL }}
+      HMPPS_PACT_BROKER_USERNAME: ${{ secrets.HMPPS_PACT_BROKER_USERNAME }}
+      HMPPS_PACT_BROKER_PASSWORD: ${{ secrets.HMPPS_PACT_BROKER_PASSWORD }}
+
+  pact_test_publish:
+    name: Pact consumer test and publish
+    needs: apply_webhook
+    if: ${{ !cancelled() && (needs.apply_webhook.result == 'success' || needs.apply_webhook.result == 'skipped') }}
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Setup Java
+        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+        with:
+          distribution: 'temurin'
+          java-version: '${{ inputs.java-version }}'
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
+        with:
+          cache-encryption-key: ${{ secrets.GRADLE_CACHE_ENCRYPTION_KEY }}
+      - name: Run pact tests
+        shell: bash
+        env:
+          PACT_TEST_TASK: ${{ inputs.pact_test_task }}
+        run: |
+          read -ra tasks <<< "${PACT_TEST_TASK}"
+          ./gradlew "${tasks[@]}"
+      - name: Upload the test artifacts
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: ${{ inputs.artifact-name }}
+          path: |
+            **/build/test-results
+            **/build/reports/tests
+      - name: Publish pacts
+        shell: bash
+        env:
+          PACT_PUBLISH_TASK: ${{ inputs.pact_publish_task }}
+          GITHUB_BRANCH: ${{ github.head_ref || github.ref_name }}
+          APP_VERSION: ${{ inputs.app_version }}
+          PACT_BROKER_URL: ${{ secrets.PACT_BROKER_URL }}
+          HMPPS_PACT_BROKER_USERNAME: ${{ secrets.HMPPS_PACT_BROKER_USERNAME }}
+          HMPPS_PACT_BROKER_PASSWORD: ${{ secrets.HMPPS_PACT_BROKER_PASSWORD }}
+        run: |
+          read -ra tasks <<< "${PACT_PUBLISH_TASK}"
+          ./gradlew "${tasks[@]}"
