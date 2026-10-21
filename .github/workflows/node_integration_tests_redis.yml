@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-24.04
     services:
       redis:
-        image: redis:7.4@sha256:71da9275c5f3fcb97d0fa0c8c5b36cc995327265420f17a04bfd544f458059f7
+        image: redis:7.4@sha256:44960b3100c48159a66d28c18b0588c193492e25f7551d60e51dd464fc3eca5b
         ports:
           - 6379:6379
         options: --health-cmd="redis-cli ping" --health-interval=10s --health-timeout=5s --health-retries=5
