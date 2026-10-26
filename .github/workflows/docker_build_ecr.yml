@@ -108,7 +108,7 @@ jobs:
   #####################################################################
   create_version:
     name: Create app version
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     outputs:
       version: ${{ steps.image_version.outputs.version }}
       ecr_repository: ${{ steps.image_version.outputs.ecr_repository }}
@@ -133,7 +133,7 @@ jobs:
     name: Build linux/amd64 (single)
     if: ${{ ! inputs.docker_multiplatform }}
     needs: [create_version]
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     outputs:
       image_digest: ${{ steps.build_docker_step.outputs.digest }}
     steps:
