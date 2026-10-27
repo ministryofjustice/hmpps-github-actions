@@ -67,7 +67,7 @@ permissions:
 jobs:
   security-veracode-pipeline-scan:
     name: Security veracode pipeline scan
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     permissions:
       security-events: write
       contents: read

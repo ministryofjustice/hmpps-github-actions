@@ -40,7 +40,7 @@ on:
 jobs:
   generate_sbom:
     name: Generate SBOM
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     env:
       IMAGE_REPO: ${{ inputs.ecr_registry_url || secrets.ECR_REGISTRY_URL }}/${{ inputs.ecr_repository }}
     steps:
