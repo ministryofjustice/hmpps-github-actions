@@ -64,7 +64,7 @@ permissions:
 jobs:
   security-snyk-check:
     name: Security snyk dependency check
-    runs-on: ubuntu-26.04
+    runs-on: ubuntu-latest
     continue-on-error: true
     permissions:
       packages: read

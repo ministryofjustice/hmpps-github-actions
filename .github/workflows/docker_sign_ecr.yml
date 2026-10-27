@@ -31,7 +31,7 @@ on:
 jobs:
   sign_image:
     name: Sign image
-    runs-on: ubuntu-26.04
+    runs-on: ubuntu-latest
     env:
       IMAGE_NAME: ${{ inputs.ecr_registry_url || secrets.ECR_REGISTRY_URL }}/${{ inputs.ecr_repository }}
     steps:
