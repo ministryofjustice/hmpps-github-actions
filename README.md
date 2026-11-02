@@ -37,6 +37,31 @@ consumer tests when `webhook_name`, `webhook_id`, and `webhook_provider_reposito
 Both workflows accept `webhook_definitions_ref` (default `main`) to select the broker repo ref;
 use `ci/trigger-apply-webhooks` while the script and definition are awaiting merge.
 
+The broker checkout uses a short-lived Octo STS token with the identity
+`pact-webhook-checkout`. Calling workflows must grant `contents: read` and
+`id-token: write` to the job calling either reusable workflow. This also applies
+to `pact_test_publish` when webhook setup is omitted, because GitHub validates
+permissions for nested reusable workflows even when their jobs are skipped.
+
+The Octo STS GitHub App must have access to `ministryofjustice/hmpps-pact-broker`.
+In that repository, add `.github/chainguard/pact-webhook-checkout.sts.yaml` on its
+default branch to authorise the original calling repository, for example:
+
+```yaml
+issuer: https://token.actions.githubusercontent.com
+subject_pattern: repo:ministryofjustice/hmpps-person-record:.*
+
+permissions:
+  contents: read
+```
+
+Replace `hmpps-person-record` with the intended caller; for multiple callers,
+use an explicit pattern allowing only those repositories. The caller is the
+repository running the workflow, not `hmpps-github-actions`. This policy is
+required in the broker repository, not in this repository.
+
+Octo STS authenticates only the checkout. The separate GitHub App credentials
+below are still required to generate the provider token embedded in the webhook.
 The GitHub App token is not revoked at the end of the webhook job, but expires after one hour.
 The webhook must be refreshed before publishing, and its dispatch must happen before the token
 expires. This is not a permanent credential for later broker events.
@@ -49,6 +74,7 @@ jobs:
     name: Pact consumer tests and publish contracts
     permissions:
       contents: read
+      id-token: write
     needs: app_version
     uses: ministryofjustice/hmpps-github-actions/.github/workflows/pact_test_publish.yml@v2
     with:

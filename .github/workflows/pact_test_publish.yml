@@ -8,6 +8,9 @@ name: Pact - Consumer test and publish
 # jobs:
 #   pact_test:
 #     name: Pact consumer tests and publish contracts
+#     permissions:
+#       contents: read
+#       id-token: write
 #     needs: app_version
 #     uses: ministryofjustice/hmpps-github-actions/.github/workflows/pact_test_publish.yml@v2
 #     with:
@@ -86,6 +89,9 @@ permissions:
 jobs:
   apply_webhook:
     name: Apply Pact Broker webhook
+    permissions:
+      contents: read
+      id-token: write
     if: ${{ inputs.webhook_name != '' }}
     uses: ./.github/workflows/pact_apply_webhook.yml
     with:

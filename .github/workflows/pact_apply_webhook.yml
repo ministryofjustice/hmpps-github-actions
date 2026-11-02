@@ -9,6 +9,9 @@ name: Pact - Apply webhook
 #
 # jobs:
 #   apply_webhook:
+#     permissions:
+#       contents: read
+#       id-token: write
 #     uses: ministryofjustice/hmpps-github-actions/.github/workflows/pact_apply_webhook.yml@v2
 #     with:
 #       webhook_name: hmpps-person-record
@@ -55,6 +58,7 @@ on:
 
 permissions:
   contents: read
+  id-token: write
 
 jobs:
   apply_webhook:
@@ -77,10 +81,17 @@ jobs:
             echo "::error::PACT_TRIGGER_APP_ID and PACT_TRIGGER_PRIVATE_KEY secrets are required to apply webhooks"
             exit 1
           fi
+      - name: Obtain Octo STS token
+        id: octo_sts
+        uses: octo-sts/action@f603d3be9d8dd9871a265776e625a27b00effe05
+        with:
+          scope: ministryofjustice/hmpps-pact-broker
+          identity: pact-webhook-checkout
       - name: Checkout webhook script and definitions
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: ministryofjustice/hmpps-pact-broker
+          token: ${{ steps.octo_sts.outputs.token }}
           ref: ${{ inputs.webhook_definitions_ref }}
           path: hmpps-pact-broker
           sparse-checkout: seed
