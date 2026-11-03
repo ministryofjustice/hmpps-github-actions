@@ -25,7 +25,110 @@ This repository contains a library of reusable GitHub workflows for use by other
 - `pact_can_i_deploy`: gates a deployment on Pact Broker verification results for a target environment
 - `pact_deploy_env`: orchestrates a Pact-gated deployment to a Cloud Platforms environment, recording the deployment in the Pact Broker on success
 - `pact_record_deployment`: records a deployment against a Pact Broker environment
+- `pact_apply_webhook`: creates/updates a Pact Broker webhook from a definition in `hmpps-pact-broker/seed`, injecting a GitHub App token scoped to the provider repository
+- `pact_test_publish`: runs Pact consumer tests and publishes the pacts to the Pact Broker using configurable Gradle tasks, optionally applying a Pact Broker webhook first
 - `sentry_release_and_deploy`: creates and deploys Sentry releases
+
+#### Pact webhook setup
+
+`pact_apply_webhook` runs `seed/create-single-webhook.sh` from `ministryofjustice/hmpps-pact-broker`,
+alongside its webhook JSON definitions. `pact_test_publish` can call it before running the
+consumer tests when `webhook_name`, `webhook_id`, and `webhook_provider_repository` are supplied.
+Both workflows accept `webhook_definitions_ref` (default `main`) to select the broker repo ref;
+use `ci/trigger-apply-webhooks` while the script and definition are awaiting merge.
+
+The broker checkout uses a short-lived Octo STS token with the identity
+`pact-webhook-checkout`. Calling workflows must grant `contents: read` and
+`id-token: write` to the job calling either reusable workflow. This also applies
+to `pact_test_publish` when webhook setup is omitted, because GitHub validates
+permissions for nested reusable workflows even when their jobs are skipped.
+
+The Octo STS GitHub App must have access to `ministryofjustice/hmpps-pact-broker`.
+In that repository, add `.github/chainguard/pact-webhook-checkout.sts.yaml` on its
+default branch to authorise the original calling repository, for example:
+
+```yaml
+issuer: https://token.actions.githubusercontent.com
+subject_pattern: repo:ministryofjustice/hmpps-person-record:.*
+
+permissions:
+  contents: read
+```
+
+Replace `hmpps-person-record` with the intended caller; for multiple callers,
+use an explicit pattern allowing only those repositories. The caller is the
+repository running the workflow, not `hmpps-github-actions`. This policy is
+required in the broker repository, not in this repository.
+
+Octo STS authenticates only the checkout. The separate GitHub App credentials
+below are still required to generate the provider token embedded in the webhook.
+The GitHub App token is not revoked at the end of the webhook job, but expires after one hour.
+The webhook must be refreshed before publishing, and its dispatch must happen before the token
+expires. This is not a permanent credential for later broker events.
+
+Example consumer job:
+
+```yaml
+jobs:
+  pact_test:
+    name: Pact consumer tests and publish contracts
+    permissions:
+      contents: read
+      id-token: write
+    needs: app_version
+    uses: ministryofjustice/hmpps-github-actions/.github/workflows/pact_test_publish.yml@v2
+    with:
+      app_version: ${{ needs.app_version.outputs.version }}
+      pact_test_task: pactTest
+      pact_publish_task: pactPublish
+      java-version: '25'
+      # Omit these three inputs to run without webhook setup.
+      webhook_name: hmpps-person-record
+      webhook_id: ctNyAoj2Rx6pJYuJSpYChw
+      webhook_provider_repository: hmpps-person-record
+    secrets: inherit
+```
+
+`app_version` is required. The Gradle task inputs default to `pactTest` and `pactPublish`,
+and each accepts space-separated tasks or arguments, including module-qualified tasks
+such as `:consumer:pactTest`. Java defaults to `25`, and `artifact-name` defaults to
+`pact-test-results`; use a unique artifact name when calling the workflow more than once
+in the same pipeline.
+
+The calling repository must have access to the following secrets:
+
+| Secret | Required |
+| --- | --- |
+| `PACT_BROKER_URL` | Always |
+| `HMPPS_PACT_BROKER_USERNAME` | Always |
+| `HMPPS_PACT_BROKER_PASSWORD` | Always |
+| `GRADLE_CACHE_ENCRYPTION_KEY` | Optional |
+| `PACT_TRIGGER_APP_ID` | When applying a webhook |
+| `PACT_TRIGGER_PRIVATE_KEY` | When applying a webhook |
+
+For webhook setup, the GitHub App must be installed on the provider repository within
+the caller's organisation and have **Contents: write** permission. The broker repository
+must contain `seed/webhook-<webhook_name>.json`, with the token placeholder
+`${<webhook_provider_repository>_ACCESS_TOKEN}`. For a GitHub dispatch webhook, include
+the authentication scheme, for example:
+
+```json
+{
+  "Authorization": "Bearer ${hmpps-person-record_ACCESS_TOKEN}" 
+}
+```
+
+The provider's workflow must exist on its **default branch** and listen for the event
+type sent by the webhook definition, for example:
+
+```yaml
+on:
+  repository_dispatch:
+    types: [pact_changed]
+```
+
+A successful webhook delivery means GitHub accepted the request; it does not confirm
+that the provider workflow ran or that contract verification passed.
 
 ### Test workflows
 
@@ -251,4 +354,3 @@ Repositories that consume these shared workflows are upgraded through automated 
 5. Teams review and merge those PRs to adopt the newer workflow version.
 
 This keeps workflow upgrades visible, reviewable, and consistent across repositories.
-
