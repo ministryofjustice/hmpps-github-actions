@@ -116,7 +116,7 @@ jobs:
       - id: app_version
         name: Create application version
         if: inputs.image_version == ''
-        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/create_app_version@38a8e31c789777d02669f8b2de309d66ebf00f55 # v1.1.8
+        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/create_app_version@aff6180015ac5ddbec7eff2e1f63266ce97462c4 # v1.1.9
       - id: image_version
         shell: bash
         env:
@@ -139,7 +139,7 @@ jobs:
     steps:
       - id: build_docker_step
         name: Build (and push) Docker (ECR)
-        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/build_docker@38a8e31c789777d02669f8b2de309d66ebf00f55 # v1.1.8
+        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/build_docker@aff6180015ac5ddbec7eff2e1f63266ce97462c4 # v1.1.9
         with:
           image_name: ${{ needs.create_version.outputs.ecr_repository }}
           docker_registry: ecr

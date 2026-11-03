@@ -88,7 +88,7 @@ jobs:
         java-version: '${{ inputs.java_version }}'
     - name: prepare assets
       if: inputs.veracode_package_artifact_name == ''
-      uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/security_veracode_prepare_artifacts@38a8e31c789777d02669f8b2de309d66ebf00f55 # v1.1.8
+      uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/security_veracode_prepare_artifacts@aff6180015ac5ddbec7eff2e1f63266ce97462c4 # v1.1.9
       with:
         docker_image_app_dir: ${{ inputs.docker_image_app_dir }}
     - name: download assets artifact
@@ -169,7 +169,7 @@ jobs:
         path: results.txt
     - name: send a failure slack message
       if: steps.veracode-pipeline-scan.outcome == 'failure' && inputs.channel_id != 'NO_SLACK'
-      uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/slack_failure_results@38a8e31c789777d02669f8b2de309d66ebf00f55 # v1.1.8
+      uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/slack_failure_results@aff6180015ac5ddbec7eff2e1f63266ce97462c4 # v1.1.9
       with:
         SLACK_BOT_TOKEN: ${{ secrets.HMPPS_SRE_SLACK_BOT_TOKEN }}
         channel_id: ${{ inputs.channel_id }}
