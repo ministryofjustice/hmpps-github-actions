@@ -132,4 +132,4 @@ jobs:
           PACT_BROKER_BASE_URL: ${{ secrets.PACT_BROKER_URL }}
           PACT_BROKER_USERNAME: ${{ secrets.HMPPS_PACT_BROKER_USERNAME }}
           PACT_BROKER_PASSWORD: ${{ secrets.HMPPS_PACT_BROKER_PASSWORD }}
-        run: npm run "${PACT_PUBLISH_SCRIPT}"
+        run: npm run "${PACT_PUBLISH_SCRIPT}" "${PACT_DIR}" -- --consumer-app-version="${{ inputs.app_version }}" --broker-base-url="${{ PACT_BROKER_URL }}" --broker-username="${{ HMPPS_PACT_BROKER_USERNAME }}" --broker-password="${{ HMPPS_PACT_BROKER_PASSWORD }}
