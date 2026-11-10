@@ -1,28 +1,5 @@
 name: Pact - Consumer test and publish
 
-# Reusable workflow that any Gradle consumer repo can call to run its Pact
-# consumer tests and publish the generated pacts to the Pact Broker.
-#
-# Example usage from a consumer repo:
-#
-# jobs:
-#   pact_test:
-#     name: Pact consumer tests and publish contracts
-#     permissions:
-#       contents: read
-#       id-token: write
-#     needs: app_version
-#     uses: ministryofjustice/hmpps-github-actions/.github/workflows/pact_test_publish.yml@v2
-#     with:
-#       app_version: ${{ needs.app_version.outputs.version }}
-#       pact_test_task: 'pactTest'        # optional, defaults to pactTest
-#       pact_publish_task: 'pactPublish'  # optional, defaults to pactPublish
-#       # optional - applies a Pact Broker webhook (see pact_apply_webhook.yml) before running the tests
-#       webhook_name: hmpps-person-record
-#       webhook_id: ctNyAoj2Rx6pJYuJSpYChw
-#       webhook_provider_repository: hmpps-person-record
-#     secrets: inherit
-
 on:
   workflow_call:
     inputs:
@@ -50,7 +27,7 @@ on:
         type: string
         default: 'pact-test-results'
       webhook_name:
-        description: Optionally, apply the Pact Broker webhook defined in hmpps-pact-broker seed/webhook-<webhook_name>.json before running the tests
+        description: Optional webhook definition name, without the webhook- prefix or .json suffix
         required: false
         type: string
         default: ''
@@ -64,6 +41,11 @@ on:
         required: false
         type: string
         default: ''
+      webhooks:
+        description: JSON array of webhook objects containing name, id and repository
+        required: false
+        type: string
+        default: '[]'
       webhook_definitions_ref:
         description: Broker repo ref containing the webhook script and definitions
         required: false
@@ -106,10 +88,38 @@ jobs:
       HMPPS_PACT_BROKER_USERNAME: ${{ secrets.HMPPS_PACT_BROKER_USERNAME }}
       HMPPS_PACT_BROKER_PASSWORD: ${{ secrets.HMPPS_PACT_BROKER_PASSWORD }}
 
+  apply_webhooks:
+    name: Apply Pact Broker webhook - ${{ matrix.webhook.name }}
+    permissions:
+      contents: read
+      id-token: write
+    if: ${{ toJSON(fromJSON(inputs.webhooks)) != '[]' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        webhook: ${{ fromJSON(inputs.webhooks) }}
+    uses: ./.github/workflows/pact_apply_webhook.yml
+    with:
+      webhook_name: ${{ matrix.webhook.name }}
+      webhook_id: ${{ matrix.webhook.id }}
+      provider_repository: ${{ matrix.webhook.repository }}
+      webhook_definitions_ref: ${{ inputs.webhook_definitions_ref }}
+    secrets:
+      PACT_TRIGGER_APP_ID: ${{ secrets.PACT_TRIGGER_APP_ID }}
+      PACT_TRIGGER_PRIVATE_KEY: ${{ secrets.PACT_TRIGGER_PRIVATE_KEY }}
+      PACT_BROKER_URL: ${{ secrets.PACT_BROKER_URL }}
+      HMPPS_PACT_BROKER_USERNAME: ${{ secrets.HMPPS_PACT_BROKER_USERNAME }}
+      HMPPS_PACT_BROKER_PASSWORD: ${{ secrets.HMPPS_PACT_BROKER_PASSWORD }}
+
   pact_test_publish:
     name: Pact consumer test and publish
-    needs: apply_webhook
-    if: ${{ !cancelled() && (needs.apply_webhook.result == 'success' || needs.apply_webhook.result == 'skipped') }}
+    needs:
+      - apply_webhook
+      - apply_webhooks
+    if: >-
+      ${{ !cancelled()
+        && (needs.apply_webhook.result == 'success' || needs.apply_webhook.result == 'skipped')
+        && (needs.apply_webhooks.result == 'success' || needs.apply_webhooks.result == 'skipped') }}
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout sources

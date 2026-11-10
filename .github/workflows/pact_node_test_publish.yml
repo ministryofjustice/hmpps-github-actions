@@ -1,0 +1,168 @@
+name: Pact - Node consumer test and publish
+
+on:
+  workflow_call:
+    inputs:
+      app_version:
+        description: App version used as the consumer version when publishing pacts
+        required: true
+        type: string
+      node_version_file:
+        description: File used by setup-node to select the Node.js version
+        required: false
+        type: string
+        default: '.nvmrc'
+      pact_test_script:
+        description: npm script that runs the Pact consumer tests
+        required: false
+        type: string
+        default: 'pact:test'
+      pact_publish_script:
+        description: npm script that publishes the generated pacts
+        required: false
+        type: string
+        default: 'pact:publish'
+      pact_dir:
+        description: Directory containing the generated Pact JSON files
+        required: false
+        type: string
+        default: 'pacts'
+      test_results_artifact_name:
+        description: Unique name for the uploaded test results artifact
+        required: false
+        type: string
+        default: 'pact-node-test-results'
+      test_results_artifact_path:
+        description: Paths to the test results artifacts
+        required: false
+        type: string
+        default: 'test_results'
+      webhook_name:
+        description: Optionally apply a Pact Broker webhook before running the tests
+        required: false
+        type: string
+        default: ''
+      webhook_id:
+        description: Pact Broker webhook ID to create or update (required if webhook_name is set)
+        required: false
+        type: string
+        default: ''
+      webhook_provider_repository:
+        description: Repository the webhook GitHub App token is scoped to (required if webhook_name is set)
+        required: false
+        type: string
+        default: ''
+      webhooks:
+        description: JSON array of webhook objects containing name, id and repository
+        required: false
+        type: string
+        default: '[]'
+      webhook_definitions_ref:
+        description: Broker repo ref containing the webhook script and definitions
+        required: false
+        type: string
+        default: 'main'
+    secrets:
+      PACT_TRIGGER_APP_ID:
+        required: false
+      PACT_TRIGGER_PRIVATE_KEY:
+        required: false
+      PACT_BROKER_URL:
+        required: true
+      HMPPS_PACT_BROKER_USERNAME:
+        required: true
+      HMPPS_PACT_BROKER_PASSWORD:
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  apply_webhook:
+    name: Apply Pact Broker webhook
+    permissions:
+      contents: read
+      id-token: write
+    if: ${{ inputs.webhook_name != '' }}
+    uses: ./.github/workflows/pact_apply_webhook.yml
+    with:
+      webhook_name: ${{ inputs.webhook_name }}
+      webhook_id: ${{ inputs.webhook_id }}
+      provider_repository: ${{ inputs.webhook_provider_repository }}
+      webhook_definitions_ref: ${{ inputs.webhook_definitions_ref }}
+    secrets:
+      PACT_TRIGGER_APP_ID: ${{ secrets.PACT_TRIGGER_APP_ID }}
+      PACT_TRIGGER_PRIVATE_KEY: ${{ secrets.PACT_TRIGGER_PRIVATE_KEY }}
+      PACT_BROKER_URL: ${{ secrets.PACT_BROKER_URL }}
+      HMPPS_PACT_BROKER_USERNAME: ${{ secrets.HMPPS_PACT_BROKER_USERNAME }}
+      HMPPS_PACT_BROKER_PASSWORD: ${{ secrets.HMPPS_PACT_BROKER_PASSWORD }}
+
+  apply_webhooks:
+    name: Apply Pact Broker webhook - ${{ matrix.webhook.name }}
+    permissions:
+      contents: read
+      id-token: write
+    if: ${{ toJSON(fromJSON(inputs.webhooks)) != '[]' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        webhook: ${{ fromJSON(inputs.webhooks) }}
+    uses: ./.github/workflows/pact_apply_webhook.yml
+    with:
+      webhook_name: ${{ matrix.webhook.name }}
+      webhook_id: ${{ matrix.webhook.id }}
+      provider_repository: ${{ matrix.webhook.repository }}
+      webhook_definitions_ref: ${{ inputs.webhook_definitions_ref }}
+    secrets:
+      PACT_TRIGGER_APP_ID: ${{ secrets.PACT_TRIGGER_APP_ID }}
+      PACT_TRIGGER_PRIVATE_KEY: ${{ secrets.PACT_TRIGGER_PRIVATE_KEY }}
+      PACT_BROKER_URL: ${{ secrets.PACT_BROKER_URL }}
+      HMPPS_PACT_BROKER_USERNAME: ${{ secrets.HMPPS_PACT_BROKER_USERNAME }}
+      HMPPS_PACT_BROKER_PASSWORD: ${{ secrets.HMPPS_PACT_BROKER_PASSWORD }}
+
+  pact_test_publish:
+    name: Pact Node consumer test and publish
+    needs:
+      - apply_webhook
+      - apply_webhooks
+    if: >-
+      ${{ !cancelled()
+        && (needs.apply_webhook.result == 'success' || needs.apply_webhook.result == 'skipped')
+        && (needs.apply_webhooks.result == 'success' || needs.apply_webhooks.result == 'skipped') }}
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Setup Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: ${{ inputs.node_version_file }}
+      - name: Install dependencies
+        run: npm ci --no-audit
+      - name: Run pact tests
+        id: pact_tests
+        shell: bash
+        env:
+          PACT_TEST_SCRIPT: ${{ inputs.pact_test_script }}
+          PACT_DIR: ${{ inputs.pact_dir }}
+        run: npm run "${PACT_TEST_SCRIPT}"
+      - name: Upload the test artifacts
+        if: ${{ !cancelled() && (steps.pact_tests.outcome == 'success' || steps.pact_tests.outcome == 'failure') }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: ${{ inputs.test_results_artifact_name }}
+          path: ${{ inputs.test_results_artifact_path }}
+      - name: Publish pacts
+        shell: bash
+        env:
+          PACT_PUBLISH_SCRIPT: ${{ inputs.pact_publish_script }}
+          PACT_DIR: ${{ inputs.pact_dir }}
+          GITHUB_BRANCH: ${{ github.head_ref || github.ref_name }}
+          APP_VERSION: ${{ inputs.app_version }}
+          PACT_BROKER_URL: ${{ secrets.PACT_BROKER_URL }}
+          PACT_BROKER_BASE_URL: ${{ secrets.PACT_BROKER_URL }}
+          PACT_BROKER_USERNAME: ${{ secrets.HMPPS_PACT_BROKER_USERNAME }}
+          PACT_BROKER_PASSWORD: ${{ secrets.HMPPS_PACT_BROKER_PASSWORD }}
+        run: npm run "${PACT_PUBLISH_SCRIPT}" "${PACT_DIR}" -- --consumer-app-version="${APP_VERSION}" --broker-base-url="${PACT_BROKER_URL}"

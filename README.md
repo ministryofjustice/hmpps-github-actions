@@ -27,20 +27,22 @@ This repository contains a library of reusable GitHub workflows for use by other
 - `pact_record_deployment`: records a deployment against a Pact Broker environment
 - `pact_apply_webhook`: creates/updates a Pact Broker webhook from a definition in `hmpps-pact-broker/seed`, injecting a GitHub App token scoped to the provider repository
 - `pact_test_publish`: runs Pact consumer tests and publishes the pacts to the Pact Broker using configurable Gradle tasks, optionally applying a Pact Broker webhook first
+- `pact_node_test_publish`: runs Pact consumer tests and publishes the pacts using configurable npm scripts, optionally applying a Pact Broker webhook first
 - `sentry_release_and_deploy`: creates and deploys Sentry releases
 
 #### Pact webhook setup
 
 `pact_apply_webhook` runs `seed/create-single-webhook.sh` from `ministryofjustice/hmpps-pact-broker`,
-alongside its webhook JSON definitions. `pact_test_publish` can call it before running the
-consumer tests when `webhook_name`, `webhook_id`, and `webhook_provider_repository` are supplied.
-Both workflows accept `webhook_definitions_ref` (default `main`) to select the broker repo ref;
+alongside its webhook JSON definitions. `pact_test_publish` and `pact_node_test_publish`
+can call it before running the consumer tests when `webhook_name`, `webhook_id`, and
+`webhook_provider_repository` are supplied. All three workflows accept
+`webhook_definitions_ref` (default `main`) to select the broker repo ref;
 use `ci/trigger-apply-webhooks` while the script and definition are awaiting merge.
 
 The broker checkout uses a short-lived Octo STS token with the identity
 `pact-webhook-checkout`. Calling workflows must grant `contents: read` and
-`id-token: write` to the job calling either reusable workflow. This also applies
-to `pact_test_publish` when webhook setup is omitted, because GitHub validates
+`id-token: write` to the job calling any of these reusable workflows. This also applies
+to both consumer workflows when webhook setup is omitted, because GitHub validates
 permissions for nested reusable workflows even when their jobs are skipped.
 
 The Octo STS GitHub App must have access to `ministryofjustice/hmpps-pact-broker`.
@@ -66,7 +68,7 @@ The GitHub App token is not revoked at the end of the webhook job, but expires a
 The webhook must be refreshed before publishing, and its dispatch must happen before the token
 expires. This is not a permanent credential for later broker events.
 
-Example consumer job:
+Example Gradle consumer job:
 
 ```yaml
 jobs:
@@ -102,7 +104,7 @@ The calling repository must have access to the following secrets:
 | `PACT_BROKER_URL` | Always |
 | `HMPPS_PACT_BROKER_USERNAME` | Always |
 | `HMPPS_PACT_BROKER_PASSWORD` | Always |
-| `GRADLE_CACHE_ENCRYPTION_KEY` | Optional |
+| `GRADLE_CACHE_ENCRYPTION_KEY` | Optional for Gradle |
 | `PACT_TRIGGER_APP_ID` | When applying a webhook |
 | `PACT_TRIGGER_PRIVATE_KEY` | When applying a webhook |
 
@@ -129,6 +131,57 @@ on:
 
 A successful webhook delivery means GitHub accepted the request; it does not confirm
 that the provider workflow ran or that contract verification passed.
+
+#### Node Pact consumer
+
+The Node workflow checks out the calling repository, selects Node using `.nvmrc` and
+installs dependencies using `npm ci --no-audit`. It runs the consumer's npm test script,
+uploads test results even when tests fail, and invokes the publish script only after
+successful tests. Contract validation is the publish script's responsibility. It uses the same
+broker and optional webhook secrets as the Gradle workflow above.
+
+```yaml
+jobs:
+  pact_test:
+    permissions:
+      contents: read
+      id-token: write
+    needs: app_version
+    uses: ministryofjustice/hmpps-github-actions/.github/workflows/pact_node_test_publish.yml@v2
+    with:
+      app_version: ${{ needs.app_version.outputs.version }}
+      # Optional: webhook_name, webhook_id and webhook_provider_repository
+    secrets: inherit
+```
+
+The scripts default to `pact:test` and `pact:publish`; configure them in the consumer's
+`package.json`. For example, with `@pact-foundation/pact-cli` installed as a development
+dependency, the publish script can use:
+
+```json
+{
+  "scripts": {
+    "pact:test": "your-pact-test-command",
+    "pact:publish": "pact-broker publish \"$PACT_DIR\" --consumer-app-version \"$APP_VERSION\" --branch \"$GITHUB_BRANCH\""
+  }
+}
+```
+
+Replace `your-pact-test-command` with the project's test runner and configure its Pact
+tests to write contracts to `PACT_DIR`. The test script should clear old generated
+contracts before running so stale interactions are not published. The workflow passes
+`PACT_DIR` to both scripts and passes `APP_VERSION`, `GITHUB_BRANCH`,
+`PACT_BROKER_BASE_URL`, `PACT_BROKER_URL`, `PACT_BROKER_USERNAME` and
+`PACT_BROKER_PASSWORD` to the publish script. The publish script must use the supplied
+version and branch and return a non-zero exit code on failure. Ensure the Pact consumer
+name matches the repository name used as the pacticipant by the deployment workflows.
+
+Optional inputs are `node_version_file` (default `.nvmrc`), `pact_test_script`
+(default `pact:test`), `pact_publish_script` (default `pact:publish`), `pact_dir`
+(default `pacts`), `test_results_artifact_path` (default `test_results`) and
+`test_results_artifact_name` (default `pact-node-test-results`). Set a unique artifact
+name for each call in a pipeline. The workflow warns, but does not fail, if the test
+results path is missing.
 
 ### Test workflows
 
