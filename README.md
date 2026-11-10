@@ -136,8 +136,8 @@ that the provider workflow ran or that contract verification passed.
 
 The Node workflow checks out the calling repository, selects Node using `.nvmrc` and
 installs dependencies using `npm ci --no-audit`. It runs the consumer's npm test script,
-uploads test results even when tests fail, and publishes only after successful tests
-and a check that the Pact directory contains at least one JSON file. It uses the same
+uploads test results even when tests fail, and invokes the publish script only after
+successful tests. Contract validation is the publish script's responsibility. It uses the same
 broker and optional webhook secrets as the Gradle workflow above.
 
 ```yaml
