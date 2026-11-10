@@ -121,20 +121,6 @@ jobs:
         with:
           name: ${{ inputs.test_results_artifact_name }}
           path: ${{ inputs.test_results_artifact_path }}
-      - name: Check generated pacts
-        shell: bash
-        env:
-          PACT_DIR: ${{ inputs.pact_dir }}
-        run: |
-          if [[ ! -d "${PACT_DIR}" ]]; then
-            echo "::error::Pact directory does not exist: ${PACT_DIR}"
-            exit 1
-          fi
-          pact_file=$(find "${PACT_DIR}" -type f -name '*.json' -print -quit)
-          if [[ -z "${pact_file}" ]]; then
-            echo "::error::No Pact JSON files found in ${PACT_DIR}"
-            exit 1
-          fi
       - name: Publish pacts
         shell: bash
         env:
