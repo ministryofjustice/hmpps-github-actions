@@ -27,6 +27,14 @@ on:
         required: false
         default: false
         type: boolean
+      pacticipants:
+        description: |
+          JSON array of Pact participant names to record after deployment.
+          Defaults to the calling repository name when omitted.
+          All participants use app_version. Does not change the can-i-deploy participant.
+        required: false
+        default: ''
+        type: string
       slack_notification:
         description: Slack notification
         default: "false"
@@ -61,8 +69,13 @@ jobs:
     name: Record successful deployment in Pact Broker
     needs: deploy_env
     if: ${{ always() && needs.deploy_env.result == 'success' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        pacticipant: ${{ fromJSON(inputs.pacticipants || '[""]') }}
     uses: ./.github/workflows/pact_record_deployment.yml
     secrets: inherit
     with:
       environment: ${{ inputs.pact_environment_override || inputs.environment }}
       app_version: ${{ inputs.app_version }}
+      pacticipant: ${{ matrix.pacticipant }}
