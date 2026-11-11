@@ -30,6 +30,29 @@ This repository contains a library of reusable GitHub workflows for use by other
 - `pact_node_test_publish`: runs Pact consumer tests and publishes the pacts using configurable npm scripts, optionally applying a Pact Broker webhook first
 - `sentry_release_and_deploy`: creates and deploys Sentry releases
 
+#### Pact deployment participants
+
+`pact_deploy_env` accepts an optional `pacticipants` input containing a non-empty
+JSON array of Pact participant names. After a successful deployment it calls
+`pact_record_deployment` for each participant, using the same `app_version` and
+Pact environment. Recording failures fail the workflow, but do not cancel the
+other participant recordings. Omit the input to retain the calling repository
+name as the sole participant.
+
+```yaml
+uses: ministryofjustice/hmpps-github-actions/.github/workflows/pact_deploy_env.yml@v2
+secrets: inherit
+with:
+  environment: dev
+  app_version: ${{ needs.build.outputs.app_version }}
+  pacticipants: '["hmpps-person-record", "hmpps-person-record-events"]'
+```
+
+`pact_record_deployment` also accepts an optional singular `pacticipant` input
+when called directly. Deployment recording describes what is actually deployed;
+it does not publish verification results. The optional `can-i-deploy` gate still
+checks the calling repository's participant, as before.
+
 #### Pact webhook setup
 
 `pact_apply_webhook` runs `seed/create-single-webhook.sh` from `ministryofjustice/hmpps-pact-broker`,

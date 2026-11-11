@@ -28,6 +28,11 @@ on:
         description: Pact Broker environment name to record the deployment against
         required: true
         type: string
+      pacticipant:
+        description: Pact participant name; defaults to the calling repository name
+        required: false
+        default: ''
+        type: string
     secrets:
       PACT_BROKER_URL:
         required: true
@@ -51,13 +56,14 @@ jobs:
         env:
           INPUT_APP_VERSION: ${{ inputs.app_version }}
           INPUT_ENVIRONMENT: ${{ inputs.environment }}
+          INPUT_PACTICIPANT: ${{ inputs.pacticipant }}
           PACT_BROKER_BASE_URL: ${{ secrets.PACT_BROKER_URL }}
           PACT_BROKER_USERNAME: ${{ secrets.HMPPS_PACT_BROKER_USERNAME }}
           PACT_BROKER_PASSWORD: ${{ secrets.HMPPS_PACT_BROKER_PASSWORD }}
         run: |
           set -eu
 
-          pacticipant="${GITHUB_REPOSITORY#*/}"
+          pacticipant="${INPUT_PACTICIPANT:-${GITHUB_REPOSITORY#*/}}"
 
           pact-broker record-deployment \
             --environment "$INPUT_ENVIRONMENT" \
