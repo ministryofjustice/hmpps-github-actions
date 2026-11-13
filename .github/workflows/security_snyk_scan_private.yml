@@ -47,9 +47,7 @@ on:
       HMPPS_SRE_SLACK_BOT_TOKEN:
         description: 'Slack bot token'
         required: false
-      HMPPS_SNYK_API_KEY:
-        description: 'Snyk token'
-        required: false
+
       HMPPS_SNYK_CLIENT_ID:
         description: 'Snyk client ID'
         required: false
@@ -86,7 +84,6 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           client_id: ${{ secrets.HMPPS_SNYK_CLIENT_ID }}
           client_secret: ${{ secrets.HMPPS_SNYK_CLIENT_SECRET }}
-          snyk_token: ${{ secrets.HMPPS_SNYK_API_KEY }}
           snyk_policy_path: ${{ inputs.snyk_policy_path }}
           image_ref: ${{ inputs.image_ref }}
 
