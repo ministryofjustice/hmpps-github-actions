@@ -63,7 +63,7 @@ permissions:
 jobs:
   apply_webhook:
     name: Apply Pact Broker webhook – ${{ inputs.webhook_name }}
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     steps:
       - name: Check webhook configuration
         env:
