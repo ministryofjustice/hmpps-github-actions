@@ -58,6 +58,11 @@ on:
         type: boolean
         default: true
         required: false
+      test-report-continue-on-error:
+        description: Whether a failure to publish the test report (e.g. a transient 404 downloading the artifact) should leave the job passing
+        type: boolean
+        default: false
+        required: false
       upload-build-artifacts:
         description: Whether to upload the uber jar and other required artifacts to build a docker image
         type: boolean
@@ -124,6 +129,7 @@ jobs:
           retention-days: 1
       - name: publish test report
         if: ${{ inputs.upload-test-artifacts && !cancelled() && github.event.repository.visibility == 'public' }}
+        continue-on-error: ${{ inputs.test-report-continue-on-error }}
         uses: dorny/test-reporter@d1b5dff021aa968b288b02285a8bf47471c5928a # v3.2.0
         with:
           artifact: ${{ inputs.artifact-name }}
