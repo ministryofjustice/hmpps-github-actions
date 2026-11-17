@@ -31,6 +31,11 @@ on:
         description: 'Optionally, start a redis service with this tag'
         required: false
         type: string
+      test-report-continue-on-error:
+        description: Whether a failure to publish the test report (e.g. a transient 404 downloading the artifact) should leave the job passing
+        type: boolean
+        default: false
+        required: false
 
 permissions:
   contents: read
@@ -95,6 +100,7 @@ jobs:
           path: ${{ inputs.test_results_artifact_path }}
       - name: publish test report
         if: ${{ !cancelled() && github.event.repository.visibility == 'public' }}
+        continue-on-error: ${{ inputs.test-report-continue-on-error }}
         uses: dorny/test-reporter@d1b5dff021aa968b288b02285a8bf47471c5928a # v3.2.0
         with:
           artifact: ${{ inputs.test_results_artifact_name }}
