@@ -62,7 +62,7 @@ jobs:
         input-file: 'npm-security-check-reports.json'
     # Upload Sarif file: this will attempt to upload the sarif file for private/internal repositories as well
     - name: npm upload sarif
-      uses: github/codeql-action/upload-sarif@33d7b85da1a04171e211befe2c739303b9a4c066 # v4.39.3
+      uses: github/codeql-action/upload-sarif@1bd86f2fdb4b86187fa4059f16f31a3202acc9ea # v4.39.4
       id: npm-upload-sarif
       # if: ${{ github.event.repository.visibility != 'private' && github.event.repository.visibility != 'internal' }}
       with:
