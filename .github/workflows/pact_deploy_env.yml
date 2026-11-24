@@ -57,7 +57,7 @@ jobs:
   deploy_env:
     name: Deploy to ${{ inputs.environment }}
     needs: can_i_deploy
-    if: ${{ always() && (!inputs.pact_consumer_deployment || needs.can_i_deploy.result == 'success') }}
+    if: ${{ !cancelled() && (!inputs.pact_consumer_deployment || needs.can_i_deploy.result == 'success') }}
     uses: ./.github/workflows/deploy_env.yml
     secrets: inherit
     with:
