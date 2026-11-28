@@ -98,7 +98,7 @@ jobs:
         java-version: '${{ inputs.java_version }}'
     - name: prepare assets
       if: inputs.veracode_package_artifact_name == ''
-      uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/security_veracode_prepare_artifacts@cf153ef9fac2a87d0ae26cdd67c6b54dc6ce32f4 # v1.1.10
+      uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/security_veracode_prepare_artifacts@a72e9a2ee67d147544c72b40f576e27de7d1e0d3 # v1.1.11
       with:
         docker_image_app_dir: ${{ inputs.docker_image_app_dir }}
     - name: download assets artifact
@@ -106,7 +106,7 @@ jobs:
       uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
       with:
         name: ${{ inputs.veracode_package_artifact_name }}
-    - uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/tool-installers/setup-veracode-wrapper@cf153ef9fac2a87d0ae26cdd67c6b54dc6ce32f4 # v1.1.10
+    - uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/tool-installers/setup-veracode-wrapper@a72e9a2ee67d147544c72b40f576e27de7d1e0d3 # v1.1.11
     - name: "Upload to Veracode"
       shell: bash
       env:
@@ -150,7 +150,7 @@ jobs:
         path: output.txt
     - name: send a failure slack message
       if: failure()  && inputs.channel_id != 'NO_SLACK'
-      uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/slack_failure_results@cf153ef9fac2a87d0ae26cdd67c6b54dc6ce32f4 # v1.1.10
+      uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/slack_failure_results@a72e9a2ee67d147544c72b40f576e27de7d1e0d3 # v1.1.11
       with:
         SLACK_BOT_TOKEN: ${{ secrets.HMPPS_SRE_SLACK_BOT_TOKEN }}
         channel_id: ${{ inputs.channel_id }}
